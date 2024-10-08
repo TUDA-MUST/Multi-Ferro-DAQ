@@ -1,0 +1,6 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "AD8608ARUZ")(type "KiCad")(uri "${KIPRJMOD}/components/AD8608ARUZ/2024-10-08_12-39-19.kicad_sym")(options "")(descr ""))
+  (lib (name "ADS131M08IPBS")(type "KiCad")(uri "${KIPRJMOD}/components/ADS131M08IPBS/2024-10-07_14-28-52.kicad_sym")(options "")(descr ""))
+  (lib (name "ADS131E08IPAGR")(type "KiCad")(uri "${KIPRJMOD}/components/ADS131E08IPAGR/ADS131E08IPAGR.kicad_sym")(options "")(descr ""))
+)
