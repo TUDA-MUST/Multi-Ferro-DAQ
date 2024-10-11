@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TPD4E05U06DQAR
+D 4-Channel Ultra-Low-Capacitance IEC ESD Protection Diode
+K
+F http://www.ti.com/lit/gpn/tpd4e05u06
+$ENDCMP
+#
+#End Doc Library
