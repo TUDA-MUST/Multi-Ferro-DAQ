@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TPD6E001RSER
+D Low-Capacitance 6-Channel +/-15-kV ESD Protection Array for High-Speed Data Interfaces
+K
+F http://www.ti.com/lit/gpn/tpd6e001
+$ENDCMP
+#
+#End Doc Library

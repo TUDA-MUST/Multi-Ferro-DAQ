@@ -12,4 +12,6 @@
   (lib (name "TPD4E05U06DQAR")(type "KiCad")(uri "${KIPRJMOD}/components/TPD4E05U06DQAR")(options "")(descr ""))
   (lib (name "TPD6E05U06RVZR")(type "KiCad")(uri "${KIPRJMOD}/components/TPD6E05U06RVZR")(options "")(descr ""))
   (lib (name "TPD1E04U04DPLR")(type "KiCad")(uri "${KIPRJMOD}/components/TPD1E04U04DPLR")(options "")(descr ""))
+  (lib (name "TPS7A8801RTJR")(type "KiCad")(uri "${KIPRJMOD}/components/TPS7A8801RTJR")(options "")(descr ""))
+  (lib (name "R-RJ45R08P-B000")(type "KiCad")(uri "${KIPRJMOD}/components/R-RJ45R08P-B000/R-RJ45R08P-B000.pretty")(options "")(descr ""))
 )

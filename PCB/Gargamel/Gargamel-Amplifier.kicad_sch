@@ -2661,7 +2661,7 @@
 				)
 			)
 		)
-		(property "Footprint" "RU_14_ADI"
+		(property "Footprint" "AD8608ARUZ:RU_14_ADI"
 			(at 139.7 77.47 0)
 			(effects
 				(font

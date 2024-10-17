@@ -1,0 +1,30 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#SamacSys ECAD Model LM2775QDSGRQ1
+#/1506704/384810/2.50/9/3/Integrated Circuit
+DEF LM2775QDSGRQ1 IC 0 30 Y Y 1 F N
+F0 "IC" 1250 300 50 H V L CNN
+F1 "LM2775QDSGRQ1" 1250 200 50 H V L CNN
+F2 "SON50P200X200X80-9N" 1250 100 50 H I L CNN
+F3 "http://www.ti.com/lit/gpn/lm2775-q1" 1250 0 50 H I L CNN
+F4 "Switched Capacitor 5V Boost Converter" 1250 -100 50 H I L CNN "Description"
+F5 "0.8" 1250 -200 50 H I L CNN "Height"
+F6 "595-LM2775QDSGRQ1" 1250 -300 50 H I L CNN "Mouser Part Number"
+F7 "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/LM2775QDSGRQ1?qs=%252BEew9%252B0nqrAJN20Oz67Akw%3D%3D" 1250 -400 50 H I L CNN "Mouser Price/Stock"
+F8 "Texas Instruments" 1250 -500 50 H I L CNN "Manufacturer_Name"
+F9 "LM2775QDSGRQ1" 1250 -600 50 H I L CNN "Manufacturer_Part_Number"
+DRAW
+X PFM 1 0 0 200 R 50 50 0 0 P
+X C1- 2 0 -100 200 R 50 50 0 0 P
+X C1+ 3 0 -200 200 R 50 50 0 0 P
+X OUTDIS 4 0 -300 200 R 50 50 0 0 P
+X GND_2 9 700 -1000 200 U 50 50 0 0 P
+X GND_1 8 1400 0 200 L 50 50 0 0 P
+X VIN 7 1400 -100 200 L 50 50 0 0 P
+X VOUT 6 1400 -200 200 L 50 50 0 0 P
+X EN 5 1400 -300 200 L 50 50 0 0 P
+P 5 0 1 6 200 100 1200 100 1200 -800 200 -800 200 100 N
+ENDDRAW
+ENDDEF
+#
+#End Library
