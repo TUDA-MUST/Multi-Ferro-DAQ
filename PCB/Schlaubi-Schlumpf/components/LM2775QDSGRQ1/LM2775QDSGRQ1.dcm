@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP LM2775QDSGRQ1
+D Switched Capacitor 5V Boost Converter
+K
+F http://www.ti.com/lit/gpn/lm2775-q1
+$ENDCMP
+#
+#End Doc Library
