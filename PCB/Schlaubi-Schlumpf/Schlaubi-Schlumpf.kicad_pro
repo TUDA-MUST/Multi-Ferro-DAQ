@@ -397,7 +397,7 @@
     ],
     [
       "9d5ae46d-7e31-4e0f-b583-61afb72b72e3",
-      "Amplifier"
+      "Charge-Amplifier-Sensitive"
     ],
     [
       "b2b2c764-2d7a-4fe7-b3f5-2bbb716da457",
@@ -418,6 +418,14 @@
     [
       "120ac1c6-1ca0-4ddb-88e6-c30d0b713ceb",
       "USB-Connector3"
+    ],
+    [
+      "b54ea6c0-cff1-494e-9f24-f06fcdb34435",
+      "IMU"
+    ],
+    [
+      "b89fdfd1-873e-4102-a919-e1ab7efa6efe",
+      "Charge-Amplifier-Coarse"
     ]
   ],
   "text_variables": {}
