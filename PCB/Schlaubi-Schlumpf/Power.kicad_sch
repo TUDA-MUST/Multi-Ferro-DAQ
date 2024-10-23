@@ -3035,6 +3035,12 @@
 		(uuid "1f3516b3-3cff-415b-bc75-ed90340b57da")
 	)
 	(junction
+		(at 198.12 25.4)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "287d3511-9723-4efb-b6b5-ad417ca89b8a")
+	)
+	(junction
 		(at 233.68 30.48)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3185,6 +3191,12 @@
 		(uuid "c93abca7-461d-4ad1-91eb-b37f8497eb6e")
 	)
 	(junction
+		(at 195.58 115.57)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "c9beaa32-359c-48b7-a814-dd9a47936803")
+	)
+	(junction
 		(at 219.71 39.37)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3231,16 +3243,18 @@
 		(uuid "001abbd4-16eb-4703-9f74-550eecc780c4")
 	)
 	(no_connect
-		(at 198.12 39.37)
-		(uuid "616d6792-1692-41f5-8ee2-a51d28866960")
-	)
-	(no_connect
 		(at 67.31 46.99)
 		(uuid "c055ebb4-1045-49c7-9a36-d2ead6aa0cf8")
 	)
-	(no_connect
-		(at 195.58 90.17)
-		(uuid "e74eba8a-6c57-4f45-9292-336fe3e6c404")
+	(wire
+		(pts
+			(xy 199.39 25.4) (xy 198.12 25.4)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "06aff066-e1dc-405d-a404-6653c04c90a3")
 	)
 	(wire
 		(pts
@@ -3321,6 +3335,16 @@
 			(type default)
 		)
 		(uuid "273b5a74-04f9-469b-a826-3220f9ce62fd")
+	)
+	(wire
+		(pts
+			(xy 198.12 19.05) (xy 198.12 25.4)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "293632fe-a754-400a-914b-b4bb9404778f")
 	)
 	(wire
 		(pts
@@ -3494,6 +3518,16 @@
 	)
 	(wire
 		(pts
+			(xy 195.58 120.65) (xy 195.58 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "466ee1df-9c53-43ca-b858-a37d1e3893f4")
+	)
+	(wire
+		(pts
 			(xy 210.82 69.85) (xy 219.71 69.85)
 		)
 		(stroke
@@ -3631,6 +3665,16 @@
 			(type default)
 		)
 		(uuid "5f4cd15d-c7d5-4e03-bd58-20249ecd811e")
+	)
+	(wire
+		(pts
+			(xy 198.12 25.4) (xy 198.12 39.37)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6026b44b-51a8-45c6-bf78-0f0118c823cb")
 	)
 	(wire
 		(pts
@@ -3794,6 +3838,16 @@
 	)
 	(wire
 		(pts
+			(xy 195.58 115.57) (xy 195.58 90.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a2f3d4dc-4460-43f2-98b5-0ccf255c45f2")
+	)
+	(wire
+		(pts
 			(xy 57.15 27.94) (xy 57.15 25.4)
 		)
 		(stroke
@@ -3851,6 +3905,16 @@
 			(type default)
 		)
 		(uuid "b4f40c65-76ca-4180-9d38-b382dd7969ce")
+	)
+	(wire
+		(pts
+			(xy 195.58 115.57) (xy 198.12 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b83df093-47fb-419e-877c-57b94d8b614a")
 	)
 	(wire
 		(pts
@@ -4432,6 +4496,18 @@
 		)
 		(uuid "e9f19819-bcb2-4543-9eab-e19ae7d1b7d5")
 	)
+	(hierarchical_label "PG_3.3V"
+		(shape output)
+		(at 198.12 19.05 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "1a0b1d81-0901-4dde-84ce-40b393893981")
+	)
 	(hierarchical_label "3.3V"
 		(shape output)
 		(at 242.57 59.69 0)
@@ -4444,6 +4520,18 @@
 		)
 		(uuid "219e8360-e9cf-4a65-9457-2e25915710d2")
 	)
+	(hierarchical_label "3.3V"
+		(shape output)
+		(at 209.55 25.4 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "4cfd1c8d-aae7-424a-a721-2e03493f5af5")
+	)
 	(hierarchical_label "Vbus"
 		(shape input)
 		(at 35.56 35.56 180)
@@ -4455,6 +4543,18 @@
 			(justify right)
 		)
 		(uuid "572af436-b2be-4d3f-99a5-33fc2add3791")
+	)
+	(hierarchical_label "3.3V"
+		(shape output)
+		(at 208.28 115.57 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "92a743b1-205c-482a-82b8-41f8a5d3ee69")
 	)
 	(hierarchical_label "2V"
 		(shape output)
@@ -4479,6 +4579,18 @@
 			(justify right)
 		)
 		(uuid "b924ac66-4226-4987-b353-73300c6b5c48")
+	)
+	(hierarchical_label "PG_2V"
+		(shape output)
+		(at 195.58 120.65 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "ed980abc-1d87-4b33-9000-07c191f549c3")
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
@@ -5223,6 +5335,75 @@
 		)
 	)
 	(symbol
+		(lib_id "MiniLev-eagle-import:R-EU_R0805")
+		(at 203.2 115.57 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2616c8eb-6e3d-4b9a-9cf1-2e6c7a081fe9")
+		(property "Reference" "R18"
+			(at 199.39 114.0714 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Value" "10k"
+			(at 199.39 118.872 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 203.2 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 203.2 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 203.2 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9bb3751f-45eb-4624-acca-6c7de0efd041")
+		)
+		(pin "2"
+			(uuid "7f3280be-a5d8-4e09-ba7b-b52b178d65ac")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/b2b2c764-2d7a-4fe7-b3f5-2bbb716da457"
+					(reference "R18")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 187.96 39.37 180)
 		(unit 1)
@@ -5350,6 +5531,75 @@
 			(project "Schlaubi-Schlumpf"
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/b2b2c764-2d7a-4fe7-b3f5-2bbb716da457"
 					(reference "D2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "MiniLev-eagle-import:R-EU_R0805")
+		(at 204.47 25.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "3a7b7aca-35c3-4e39-ae63-8da77a4b4221")
+		(property "Reference" "R17"
+			(at 200.66 23.9014 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Value" "10k"
+			(at 200.66 28.702 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 204.47 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 204.47 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 204.47 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3c451d5c-9517-4265-b232-aab256200437")
+		)
+		(pin "2"
+			(uuid "fc3d7be3-551e-43cc-9fa2-027711a1656b")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/b2b2c764-2d7a-4fe7-b3f5-2bbb716da457"
+					(reference "R17")
 					(unit 1)
 				)
 			)

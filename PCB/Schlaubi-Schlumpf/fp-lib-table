@@ -21,4 +21,5 @@
   (lib (name "LM2775QDSGRQ1")(type "KiCad")(uri "${KIPRJMOD}/components/LM2775QDSGRQ1")(options "")(descr ""))
   (lib (name "SK6812MNI-HS")(type "KiCad")(uri "${KIPRJMOD}/components/SK6812MNI-HS")(options "")(descr ""))
   (lib (name "SK-12D02-VG3")(type "KiCad")(uri "${KIPRJMOD}/components/SK-12D02-VG3")(options "")(descr ""))
+  (lib (name "ICM-42670-P")(type "KiCad")(uri "${KIPRJMOD}/components/ICM-42670-P")(options "")(descr ""))
 )
