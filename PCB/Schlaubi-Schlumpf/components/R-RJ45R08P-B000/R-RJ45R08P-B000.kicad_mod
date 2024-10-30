@@ -158,8 +158,8 @@
 		(uuid "8b2d2350-f231-4a93-9399-dfe326dd1673")
 	)
 	(fp_line
-		(start 3 -3.75)
-		(end 3.5 -4.25)
+		(start 3 -6.75)
+		(end 3.5 -7.25)
 		(stroke
 			(width 0.1)
 			(type default)
@@ -168,8 +168,18 @@
 		(uuid "22ebbe38-a074-452f-90c6-e8893c90757f")
 	)
 	(fp_line
-		(start 3.5 -4.25)
-		(end 4 -3.75)
+		(start 3 -5.5)
+		(end 3.5 -5)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "Dwgs.User")
+		(uuid "74e91a5b-d102-4d19-9427-6b9271024225")
+	)
+	(fp_line
+		(start 3.5 -7.25)
+		(end 4 -6.75)
 		(stroke
 			(width 0.1)
 			(type default)
@@ -178,14 +188,24 @@
 		(uuid "e01aa042-c450-41e4-bd23-236af8e356a2")
 	)
 	(fp_line
-		(start 3.5 -2.75)
-		(end 3.5 -4.25)
+		(start 3.5 -5)
+		(end 3.5 -7.25)
 		(stroke
 			(width 0.1)
 			(type default)
 		)
 		(layer "Dwgs.User")
 		(uuid "ab8170ab-62e7-462c-bff7-f643494262a6")
+	)
+	(fp_line
+		(start 3.5 -5)
+		(end 4 -5.5)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "Dwgs.User")
+		(uuid "4d97c6b3-c2bd-4cdc-990f-2069cf929a54")
 	)
 	(fp_line
 		(start -6.22 -8.5)
@@ -278,7 +298,7 @@
 		(uuid "503fa74f-3150-49e3-b7e8-664e2525ee83")
 	)
 	(fp_text user "${REFERENCE}"
-		(at 3.56 -6 0)
+		(at 3.5 -2 0)
 		(layer "F.Fab")
 		(uuid "40522698-c48a-43f4-aefd-e4f004bcbc28")
 		(effects

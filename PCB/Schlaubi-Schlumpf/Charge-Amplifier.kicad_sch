@@ -1286,78 +1286,6 @@
 		)
 		(uuid "fc9db0d7-fbe2-4ef9-854d-236a9371effa")
 	)
-	(hierarchical_label "Vref"
-		(shape input)
-		(at 107.95 87.63 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "37343320-c45d-44b7-91f1-19cdc37bb79c")
-	)
-	(hierarchical_label "Vin_A"
-		(shape input)
-		(at 107.95 80.01 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "47d5368e-dd3d-4e22-bb54-323d99b209ec")
-	)
-	(hierarchical_label "Vref"
-		(shape input)
-		(at 194.31 87.63 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "4a760712-e18f-4c4d-9216-6cafbc625263")
-	)
-	(hierarchical_label "Vin_B"
-		(shape input)
-		(at 107.95 90.17 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "542c8031-cb1f-41a5-91cb-a7cce744f154")
-	)
-	(hierarchical_label "Vin_D"
-		(shape input)
-		(at 194.31 80.01 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "59c0fc87-c41d-4a97-babc-578091175063")
-	)
-	(hierarchical_label "Vin_C"
-		(shape input)
-		(at 194.31 90.17 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "8ad384d3-f525-4874-8f01-90638fe092ba")
-	)
 	(hierarchical_label "Vout_A"
 		(shape output)
 		(at 107.95 72.39 180)
@@ -1368,67 +1296,7 @@
 			)
 			(justify right)
 		)
-		(uuid "8b6737c1-6db6-4126-b0c8-7e131b324920")
-	)
-	(hierarchical_label "Vref"
-		(shape input)
-		(at 194.31 82.55 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "99447673-9e28-45ee-9fb9-0a38774baacf")
-	)
-	(hierarchical_label "Vref"
-		(shape input)
-		(at 138.3483 105.4337 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a5ebafaf-01d3-45b5-a7dc-f3314fa2bb3d")
-	)
-	(hierarchical_label "Vout_D"
-		(shape output)
-		(at 194.31 72.39 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "ca87b549-de46-48f2-8cd9-ec610d659914")
-	)
-	(hierarchical_label "3.3V"
-		(shape input)
-		(at 73.66 85.09 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "d74b9c77-5503-46fb-8439-bc28afdd18b0")
-	)
-	(hierarchical_label "Vout_B"
-		(shape output)
-		(at 107.95 97.79 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "dc561529-8c60-48c4-a652-e428c344905b")
+		(uuid "1528309c-f4ce-41c6-9811-906f03ce8098")
 	)
 	(hierarchical_label "Vref"
 		(shape input)
@@ -1440,7 +1308,19 @@
 			)
 			(justify right)
 		)
-		(uuid "dcffd086-3987-4200-b587-92d6099ade4e")
+		(uuid "160f5cbc-8b05-48ed-9a73-f237a8bd8611")
+	)
+	(hierarchical_label "Vin_B"
+		(shape input)
+		(at 107.95 90.17 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "1ef3ef2e-d5ac-454f-984f-8c7404d350b7")
 	)
 	(hierarchical_label "Vout_C"
 		(shape output)
@@ -1452,991 +1332,127 @@
 			)
 			(justify left)
 		)
-		(uuid "e36ad419-b5f4-4f91-8ac8-79c6892a179d")
+		(uuid "21e01ad9-c658-4b99-8ad1-bbf3aefae87f")
 	)
-	(symbol
-		(lib_id "power:GND")
-		(at 173.99 85.09 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(hierarchical_label "Vout_B"
+		(shape output)
+		(at 107.95 97.79 180)
 		(fields_autoplaced yes)
-		(uuid "0d68d141-289f-4c66-a5f4-45059f7d81b6")
-		(property "Reference" "#PWR027"
-			(at 180.34 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify right)
 		)
-		(property "Value" "GND"
-			(at 177.8 85.0899 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 173.99 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 173.99 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 173.99 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "664fee03-5977-4e3f-9bb8-057f580682a1")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "#PWR027")
-					(unit 1)
-				)
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
-					(reference "#PWR080")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "26f5b2a7-c605-459b-a5dc-7472ad5ee302")
 	)
-	(symbol
-		(lib_id "AD8608ARUZ:AD8608ARUZ-REEL")
-		(at 130.81 77.47 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(hierarchical_label "Vref"
+		(shape input)
+		(at 138.43 105.41 180)
 		(fields_autoplaced yes)
-		(uuid "158eb886-5a54-4b96-8a03-bfd7fd973fb8")
-		(property "Reference" "U1"
-			(at 151.13 67.31 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify right)
 		)
-		(property "Value" "AD8608ARUZ-REEL"
-			(at 151.13 69.85 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-			)
-		)
-		(property "Footprint" "AD8608ARUZ:RU_14_ADI"
-			(at 130.81 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "AD8608ARUZ-REEL"
-			(at 130.81 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 130.81 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "4"
-			(uuid "01686564-81c0-4d29-9401-acb32b6d6ebb")
-		)
-		(pin "1"
-			(uuid "f133aaf7-2305-40e7-b969-6f33ed88c99f")
-		)
-		(pin "9"
-			(uuid "cc8402aa-673a-4572-bc01-e7ae1eb6ca33")
-		)
-		(pin "7"
-			(uuid "27396e17-885f-4ccc-8180-6f9250fea119")
-		)
-		(pin "2"
-			(uuid "a52a976b-1f9b-4534-99bd-7ca52fdec950")
-		)
-		(pin "13"
-			(uuid "ef6539b6-4819-4d06-a7ed-aeba2fc31341")
-		)
-		(pin "8"
-			(uuid "614b1ffd-e4c5-41bb-bfd3-f26c42154da3")
-		)
-		(pin "5"
-			(uuid "ce3d3bf0-dd7e-4f30-a649-234f1d7fe6b8")
-		)
-		(pin "3"
-			(uuid "d5097033-e50e-4546-917d-8bec949ff59a")
-		)
-		(pin "14"
-			(uuid "a9fc3004-4f08-4dd3-b56c-96a28cbf2d4c")
-		)
-		(pin "12"
-			(uuid "d3a0ebb8-e8b1-44e6-a6be-4865cfa13d58")
-		)
-		(pin "6"
-			(uuid "cbc5d2bd-a69a-440f-a925-cd74e132f3a5")
-		)
-		(pin "10"
-			(uuid "2178500f-da2d-43bd-a20e-6f4e8477aa35")
-		)
-		(pin "11"
-			(uuid "23a93818-25cf-4cb0-94e3-34c3e6970ce7")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "U1")
-					(unit 1)
-				)
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
-					(reference "U4")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "4f6faae3-ce90-40ee-88ac-53a2f7ec707d")
 	)
-	(symbol
-		(lib_id "Device:R")
-		(at 185.42 93.98 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(hierarchical_label "Vref"
+		(shape input)
+		(at 194.31 82.55 0)
 		(fields_autoplaced yes)
-		(uuid "2709467f-9f1f-4787-b282-fef654956b6b")
-		(property "Reference" "RF4"
-			(at 187.96 92.7099 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify left)
 		)
-		(property "Value" "2G"
-			(at 187.96 95.2499 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 183.642 93.98 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 185.42 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 185.42 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "ee6bb16d-6e42-4b6e-b12e-08e663960e88")
-		)
-		(pin "1"
-			(uuid "6baa7c5d-068a-4c93-9216-284790214231")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "RF4")
-					(unit 1)
-				)
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
-					(reference "RF8")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "55c4e70e-ec65-4fa8-a215-837844b0319f")
 	)
-	(symbol
-		(lib_id "Device:C")
-		(at 154.94 109.22 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(hierarchical_label "Vin_C"
+		(shape input)
+		(at 194.31 90.17 0)
 		(fields_autoplaced yes)
-		(uuid "37d33e67-d3f8-4e1d-881c-bcbe3add0bd8")
-		(property "Reference" "CS19"
-			(at 158.75 107.9499 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify left)
 		)
-		(property "Value" "100n"
-			(at 158.75 110.4899 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 155.9052 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 154.94 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 154.94 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "92ba2601-70c5-401e-b036-67ea6090cb20")
-		)
-		(pin "2"
-			(uuid "ca1c1add-2b36-4efd-8437-c0a0c7b317df")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "CS19")
-					(unit 1)
-				)
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
-					(reference "CS53")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "977a9e9c-1e52-472e-96c5-bc48bd26f872")
 	)
-	(symbol
-		(lib_id "Device:R")
-		(at 185.42 76.2 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(hierarchical_label "Vref"
+		(shape input)
+		(at 107.95 87.63 180)
 		(fields_autoplaced yes)
-		(uuid "38e95d9c-9105-49b1-8511-ab980e8f30fe")
-		(property "Reference" "RF3"
-			(at 187.96 74.9299 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify right)
 		)
-		(property "Value" "2G"
-			(at 187.96 77.4699 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 183.642 76.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 185.42 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 185.42 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "31e7552e-7c9e-45f9-b3c6-fddd0cfa5e75")
-		)
-		(pin "1"
-			(uuid "4f7e7240-76ab-4d4d-90e6-bf6f3c6060f8")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "RF3")
-					(unit 1)
-				)
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
-					(reference "RF7")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "a6b1cb0b-f512-43aa-b9eb-d4a5e2fd9ab8")
 	)
-	(symbol
-		(lib_id "Device:R")
-		(at 123.19 76.2 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(hierarchical_label "Vin_A"
+		(shape input)
+		(at 107.95 80.01 180)
 		(fields_autoplaced yes)
-		(uuid "39626676-f8ba-424d-9783-a62b6e20dc93")
-		(property "Reference" "RF1"
-			(at 125.73 74.9299 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify right)
 		)
-		(property "Value" "2G"
-			(at 125.73 77.4699 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 121.412 76.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 123.19 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 123.19 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "2c78a223-b75c-4686-9479-8c55b88ab5d1")
-		)
-		(pin "1"
-			(uuid "3ffed49a-9886-4798-a9c9-b763b1819013")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "RF1")
-					(unit 1)
-				)
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
-					(reference "RF5")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "b5bf3fde-ab1e-4177-b9f6-9d291778a90e")
 	)
-	(symbol
-		(lib_id "power:GND")
-		(at 83.82 92.71 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(hierarchical_label "Vref"
+		(shape input)
+		(at 194.31 87.63 0)
 		(fields_autoplaced yes)
-		(uuid "52992942-df49-4f78-acd1-d06cbf360b24")
-		(property "Reference" "#PWR024"
-			(at 83.82 99.06 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify left)
 		)
-		(property "Value" "GND"
-			(at 83.82 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 83.82 92.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 83.82 92.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 83.82 92.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "e91d71e4-5477-4ad0-b2b4-b03b2adac92e")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "#PWR024")
-					(unit 1)
-				)
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
-					(reference "#PWR078")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "cfa6f666-dd55-405e-8c4e-eef65f6dc067")
 	)
-	(symbol
-		(lib_id "Device:C")
-		(at 180.34 93.98 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "62ec5b71-ab12-485e-abbb-941544e4f806")
-		(property "Reference" "CF4"
-			(at 174.752 91.948 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "360p"
-			(at 172.974 94.488 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 181.3052 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 180.34 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 180.34 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "04986606-a6c0-4a0b-a756-833bb6c73c48")
-		)
-		(pin "1"
-			(uuid "88c14d7e-cde0-4b5d-8436-4af489949649")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "CF4")
-					(unit 1)
-				)
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
-					(reference "CF8")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 123.19 93.98 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(hierarchical_label "5V"
+		(shape input)
+		(at 73.66 85.09 180)
 		(fields_autoplaced yes)
-		(uuid "693bf48e-5d74-40e0-a4d6-d393149000cf")
-		(property "Reference" "RF2"
-			(at 125.73 92.7099 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify right)
 		)
-		(property "Value" "2G"
-			(at 125.73 95.2499 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 121.412 93.98 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 123.19 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 123.19 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "cf4536ca-c1dd-4e79-80a8-0e5fc5ec78e9")
-		)
-		(pin "1"
-			(uuid "aa7eb2fb-7a48-4799-a7a6-0e66989f7fdb")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "RF2")
-					(unit 1)
-				)
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
-					(reference "RF6")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "dc2d7325-827e-4037-b624-211fe169454d")
 	)
-	(symbol
-		(lib_id "power:GND")
-		(at 149.86 113.03 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(hierarchical_label "Vout_D"
+		(shape output)
+		(at 194.31 72.39 0)
 		(fields_autoplaced yes)
-		(uuid "89a7a61f-b7ab-4a24-92c7-c144aee0c193")
-		(property "Reference" "#PWR026"
-			(at 149.86 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify left)
 		)
-		(property "Value" "GND"
-			(at 149.86 118.11 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 149.86 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 149.86 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 149.86 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "2f075690-03c9-4726-b7b0-9a97fad8ae8d")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "#PWR026")
-					(unit 1)
-				)
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
-					(reference "#PWR079")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "edbbed33-aedf-4e94-af05-8af0c3615b31")
 	)
-	(symbol
-		(lib_id "Device:C")
-		(at 144.78 109.22 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(hierarchical_label "Vin_D"
+		(shape input)
+		(at 194.31 80.01 0)
 		(fields_autoplaced yes)
-		(uuid "8f803d66-602b-45a2-8ab1-61bd24fa992f")
-		(property "Reference" "CS18"
-			(at 148.59 107.9499 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify left)
 		)
-		(property "Value" "10u"
-			(at 148.59 110.4899 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 145.7452 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 144.78 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 144.78 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "7a525cdd-47c2-4923-aae3-65957b36b704")
-		)
-		(pin "2"
-			(uuid "45970536-1c96-4edc-98cd-9913b2285380")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "CS18")
-					(unit 1)
-				)
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
-					(reference "CS52")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 118.11 93.98 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "98ec1255-9599-45e8-86fa-70ef789cea83")
-		(property "Reference" "CF2"
-			(at 112.522 91.948 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "360p"
-			(at 110.744 94.488 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 119.0752 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 118.11 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 118.11 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "7db5a45f-b0fa-47ed-bc54-7ebe56a2ebac")
-		)
-		(pin "1"
-			(uuid "e787db19-6e62-4ab4-bf3f-8cb3ed1002b6")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "CF2")
-					(unit 1)
-				)
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
-					(reference "CF6")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 180.34 76.2 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "9d8ddee8-0367-4793-b474-bad20a62c6ff")
-		(property "Reference" "CF3"
-			(at 174.752 74.168 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "360p"
-			(at 172.974 76.708 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 181.3052 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 180.34 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 180.34 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "2584809f-fb73-40d9-8517-b95b06249187")
-		)
-		(pin "1"
-			(uuid "4bcfd490-47e0-49c3-aadc-175ab145e0a8")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "CF3")
-					(unit 1)
-				)
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
-					(reference "CF7")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "fd3dd898-1037-4f48-ba7c-eb24e72ce5b9")
 	)
 	(symbol
 		(lib_id "Device:C")
@@ -2447,8 +1463,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "da3027d6-b3b0-41bb-afe2-eae22cd656a1")
-		(property "Reference" "CS17"
+		(uuid "04264594-195b-48e9-ae75-2fa29abb76ad")
+		(property "Reference" "CS51"
 			(at 92.71 87.6299 0)
 			(effects
 				(font
@@ -2494,19 +1510,225 @@
 			)
 		)
 		(pin "1"
-			(uuid "98b88819-9b84-4138-b730-a687196747fe")
+			(uuid "7a6a48e4-7c39-42c4-af33-2c0dfdb9edee")
 		)
 		(pin "2"
-			(uuid "90cb39ee-d2b5-495b-ac46-10a7ec5ff98b")
+			(uuid "03b15677-1751-4dd2-8582-d7082226e451")
 		)
 		(instances
 			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "CS17")
-					(unit 1)
-				)
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
 					(reference "CS51")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 185.42 93.98 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "048caa1c-9063-42cc-a04f-379da9085ec9")
+		(property "Reference" "RF8"
+			(at 187.96 92.7099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "15k"
+			(at 187.96 95.2499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 183.642 93.98 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 185.42 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 185.42 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "4fd2f441-6023-4561-8d24-1eb2d2f220f5")
+		)
+		(pin "1"
+			(uuid "7d04d8e2-9e77-4f29-b3fc-eef82bbc7f5b")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
+					(reference "RF8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 123.19 76.2 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "0c6a2aea-e748-4c00-864e-073d08d4b2bd")
+		(property "Reference" "RF5"
+			(at 125.73 75.5649 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "15k"
+			(at 125.73 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 121.412 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 123.19 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 123.19 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "565343ea-a9a7-4583-b798-880e114ea801")
+		)
+		(pin "1"
+			(uuid "e85420f9-ccba-4aa6-b4fa-0008a12ce1d6")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
+					(reference "RF5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 185.42 76.2 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "14690036-8220-4e32-bca5-9746a6a5241b")
+		(property "Reference" "RF7"
+			(at 187.96 74.9299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "15k"
+			(at 187.96 77.4699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 183.642 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 185.42 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 185.42 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "7055d9be-4e9f-4c00-8665-0ec7123a5c48")
+		)
+		(pin "1"
+			(uuid "6a0c0072-ea7d-4fbf-980d-7e9bdc5ae92b")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
+					(reference "RF7")
 					(unit 1)
 				)
 			)
@@ -2521,8 +1743,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "dd4f2129-576d-49c0-95b3-3b4e5ae370ac")
-		(property "Reference" "CS16"
+		(uuid "1c4eec3a-7071-4b6f-9add-5d7c15a90157")
+		(property "Reference" "CS50"
 			(at 82.55 87.6299 0)
 			(effects
 				(font
@@ -2568,19 +1790,220 @@
 			)
 		)
 		(pin "1"
-			(uuid "eb19f3b8-0d27-4b8b-9e8d-461f5abf777c")
+			(uuid "c921acd7-b074-485f-a993-e84a24aa8561")
 		)
 		(pin "2"
-			(uuid "3c21e0e3-2447-4e6c-b3b9-8ec4ffaad746")
+			(uuid "aab2435c-c0f4-44b9-83cf-f961fbc8024b")
 		)
 		(instances
 			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "CS16")
-					(unit 1)
-				)
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
 					(reference "CS50")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 173.99 85.09 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "2a0976a1-035e-48f7-a9c8-aaf0edd7a7a4")
+		(property "Reference" "#PWR080"
+			(at 180.34 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 177.8 85.0899 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 173.99 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 173.99 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 173.99 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e8b810da-8d96-4d21-b37c-96cc994ddf37")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
+					(reference "#PWR080")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 118.11 93.98 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "334bd86d-9753-463a-a997-9c80ca200876")
+		(property "Reference" "CF6"
+			(at 112.522 91.948 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "330n"
+			(at 110.744 94.488 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 119.0752 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 118.11 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 118.11 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "da13f430-0d52-4ca7-ada9-353bfc692ba1")
+		)
+		(pin "1"
+			(uuid "c4fefd22-553c-4a29-a3c3-97cbc1e8a207")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
+					(reference "CF6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 180.34 93.98 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "388c5eea-c9e8-48f2-a50b-d019d843fb95")
+		(property "Reference" "CF8"
+			(at 174.752 91.948 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "330n"
+			(at 172.974 94.488 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 181.3052 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 180.34 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 180.34 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "a68839ad-02bc-4d55-82a9-002ab397453d")
+		)
+		(pin "1"
+			(uuid "db13de47-c8ff-40f9-94b1-06892f803860")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
+					(reference "CF8")
 					(unit 1)
 				)
 			)
@@ -2594,8 +2017,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "e03993a3-4adc-490d-b517-5d9c6b6b9ef3")
-		(property "Reference" "CF1"
+		(uuid "39f33e26-ae39-4774-bff5-33daa4897cdb")
+		(property "Reference" "CF5"
 			(at 112.522 74.168 0)
 			(effects
 				(font
@@ -2604,7 +2027,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "360p"
+		(property "Value" "330n"
 			(at 110.744 76.708 0)
 			(effects
 				(font
@@ -2641,19 +2064,532 @@
 			)
 		)
 		(pin "2"
-			(uuid "b4c7714b-92e2-45a5-95ce-13349bb93f35")
+			(uuid "dec314f2-c87c-4d80-92c7-42bedb6faa14")
 		)
 		(pin "1"
-			(uuid "308f1d71-e275-4d3d-8b21-326e7065b4e9")
+			(uuid "05464442-a402-470e-ae5b-dfef1a31ba05")
 		)
 		(instances
 			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/9d5ae46d-7e31-4e0f-b583-61afb72b72e3"
-					(reference "CF1")
-					(unit 1)
-				)
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
 					(reference "CF5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 83.82 92.71 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "484572f4-8d39-40a1-a0f5-fc8e6615f8a5")
+		(property "Reference" "#PWR078"
+			(at 83.82 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 83.82 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 83.82 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 83.82 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 83.82 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4142594b-ff82-4e40-8060-cb5e72eec7e3")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
+					(reference "#PWR078")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 144.78 109.22 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7181647c-d0d3-4b30-9cb2-79a166672170")
+		(property "Reference" "CS52"
+			(at 148.59 107.9499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10u"
+			(at 148.59 110.4899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 145.7452 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 144.78 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 144.78 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2f3b20aa-35e2-47e8-a9ff-54e7308dec33")
+		)
+		(pin "2"
+			(uuid "0e85a867-f160-410a-9061-e33a6e917668")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
+					(reference "CS52")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 149.86 113.03 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7b91983c-58b5-4d2d-aa99-1ffc0eb8cc2f")
+		(property "Reference" "#PWR079"
+			(at 149.86 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 149.86 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 149.86 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 149.86 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 149.86 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ceb5df4a-ab5f-400d-bc89-2afee3a84850")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
+					(reference "#PWR079")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 180.34 76.2 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a99492ce-7ce4-4da9-add4-e6186916a0de")
+		(property "Reference" "CF7"
+			(at 174.752 74.168 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "330n"
+			(at 172.974 76.708 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 181.3052 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 180.34 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 180.34 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "a35513b1-3978-4c30-ac07-fc5edfb04f60")
+		)
+		(pin "1"
+			(uuid "4b8afe7d-7219-4950-843d-3194f01c8a81")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
+					(reference "CF7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "AD8608ARUZ:AD8608ARUZ-REEL")
+		(at 130.81 77.47 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "b8769973-bcbc-4938-91a6-5f16e1e7c68f")
+		(property "Reference" "U4"
+			(at 151.13 67.31 0)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+			)
+		)
+		(property "Value" "AD8608ARUZ-REEL"
+			(at 151.13 69.85 0)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+			)
+		)
+		(property "Footprint" "AD8608ARUZ:RU_14_ADI"
+			(at 130.81 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "AD8608ARUZ-REEL"
+			(at 130.81 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 130.81 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "4"
+			(uuid "ff6a5707-0f0e-433d-98a0-6b0e9d2c0386")
+		)
+		(pin "1"
+			(uuid "eee74ce5-fd41-46ff-a48c-20eb78afdf14")
+		)
+		(pin "9"
+			(uuid "40348e31-4969-4c97-9f37-f1c5ac71e39f")
+		)
+		(pin "7"
+			(uuid "dcfdc5a7-4e21-481a-b127-d6b1f8a5fdfd")
+		)
+		(pin "2"
+			(uuid "0198e0ca-30c0-423b-908e-7d5aafcd121d")
+		)
+		(pin "13"
+			(uuid "7469d836-b4ff-4cf4-83e2-0345919721ad")
+		)
+		(pin "8"
+			(uuid "e1ac89a9-e656-4eb6-9c40-f9a4e4285be8")
+		)
+		(pin "5"
+			(uuid "dfa28039-b2d7-4dec-901a-42b6df578e2f")
+		)
+		(pin "3"
+			(uuid "f43ecb02-b289-4df1-b378-0c3ae446957f")
+		)
+		(pin "14"
+			(uuid "d9afeb61-1a00-4e18-bcd4-e489b6c27ab0")
+		)
+		(pin "12"
+			(uuid "49009470-785a-4953-a483-46ebeb950649")
+		)
+		(pin "6"
+			(uuid "1902c7a9-08f1-415c-bf82-37871df10945")
+		)
+		(pin "10"
+			(uuid "b2a4a60c-ef9e-476e-8d13-9eb09e25c323")
+		)
+		(pin "11"
+			(uuid "c0aa7cb1-4ba0-436b-b0d3-d8813eb1e725")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
+					(reference "U4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 123.19 93.98 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ca04ec8b-0931-45fc-8e9c-3cff60e23752")
+		(property "Reference" "RF6"
+			(at 125.73 92.7099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "15k"
+			(at 125.73 95.2499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 121.412 93.98 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 123.19 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 123.19 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "1e3209f9-fc88-45c4-8f75-8862f1f617de")
+		)
+		(pin "1"
+			(uuid "024a5848-746a-432c-8e05-832cbc8cdb32")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
+					(reference "RF6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 154.94 109.22 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ed9f1a02-a4fe-4832-b1f9-30325266f46c")
+		(property "Reference" "CS53"
+			(at 158.75 107.9499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100n"
+			(at 158.75 110.4899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 155.9052 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 154.94 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 154.94 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3ece795d-5695-496d-a127-060f2c1965de")
+		)
+		(pin "2"
+			(uuid "b750b67e-ca00-456e-8b08-dd3e11496a83")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/b89fdfd1-873e-4102-a919-e1ab7efa6efe"
+					(reference "CS53")
 					(unit 1)
 				)
 			)
