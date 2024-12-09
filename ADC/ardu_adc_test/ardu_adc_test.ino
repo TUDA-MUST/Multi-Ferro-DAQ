@@ -20,12 +20,16 @@ void setup() {
 
   Serial.begin(115200);
   while(!Serial) {}
+
+  //TODO: initialize ADS131E08
 }
 
 
   
 
 void loop() {
+
+  //TODO: communicate with ADS131E08
 
   leds[1] = CRGB::Black; FastLED.show();
   delay(300);
