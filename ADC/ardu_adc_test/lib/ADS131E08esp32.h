@@ -98,6 +98,18 @@ typedef enum
     NUMB_ADC_CH
 }_ADS131E08_ch;
 
+
+// (x)++ operator for _ADS131E08_ch enum
+_ADS131E08_ch operator ++( _ADS131E08_ch &id, int )
+{
+   _ADS131E08_ch currentID = id;
+
+   if ( NUMB_ADC_CH < id + 1 ) id = ADC_CH1;
+   else id = static_cast<_ADS131E08_ch>( id + 1 );
+
+   return ( currentID );
+}
+
 // 24 bits per channel
 #define E08_WORD_DATA_LENGTH_BITS    ((uint8_t) 24)
 

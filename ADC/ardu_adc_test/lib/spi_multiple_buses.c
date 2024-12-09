@@ -46,7 +46,7 @@
 #define VSPI FSPI
 #endif
 
-static const int spiClk = 1000000;  // 1 MHz
+static const int spiClk = 17000000;  // 17 MHz
 
 
 void mSPIsetup(SPIClass* vspi, SPIClass* hspi) {
@@ -89,9 +89,9 @@ void loop() {
 }
 */
 
-void spiCommand(SPIClass *spi, byte data) {
+void spiSendCommand(SPIClass *spi, byte data) {
   //use it as you would the regular arduino SPI API
-  spi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
+  spi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE1));
   digitalWrite(spi->pinSS(), LOW);  //pull SS slow to prep other end for transfer
   spi->transfer(data);
   digitalWrite(spi->pinSS(), HIGH);  //pull ss high to signify end of data transfer
