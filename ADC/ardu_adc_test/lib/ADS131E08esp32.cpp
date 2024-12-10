@@ -213,16 +213,17 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
             break;
     }
 
+    
     // Wait until cs pin is reset to send data
-    while(0 == ADS131E08_read_cs_signal(adcConfE->type))
+    while(1 == ADS131E08_read_cs_signal(adcConfE->type))
     {
-        Serial.println("Waiting for CS @ADS131E08 to turn low...");
+        Serial.println("Waiting for CS @ADS131E08 to turn low @ADS131E08_send_command ...");
     }
 
     adcConfE->hspi->beginTransaction(*schlaubiHSPI);
-
+    Serial.println("message0");
     ADS131E08_control_cs_signal(adcConfE->type, RESET_SIGNAL);
-
+    Serial.println("message1");
     
     if(cmd == ADS131E08_CMD_RREG)        
     {
@@ -264,7 +265,7 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
             adcConfE->rxBuf[i] = adcConfE->hspi->transfer(adcConfE->txBuf[i]);
         }
     }
-
+    Serial.println("message2");
     //end SPI transaction
     ADS131E08_control_cs_signal(adcConfE->type, SET_SIGNAL);
     adcConfE->hspi->endTransaction();
@@ -452,7 +453,7 @@ void ADS131E08_receive_data(_adcType adcType)
 void ADS131E08_send_rdatac_cmd()
 {
     ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RDATAC, 0, 0, 1);
-    ADS131E08_send_command(adcConfE1, ADS131E08_CMD_RDATAC, 0, 0, 1);
+    //ADS131E08_send_command(adcConfE1, ADS131E08_CMD_RDATAC, 0, 0, 1); commented out for only one ADC
 }
 
 
@@ -558,7 +559,7 @@ bool ADS131E08_read_cs_signal(_adcType adcType)
     {
         return digitalRead(adcConfE1->cs.pin);
     }
-
+    Serial.println("Error encountered while reading cs pin");
     return 0;
 }
 
@@ -855,7 +856,7 @@ void ADS131E08_send_rdatac_command()
 {
     // Send RDATAC command to ADC20, ADC21 simultaneously.
     ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RDATAC, 0, 0, 1);
-    ADS131E08_send_command(adcConfE1, ADS131E08_CMD_RDATAC, 0, 0, 1);
+    //ADS131E08_send_command(adcConfE1, ADS131E08_CMD_RDATAC, 0, 0, 1); commented out for only one ADC @ ADC20
 }
 
 
@@ -865,7 +866,7 @@ void ADS131E08_send_rdatac_command()
 
 
 void ADS131E08_initialize_signal()
-{
+{   
     // Generate Reset Pulse
     ADS131E08_control_reset_signal(SET_SIGNAL);
     ADS131E08_control_start_signal(RESET_SIGNAL);
@@ -873,6 +874,6 @@ void ADS131E08_initialize_signal()
     delay(5);
     ADS131E08_control_reset_signal(SET_SIGNAL);
     // Initialize Chip Select signal
-    ADS131E08_control_cs_signal(ADS131E08_ADC20, SET_SIGNAL);
-    ADS131E08_control_cs_signal(ADS131E08_ADC21, SET_SIGNAL);
+    ADS131E08_control_cs_signal(ADS131E08_ADC20, RESET_SIGNAL);
+    //ADS131E08_control_cs_signal(ADS131E08_ADC21, SET_SIGNAL); commented out for only one ADC
 }

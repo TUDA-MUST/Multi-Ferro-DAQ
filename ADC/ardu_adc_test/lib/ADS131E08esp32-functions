@@ -1,0 +1,155 @@
+Thomas Schreck - 10.12.2024
+
+This file is intended to document the various functions of the ADS131E08esp32 library
+and explain them to a, as I hope, sufficient degree.
+
+
+
+
+void ADS131E08_init(_adcType adcType, SPIClass* hspi, uint16_t nreset, uint16_t cs,uint16_t ndrdy, uint16_t start)
+
+    This function intitilizes the struct which represents the ADS131E08 it this library. You can rewrite the data 
+    by initializing the struct anew, but each time it will execute a malloc without free.
+
+
+
+
+SPIClass* ADS131E08_is_spi_type(_adcType adcType)
+
+    This returns the SPIClass object that is associated with the ADC.
+
+
+
+
+_ADS131E08_stat ADS131E08_is_adc_status(_adcType adcType)
+
+    This retruns the status enum of the ADC.
+
+
+
+
+void ADS131E08_set_adc_status(_adcType adcType, _ADS131E08_stat stat)
+
+    This function alters the status enum of a given ADC
+
+
+
+
+HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint16_t addr, uint8_t regs, uint16_t regNo)
+
+    This sends a command to the ADC and may write into the rxBuf of the ADC struct. In its current verson it only acts
+    upon RDATA, RREG, WREG.
+
+
+
+
+uint32_t ADS131E08_convert_adc_data(const uint8_t* dataBuf)
+
+    This function converts three bytes of data into an 32bit word of data with the most significant byte empty.
+
+
+
+
+float ADS131E08_convert_to_mVolt(uint32_t reg)
+
+    This function converts a register value from the ADC into a float representing mV.
+
+
+
+
+void ADS131E08_parse_adc_data(_adcType adcType)
+
+    This funciton parses rxBuf of a given ADC struct into the chData while converting it into mV.
+
+
+
+
+void ADS131E08_control_start_signal(_signalState onOff)
+
+    This sets the start pin of the ADC according to onOff.
+
+
+
+
+void ADS131E08_receive_data(_adcType adcType)
+
+    This funciton writes the recieved data into the rxBuf, while sending transfer(0) for as many bytes
+    as th bufLen of the ADC struct allows.
+
+
+
+
+void ADS131E08_send_rdatac_cmd()
+
+    This sends the rdatac cmd which is related to data conversion.
+
+
+
+
+void ADS131E08_send_rdata_cmd(_adcType adcType)
+
+    This sends the rdata cmd which is related to data conversion.
+
+
+
+
+void ADS131E08_control_reset_signal(_signalState onOff)
+
+    This function sets the reset pin according to onOff
+
+
+
+
+void ADS131E08_control_cs_signal(_adcType adcType, _signalState onOff)
+
+    This function is used to set the cs pin of the ADC in accordance to onOff.
+
+
+
+
+bool ADS131E08_read_cs_signal(_adcType adcType)
+
+    This function returns the status of the cs signal pin.
+
+
+
+
+void ADS131E08_set_default_register(_adcConfE* adcConfE)
+
+    This function sets all registers of the ADC to predetermined default values.
+
+
+
+
+uint8_t ADS131E08_wait_drdy_int(const uint32_t timeout_10ms, _adcConfE* adcConfE)
+
+    A function that waits for the ADC to initialize. In its original form it waited for 
+    an interrupt which is currently not implemented.
+
+
+
+
+void ADS131E08_initial_flow_at_power_up(_adcConfE* adcConfE)
+
+    Sends a row of different commands to be performed initial startup. Is called by ADS131E08_startup().
+
+
+
+
+HAL_StatusTypeDef ADS131E08_startup(_adcType adcType)
+
+    This funciton performs initial startup of the ADC.
+
+
+
+
+void ADS131E08_send_rdatac_command()
+
+    This sends the rdatac command to the ADC.
+
+
+
+
+void ADS131E08_initialize_signal()
+
+    This funcition creates and sends the pulses needed for the ADC to start initialization.
