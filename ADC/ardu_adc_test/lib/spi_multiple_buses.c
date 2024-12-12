@@ -31,10 +31,10 @@
 #define HSPI_SCLK 25
 #define HSPI_SS   32
 #else
-#define VSPI_MISO MISO
-#define VSPI_MOSI MOSI
-#define VSPI_SCLK SCK
-#define VSPI_SS   SS
+#define VSPI_MISO 37
+#define VSPI_MOSI 35
+#define VSPI_SCLK 36
+#define VSPI_SS   39
 
 #define HSPI_MISO 13
 #define HSPI_MOSI 11
@@ -46,7 +46,7 @@
 #define VSPI FSPI
 #endif
 
-static const int spiClk = 17000000;  // 17 MHz
+static const int spiClk = 1000000;  // 17 MHz
 
 
 void mSPIsetup(SPIClass* vspi, SPIClass* hspi) {
@@ -57,8 +57,7 @@ void mSPIsetup(SPIClass* vspi, SPIClass* hspi) {
 
 #ifndef ALTERNATE_PINS
   //initialize vspi with default pins
-  //SCLK = 18, MISO = 19, MOSI = 23, SS = 5
-  vspi->begin();
+  vspi->begin(VSPI_SCLK, VSPI_MISO, VSPI_MOSI, VSPI_SS);
 #else
   //alternatively route through GPIO pins of your choice
   vspi->begin(VSPI_SCLK, VSPI_MISO, VSPI_MOSI, VSPI_SS);  //SCLK, MISO, MOSI, SS
@@ -66,8 +65,7 @@ void mSPIsetup(SPIClass* vspi, SPIClass* hspi) {
 
 #ifndef ALTERNATE_PINS
   //initialize hspi with default pins
-  //SCLK = 14, MISO = 12, MOSI = 13, SS = 15
-  hspi->begin();
+  hspi->begin(HSPI_SCLK, HSPI_MISO, HSPI_MOSI, HSPI_SS);
 #else
   //alternatively route through GPIO pins
   hspi->begin(HSPI_SCLK, HSPI_MISO, HSPI_MOSI, HSPI_SS);  //SCLK, MISO, MOSI, SS
