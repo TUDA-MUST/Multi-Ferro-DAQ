@@ -41,7 +41,7 @@
 _adcConfE* adcConfE0 = NULL;
 _adcConfE* adcConfE1 = NULL;
 
-SPISettings* schlaubiHSPI = new SPISettings(17000000, MSBFIRST, SPI_MODE1);
+SPISettings* schlaubiHSPI = new SPISettings(1000000, MSBFIRST, SPI_MODE1);
 
 void ADS131E08_control_start_signal(_signalState onOff);
 void ADS131E08_control_reset_signal(_signalState onOff);
@@ -174,7 +174,7 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
 {
     const uint16_t cmdLen = 2;        // Command byte length (2 Bytes)
     HAL_StatusTypeDef result = HAL_OK;
-
+    Serial.println("started \"send command\"...");
     memset(adcConfE->txBuf, 0, adcConfE->bufLen);
     switch(cmd)
     {
@@ -215,15 +215,15 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
 
     
     // Wait until cs pin is reset to send data
-    while(1 == ADS131E08_read_cs_signal(adcConfE->type))
-    {
-        Serial.println("Waiting for CS @ADS131E08 to turn low @ADS131E08_send_command ...");
-    }
-
+    //while(1 == ADS131E08_read_cs_signal(adcConfE->type))
+    //{
+    //    Serial.println("Waiting for CS @ADS131E08 to turn low @ADS131E08_send_command ...");
+    //}
+    Serial.println("cmd_message0");
     adcConfE->hspi->beginTransaction(*schlaubiHSPI);
-    Serial.println("message0");
+    Serial.println("cmd_message1");
     ADS131E08_control_cs_signal(adcConfE->type, RESET_SIGNAL);
-    Serial.println("message1");
+    Serial.println("cmd_message2");
     
     if(cmd == ADS131E08_CMD_RREG)        
     {
@@ -265,7 +265,7 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
             adcConfE->rxBuf[i] = adcConfE->hspi->transfer(adcConfE->txBuf[i]);
         }
     }
-    Serial.println("message2");
+    Serial.println("cmd_message3");
     //end SPI transaction
     ADS131E08_control_cs_signal(adcConfE->type, SET_SIGNAL);
     adcConfE->hspi->endTransaction();
@@ -628,10 +628,10 @@ void ADS131E08_initial_flow_at_power_up(_adcConfE* adcConfE)
 {
     int i;
     volatile uint8_t regs, addr;
-
+    Serial.println("initial_flow_msg0");
     // Always send a SDATAC command first to stop continuous conversion and write register.
     ADS131E08_send_command(adcConfE, ADS131E08_CMD_SDATAC, 0, 0, 1);
-
+    Serial.println("initial_flow_msg1");
     ///////////////////////////////////////
     // Read ID Register
     ///////////////////////////////////////
@@ -662,6 +662,7 @@ void ADS131E08_initial_flow_at_power_up(_adcConfE* adcConfE)
     // Write CHnSET Register
     ///////////////////////////////////////
     // Set input short to middle voltage (Input shorted to (AVDD + AVSS) / 2 (for offset or noisemeasurements))
+    Serial.println("initial_flow_msg2");
     regs = E08_CH1SET_MUX_MASK & E08_CH1SET_MUX_INPUT_SHORT_TO_MID;
     addr = E08_CH1SET_ADDRESS;
     for(i = 0; i < NUMB_ADC_CH; i++, addr++)
@@ -772,12 +773,12 @@ HAL_StatusTypeDef ADS131E08_startup(_adcType adcType)
     }
 
     delay(5);
-    
+    Serial.println("startup_msg0");
     ADS131E08_initial_flow_at_power_up(adcConfE);
-
+    Serial.println("startup_msg1");
     // Always send a SDATAC command first to stop continuous conversion and write register.
     ADS131E08_send_command(adcConfE, ADS131E08_CMD_SDATAC, 0, 0, 1);
-
+    Serial.println("startup_msg2");
     ///////////////////////////////////////
     // Write Configuration 1 Register
     ///////////////////////////////////////
@@ -874,6 +875,6 @@ void ADS131E08_initialize_signal()
     delay(5);
     ADS131E08_control_reset_signal(SET_SIGNAL);
     // Initialize Chip Select signal
-    ADS131E08_control_cs_signal(ADS131E08_ADC20, RESET_SIGNAL);
+    ADS131E08_control_cs_signal(ADS131E08_ADC20, SET_SIGNAL);
     //ADS131E08_control_cs_signal(ADS131E08_ADC21, SET_SIGNAL); commented out for only one ADC
 }
