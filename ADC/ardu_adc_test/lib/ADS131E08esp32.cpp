@@ -42,6 +42,7 @@ _adcConfE* adcConfE0 = NULL;
 _adcConfE* adcConfE1 = NULL;
 
 SPISettings* schlaubiHSPI = new SPISettings(1000000, MSBFIRST, SPI_MODE1);
+static volatile bool adc2_drdy_flg;
 
 void ADS131E08_control_start_signal(_signalState onOff);
 void ADS131E08_control_reset_signal(_signalState onOff);
@@ -174,7 +175,6 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
 {
     const uint16_t cmdLen = 2;        // Command byte length (2 Bytes)
     HAL_StatusTypeDef result = HAL_OK;
-    Serial.println("started \"send command\"...");
     memset(adcConfE->txBuf, 0, adcConfE->bufLen);
     switch(cmd)
     {
@@ -214,16 +214,11 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
     }
 
     
-    // Wait until cs pin is reset to send data
-    //while(1 == ADS131E08_read_cs_signal(adcConfE->type))
-    //{
-    //    Serial.println("Waiting for CS @ADS131E08 to turn low @ADS131E08_send_command ...");
-    //}
-    Serial.println("cmd_message0");
+    // Wait until cs pin is set (= not used) to send data
+    while(0 == ADS131E08_read_cs_signal(adcConfE->type)) Serial.println("Waiting for CS @ADS131E08 to turn high @ADS131E08_send_command ...");
+    
     adcConfE->hspi->beginTransaction(*schlaubiHSPI);
-    Serial.println("cmd_message1");
     ADS131E08_control_cs_signal(adcConfE->type, RESET_SIGNAL);
-    Serial.println("cmd_message2");
     
     if(cmd == ADS131E08_CMD_RREG)        
     {
@@ -232,23 +227,56 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
         memset(adcConfE->rxBuf, 0, adcConfE->bufLen);
         result = HAL_SPI_Receive(adcConfE->hspi, adcConfE->rxBuf, regNo, 500);        
         */
-        for(int i = 0; i < cmdLen; i++){
-            adcConfE->rxBuf[i] = adcConfE->hspi->transfer(adcConfE->txBuf[i]);
+       Serial.print("The readouts for ADC_RESET, ADC_START, ADC_DRDY, ADC_CS @CMD_RREG are: ");
+       Serial.print(digitalRead(adcConfE->nReset.pin)); Serial.print("; ");
+       Serial.print(digitalRead(adcConfE->start.pin)); Serial.print("; ");
+       Serial.print(digitalRead(adcConfE->nDrdy.pin)); Serial.print("; ");
+       Serial.println(digitalRead(adcConfE->cs.pin));
+       Serial.print("tx buffer @CMD_RRREG - write cmd reads: ");
+       for(int i = 0; i < cmdLen; i++){
+        Serial.print(adcConfE->txBuf[i], BIN);
+        Serial.print("; ");
+       }
+       Serial.println(" ");
+        for(int i = 0; i < cmdLen; i++){            //important for loop doing stuff not debugging
+            adcConfE->rxBuf[i] = adcConfE->hspi->transfer(adcConfE->txBuf[i]);  
         }
         memset(adcConfE->rxBuf, 0, adcConfE->bufLen);
-        for(int i = 0; i < regNo; i++){
-            adcConfE->rxBuf[i] = adcConfE->hspi->transfer(0);
+        for(int i = 0; i < regNo; i++){            //important for loop doing stuff not debugging
+            adcConfE->rxBuf[i] = adcConfE->hspi->transfer(0);  
         }
-
+        Serial.print("rx buffer @CMD_RRREG - read result reads: ");
+        for(int i = 0; i < regNo; i++){
+            Serial.print(adcConfE->rxBuf[i], BIN);
+            Serial.print("; ");
+        }
+        Serial.println(" ");
         // Update Register Status
         adcConfE->sr.mp[adcConfE->regAddr] = adcConfE->rxBuf[0];
     }
     else if(cmd == ADS131E08_CMD_WREG)
     {
         //result = HAL_SPI_TransmitReceive(adcConfE->hspi, adcConfE->txBuf, adcConfE->rxBuf, regNo + cmdLen, 10);
-        for(int i = 0; i < regNo + cmdLen; i++){
-            adcConfE->rxBuf[i] = adcConfE->hspi->transfer(adcConfE->rxBuf[i]);
+        Serial.print("The readouts for ADC_RESET, ADC_START, ADC_DRDY, ADC_CS @CMD_WREG are: ");
+        Serial.print(digitalRead(adcConfE->nReset.pin)); Serial.print("; ");
+        Serial.print(digitalRead(adcConfE->start.pin)); Serial.print("; ");
+        Serial.print(digitalRead(adcConfE->nDrdy.pin)); Serial.print("; ");
+        Serial.println(digitalRead(adcConfE->cs.pin));
+        Serial.print("tx buffer @CMD_WREG reads: ");
+        for(int i = 0; i < cmdLen + regNo; i++){
+            Serial.print(adcConfE->txBuf[i], BIN);
+            Serial.print("; ");
         }
+        Serial.println(" ");
+        Serial.print("rx buffer @CMD_WRREG reads: ");
+        for(int i = 0; i < regNo + cmdLen; i++){            //important for loop doing stuff not debugging
+            adcConfE->rxBuf[i] = adcConfE->hspi->transfer(adcConfE->rxBuf[i]);  
+        }
+        for(int i = 0; i < regNo + cmdLen; i++){
+            Serial.print(adcConfE->rxBuf[i], BIN);
+            Serial.print("; ");
+        }
+        Serial.println(" ");
     }
     else if(cmd == ADS131E08_CMD_RDATA)
     {
@@ -265,7 +293,6 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
             adcConfE->rxBuf[i] = adcConfE->hspi->transfer(adcConfE->txBuf[i]);
         }
     }
-    Serial.println("cmd_message3");
     //end SPI transaction
     ADS131E08_control_cs_signal(adcConfE->type, SET_SIGNAL);
     adcConfE->hspi->endTransaction();
@@ -600,22 +627,57 @@ void ADS131E08_set_default_register(_adcConfE* adcConfE)
 uint8_t ADS131E08_wait_drdy_int(const uint32_t timeout_10ms, _adcConfE* adcConfE)
 {
     // Reset interrupt flag
-    //adc2_drdy_flg = RESET;
+    adc2_drdy_flg = 0;
     uint32_t timeout = timeout_10ms;
 
     // Wait for nDRDY interrupt or timeout - each iteration is about 20 ticks
     do {
         delay(10);
         timeout--;
-        Serial.println("Waiting for timeout, interupt not implemented...");
-    } while(0 == ADS131E08_read_cs_signal(adcConfE->type));
+    } while(!adc2_drdy_flg && (timeout > 0));
 
     // Reset interrupt flag
-    //adc2_drdy_flg = RESET;
+    adc2_drdy_flg = 0;
+
+    // Timeout counter greater than zero indicates that an interrupt occurred
+    if(timeout == 0)Serial.println("No DRDY interrupt occured");
+    return (timeout > 0);
+}
+
+
+/*original:
+uint8_t ADS131E08_wait_drdy_int(const uint32_t timeout_10ms)
+{
+    // Reset interrupt flag
+    adc2_drdy_flg = RESET;
+    uint32_t timeout = timeout_10ms;
+
+    // Wait for nDRDY interrupt or timeout - each iteration is about 20 ticks
+    do {
+        HAL_Delay(10);
+        timeout--;
+    } while (!adc2_drdy_flg && (timeout > 0));
+
+    // Reset interrupt flag
+    adc2_drdy_flg = RESET;
 
     // Timeout counter greater than zero indicates that an interrupt occurred
     return (timeout > 0);
 }
+*/
+///////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+void IRAM_ATTR ADS131E08_drdy_int_handl(){
+    adc2_drdy_flg = 1;
+}
+
+
+
 
 
 
@@ -628,10 +690,8 @@ void ADS131E08_initial_flow_at_power_up(_adcConfE* adcConfE)
 {
     int i;
     volatile uint8_t regs, addr;
-    Serial.println("initial_flow_msg0");
     // Always send a SDATAC command first to stop continuous conversion and write register.
     ADS131E08_send_command(adcConfE, ADS131E08_CMD_SDATAC, 0, 0, 1);
-    Serial.println("initial_flow_msg1");
     ///////////////////////////////////////
     // Read ID Register
     ///////////////////////////////////////
@@ -662,7 +722,6 @@ void ADS131E08_initial_flow_at_power_up(_adcConfE* adcConfE)
     // Write CHnSET Register
     ///////////////////////////////////////
     // Set input short to middle voltage (Input shorted to (AVDD + AVSS) / 2 (for offset or noisemeasurements))
-    Serial.println("initial_flow_msg2");
     regs = E08_CH1SET_MUX_MASK & E08_CH1SET_MUX_INPUT_SHORT_TO_MID;
     addr = E08_CH1SET_ADDRESS;
     for(i = 0; i < NUMB_ADC_CH; i++, addr++)
@@ -773,12 +832,9 @@ HAL_StatusTypeDef ADS131E08_startup(_adcType adcType)
     }
 
     delay(5);
-    Serial.println("startup_msg0");
     ADS131E08_initial_flow_at_power_up(adcConfE);
-    Serial.println("startup_msg1");
     // Always send a SDATAC command first to stop continuous conversion and write register.
     ADS131E08_send_command(adcConfE, ADS131E08_CMD_SDATAC, 0, 0, 1);
-    Serial.println("startup_msg2");
     ///////////////////////////////////////
     // Write Configuration 1 Register
     ///////////////////////////////////////
@@ -793,6 +849,10 @@ HAL_StatusTypeDef ADS131E08_startup(_adcType adcType)
 
     if(adcConfE->sr.mp[E08_CONFIG1_ADDRESS] != regs)
     {
+        Serial.print("read wrong value @setting config reg1, expected ");
+        Serial.print(regs, BIN);
+        Serial.print(", but got ");
+        Serial.println(adcConfE->sr.mp[E08_CONFIG1_ADDRESS], BIN); 
         return HAL_ERROR;
     }
     else
@@ -812,6 +872,35 @@ HAL_StatusTypeDef ADS131E08_startup(_adcType adcType)
 
     if(adcConfE->sr.mp[E08_CONFIG2_ADDRESS] != regs)
     {
+        Serial.print("read wrong value @setting config reg2, expected ");
+        Serial.print(regs, BIN);
+        Serial.print(", but got ");
+        Serial.println(adcConfE->sr.mp[E08_CONFIG2_ADDRESS], BIN);        
+        return HAL_ERROR;
+
+    }
+    else
+    {
+        // DO NOTHING, Keep going
+    }
+
+    ///////////////////////////////////////
+    // Write Configuration 3 Register
+    ///////////////////////////////////////
+    // Set register with default
+    regs = E08_CONFIG3_DEFAULT;
+
+    ADS131E08_send_command(adcConfE, ADS131E08_CMD_WREG, E08_CONFIG3_ADDRESS, regs, 2);
+    ADS131E08_send_command(adcConfE, ADS131E08_CMD_WREG, E08_CONFIG3_ADDRESS, regs | E08_CONFIG3_VREF_4V_MASK, 2); //setting V_REF to 4V
+    // Confirm whether written or not.
+    ADS131E08_send_command(adcConfE, ADS131E08_CMD_RREG, E08_CONFIG3_ADDRESS, 0, 1);
+
+    if(adcConfE->sr.mp[E08_CONFIG3_ADDRESS] != regs)
+    {
+        Serial.print("read wrong value @setting config reg3, expected ");
+        Serial.print(regs | E08_CONFIG3_VREF_4V_MASK, BIN);
+        Serial.print(", but got ");
+        Serial.println(adcConfE->sr.mp[E08_CONFIG3_ADDRESS], BIN);
         return HAL_ERROR;
     }
     else
@@ -833,7 +922,11 @@ HAL_StatusTypeDef ADS131E08_startup(_adcType adcType)
 
         if(adcConfE->sr.mp[addr] != regs)
         {
-            return HAL_ERROR;
+        Serial.print("read wrong value @setting channel_set reg, expected ");
+        Serial.print(regs, BIN);
+        Serial.print(", but got ");
+        Serial.println(adcConfE->sr.mp[addr], BIN);
+        return HAL_ERROR;
         }
         else
         {
