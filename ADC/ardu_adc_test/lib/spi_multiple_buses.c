@@ -1,4 +1,6 @@
 
+// DEPRECATED!!!!
+
 
 /* The ESP32 has four SPi buses, however as of right now only two of
  * them are available to use, HSPI and VSPI. Simply using the SPI API
@@ -41,12 +43,12 @@
 #define HSPI_SCLK 12
 #define HSPI_SS   10
 #endif
-
+/*
 #if !defined(CONFIG_IDF_TARGET_ESP32)
 #define VSPI FSPI
 #endif
-
-static const int spiClk = 1000000;  // 17 MHz
+*/
+static const int spiClk = 1000000;  // 1 MHz
 
 
 void mSPIsetup(SPIClass* vspi, SPIClass* hspi) {
@@ -73,8 +75,8 @@ void mSPIsetup(SPIClass* vspi, SPIClass* hspi) {
 
   //set up slave select pins as outputs as the Arduino API
   //doesn't handle automatically pulling SS low
-  pinMode(vspi->pinSS(), OUTPUT);  //VSPI SS
-  pinMode(hspi->pinSS(), OUTPUT);  //HSPI SS
+  pinMode(vspi->pinSS, OUTPUT);  //VSPI SS
+  pinMode(hspi->pinSS, OUTPUT);  //HSPI SS
 }
 
 

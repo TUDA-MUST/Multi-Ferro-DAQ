@@ -123,10 +123,12 @@ void ADS131E08_set_default_register(_adcConfE* adcConfE)
 
 uint8_t ADS131E08_wait_drdy_int(const uint32_t timeout_10ms, _adcConfE* adcConfE)
 
-    A function that waits for the ADC to initialize. In its original form it waited for 
-    an interrupt which is currently not implemented.
+    A function that waits for the ADC to initialize the data. 
 
 
+void IRAM_ATTR ADS131E08_drdy_int_handl()
+
+    The interrupt handler for drdy interrupts, exits ADS131E08_wait_drdy_int
 
 
 void ADS131E08_initial_flow_at_power_up(_adcConfE* adcConfE)

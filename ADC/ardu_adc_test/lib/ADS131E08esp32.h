@@ -227,7 +227,7 @@ _ADS131E08_ch operator ++( _ADS131E08_ch &id, int )
     #define E08_CONFIG3_ADDRESS													((uint8_t) 0x03)
 
     /* CONFIG3 default (reset) value */
-    #define E08_CONFIG3_DEFAULT													((uint8_t) 0x40)
+    #define E08_CONFIG3_DEFAULT													((uint8_t) 0x40) 
 
      /* CONFIG3 register field masks */
     #define E08_CONFIG3_PDB_REFBUF_MASK											((uint8_t) 0x80)
@@ -758,6 +758,8 @@ typedef enum                //HAL : Hardware abstraction layer, originally from 
   HAL_TIMEOUT  = 0x03U
 } HAL_StatusTypeDef;
 
+
+
 extern void ADS131E08_init(_adcType adcType, SPIClass* hspi);
 // extern SPIClass* is_spi_type(_adcType adcType);
 // extern uint8_t* is_rxbuf(_adcType adcType);
@@ -779,5 +781,7 @@ extern void ADS131E08_control_reset_signal(_signalState onOff);
 extern void ADS131E08_send_rdatac_command();
 extern void ADS131E08_initialize_signal();
 extern void ADS131E08_send_rdata_cmd(_adcType adcType);
+extern uint8_t ADS131E08_wait_drdy_int(const uint32_t timeout_10ms, _adcConfE* adcConfE);
+extern void ADS131E08_drdy_int_handl();
 
 #endif  // __ADS131E08_HEADER
