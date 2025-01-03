@@ -1788,22 +1788,10 @@
 		(uuid "4629dc01-2681-49b6-bae2-c71e99b0f505")
 	)
 	(junction
-		(at 25.4 128.27)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "4b62d433-3400-48c4-a35f-93ef4a670984")
-	)
-	(junction
 		(at 158.75 35.56)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "86ca93fa-58fd-46a9-9a14-665d84d4353f")
-	)
-	(junction
-		(at 25.4 123.19)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "e3a60193-c9e7-4e7e-9931-3a66a12228d4")
 	)
 	(junction
 		(at 69.85 26.67)
@@ -1892,16 +1880,6 @@
 			(type default)
 		)
 		(uuid "30a951c3-6f77-4edf-aba9-029f146293be")
-	)
-	(wire
-		(pts
-			(xy 25.4 123.19) (xy 25.4 128.27)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "32d555a9-39d8-47cc-af87-e751c6478e79")
 	)
 	(wire
 		(pts
@@ -2072,16 +2050,6 @@
 			(type default)
 		)
 		(uuid "bce45b13-6f13-4e7d-94ac-8c16f80feef9")
-	)
-	(wire
-		(pts
-			(xy 25.4 128.27) (xy 25.4 133.35)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "bfd83f30-0aac-4cc0-bae3-5842c5230073")
 	)
 	(wire
 		(pts
@@ -2676,13 +2644,13 @@
 		(lib_id "Mechanical:MountingHole_Pad")
 		(at 22.86 123.19 90)
 		(unit 1)
-		(exclude_from_sim yes)
-		(in_bom no)
+		(exclude_from_sim no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "0da1c6c8-44f2-48d4-b3d5-c51377e87e71")
-		(property "Reference" "H1"
+		(uuid "1368a20b-3436-4563-a3dc-87e299fe5629")
+		(property "Reference" "H2"
 			(at 21.59 116.84 90)
 			(effects
 				(font
@@ -2726,142 +2694,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "7c90467a-1c53-4675-a7e2-e7dfb999353d")
-		)
-		(instances
-			(project ""
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17"
-					(reference "H1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Mechanical:MountingHole_Pad")
-		(at 22.86 128.27 90)
-		(unit 1)
-		(exclude_from_sim yes)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "1368a20b-3436-4563-a3dc-87e299fe5629")
-		(property "Reference" "H2"
-			(at 21.59 121.92 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "MountingHole_Pad"
-			(at 21.59 124.46 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad"
-			(at 22.86 128.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 22.86 128.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Mounting Hole with connection"
-			(at 22.86 128.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
 			(uuid "2d23e5cd-75be-45b8-83d8-66b9f0ba4fc9")
 		)
 		(instances
 			(project "Schlaubi-Schlumpf"
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17"
 					(reference "H2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Mechanical:MountingHole_Pad")
-		(at 22.86 133.35 90)
-		(unit 1)
-		(exclude_from_sim yes)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "2e190407-2f5c-4b7b-8107-74231647feae")
-		(property "Reference" "H3"
-			(at 21.59 127 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "MountingHole_Pad"
-			(at 21.59 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad"
-			(at 22.86 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 22.86 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Mounting Hole with connection"
-			(at 22.86 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "64df5be7-219c-448d-9712-80f81650227b")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17"
-					(reference "H3")
 					(unit 1)
 				)
 			)
