@@ -2317,6 +2317,12 @@
 		(uuid "8582a5e9-9ea1-4aed-ad47-a937ac062336")
 	)
 	(junction
+		(at 200.66 123.19)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "879874e5-def5-484a-a44c-2e3f64fcc0bc")
+	)
+	(junction
 		(at 228.6 21.59)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2762,6 +2768,16 @@
 			(type default)
 		)
 		(uuid "3187dbc8-84f0-451e-b82b-0c2e946fcaf3")
+	)
+	(wire
+		(pts
+			(xy 200.66 123.19) (xy 200.66 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "322a79ee-0410-4a25-b821-fb71909d4afb")
 	)
 	(wire
 		(pts
@@ -3375,7 +3391,7 @@
 	)
 	(wire
 		(pts
-			(xy 200.66 114.3) (xy 200.66 120.65)
+			(xy 200.66 114.3) (xy 200.66 123.19)
 		)
 		(stroke
 			(width 0)
@@ -3939,6 +3955,17 @@
 			(justify left bottom)
 		)
 		(uuid "9c048a44-f35f-464c-bf6b-f195fc3b7c4a")
+	)
+	(label "DVDD"
+		(at 208.28 123.19 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "9e483ba0-d142-439c-bc3e-8552581cd8c7")
 	)
 	(label "DVDD"
 		(at 170.18 60.96 90)
@@ -4750,7 +4777,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
 			(at 129.54 46.99 0)
 			(effects
 				(font
@@ -5356,7 +5383,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
 			(at 129.54 41.91 0)
 			(effects
 				(font
@@ -5488,7 +5515,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
 			(at 180.34 104.14 0)
 			(effects
 				(font
@@ -6578,7 +6605,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
 			(at 144.78 176.53 0)
 			(effects
 				(font
@@ -6915,7 +6942,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
 			(at 132.08 137.16 0)
 			(effects
 				(font
@@ -7119,7 +7146,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
 			(at 129.54 52.07 0)
 			(effects
 				(font
@@ -7800,7 +7827,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 200.66 123.19 270)
+		(at 200.66 130.81 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7809,7 +7836,7 @@
 		(fields_autoplaced yes)
 		(uuid "a5d16220-6749-4b33-86c8-62699a2700be")
 		(property "Reference" "#PWR048"
-			(at 194.31 123.19 0)
+			(at 194.31 130.81 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7818,7 +7845,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 196.85 123.1899 90)
+			(at 196.85 130.8099 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7827,7 +7854,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 200.66 123.19 0)
+			(at 200.66 130.81 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7836,7 +7863,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 200.66 123.19 0)
+			(at 200.66 130.81 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7845,7 +7872,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 200.66 123.19 0)
+			(at 200.66 130.81 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7928,6 +7955,74 @@
 			(project "Schlaubi-Schlumpf"
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
 					(reference "R25")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 204.47 123.19 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b5a54f71-d2a9-4602-a241-e950ab1fc8fb")
+		(property "Reference" "R31"
+			(at 218.186 121.92 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "10k"
+			(at 204.47 125.222 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 204.47 124.968 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 204.47 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 204.47 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "0cf4ce5f-74ac-4b66-aa30-1de62400615c")
+		)
+		(pin "1"
+			(uuid "8a8c4859-ebeb-4b2d-93d4-bd929a0e6b5b")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
+					(reference "R31")
 					(unit 1)
 				)
 			)
@@ -8697,7 +8792,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
 			(at 124.46 163.83 0)
 			(effects
 				(font
@@ -9004,7 +9099,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Conn_01x02_Pin")
-		(at 205.74 120.65 0)
+		(at 205.74 128.27 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -9013,7 +9108,7 @@
 		(dnp no)
 		(uuid "e020d903-10d0-4a01-abfa-f47cd988ca24")
 		(property "Reference" "J3"
-			(at 207.01 123.1901 0)
+			(at 207.01 130.8101 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9022,7 +9117,7 @@
 			)
 		)
 		(property "Value" "Conn_01x02_Pin"
-			(at 207.01 120.6501 0)
+			(at 207.01 128.2701 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9030,8 +9125,8 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_1.00mm:PinHeader_1x02_P1.00mm_Vertical"
-			(at 205.74 120.65 0)
+		(property "Footprint" "Connector_PinHeader_1.27mm:PinHeader_1x02_P1.27mm_Vertical"
+			(at 205.74 128.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9040,7 +9135,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 205.74 120.65 0)
+			(at 205.74 128.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9049,7 +9144,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated"
-			(at 205.74 120.65 0)
+			(at 205.74 128.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9368,7 +9463,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
 			(at 129.54 137.16 0)
 			(effects
 				(font
@@ -9502,7 +9597,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_1.00mm:PinHeader_1x02_P1.00mm_Vertical"
+		(property "Footprint" "Connector_PinHeader_1.27mm:PinHeader_1x02_P1.27mm_Vertical"
 			(at 210.82 111.76 0)
 			(effects
 				(font
