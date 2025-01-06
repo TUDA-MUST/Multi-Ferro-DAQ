@@ -84,12 +84,12 @@ void setup() {
   ADS131E08_control_start_signal(SET_SIGNAL);
   Serial.println("passed control start signal...");
 
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b11110000, 2);
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b10000111, 1); //turns on white LED for testing (RREG/ WREG) -> successful
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_GPIO_ADDRESS, 0, 1);
   }
 
 
-  
+ //TODO: Multibyte commands need decoding pause if SPI_CLK exceeds 4MHz 
 
 void loop() {
   /*/code to see if SPI works in general

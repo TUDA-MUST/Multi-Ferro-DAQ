@@ -170,7 +170,7 @@ void ADS131E08_set_adc_status(_adcType adcType, _ADS131E08_stat stat)
 ///////////////////////////////////////////////////////////////////////////////////
 
 
-// regNo is the number of affected regs
+// regNo is the number of affected regs(for real not the n-1)
 HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint16_t addr, uint8_t regs, uint16_t regNo)
 {
     const uint16_t cmdLen = 2;        // Command byte length (2 Bytes)
@@ -192,8 +192,8 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
             adcConfE->regAddr = 0;
             break;
         case ADS131E08_CMD_RREG:    // ADS131E08_CMD_RREGS
-            adcConfE->txBuf[0] = ADS131E08_UPPER(ADS131E08_REG_COMMAND(cmd,addr,regNo+1));
-            adcConfE->txBuf[1] = ADS131E08_LOWER(ADS131E08_REG_COMMAND(cmd,addr,regNo+1));
+            adcConfE->txBuf[0] = ADS131E08_UPPER(ADS131E08_REG_COMMAND(cmd,addr,regNo));
+            adcConfE->txBuf[1] = ADS131E08_LOWER(ADS131E08_REG_COMMAND(cmd,addr,regNo));
             adcConfE->txBuf[2] = 0;
             adcConfE->txBuf[3] = 0;
             adcConfE->command = cmd;
@@ -241,7 +241,7 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
         memset(adcConfE->rxBuf, 0, adcConfE->bufLen);        
         adcConfE->hspi->transfer(adcConfE->txBuf, cmdLen);     //important line doing stuff not debugging  
         
-        for(int i = 0; i <= regNo; i++){            //important for loop doing stuff not debugging
+        for(int i = 0; i < regNo; i++){            //important for loop doing stuff not debugging
             adcConfE->rxBuf[i] = adcConfE->hspi->transfer(0);  
         }
         Serial.print("rx buffer @CMD_RRREG - read result reads: ");
@@ -269,7 +269,7 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
         Serial.println(" ");
         //Serial.print("rx buffer @CMD_WRREG reads: ");
     
-        adcConfE->hspi->transfer(adcConfE->rxBuf, cmdLen+ regNo);  //important line doing stuff not debugging
+        adcConfE->hspi->transfer(adcConfE->txBuf, cmdLen+ regNo);  //important line doing stuff not debugging
         /*
         for(int i = 0; i < regNo + cmdLen; i++){
             Serial.print(adcConfE->rxBuf[i], BIN);
