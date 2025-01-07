@@ -155,3 +155,8 @@ void ADS131E08_send_rdatac_command()
 void ADS131E08_initialize_signal()
 
     This funcition creates and sends the pulses needed for the ADC to start initialization.
+
+
+_adcConfE* getadcConfE0()
+
+    This function returns adcConfE0

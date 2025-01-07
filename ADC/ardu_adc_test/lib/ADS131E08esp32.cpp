@@ -282,12 +282,15 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
     {
         memset(adcConfE->rxBuf, 0, adcConfE->bufLen);
         //result = HAL_SPI_TransmitReceive(adcConfE->hspi, adcConfE->txBuf, adcConfE->rxBuf, 28, 10);
-        adcConfE->hspi->transfer(adcConfE->txBuf, 28);
+        adcConfE->hspi->transfer(adcConfE->txBuf, 1);
+        for(int i = 1; i < 28; i++){            //important for loop doing stuff not debugging
+            adcConfE->rxBuf[i] = adcConfE->hspi->transfer(0);  
+        }
     }
     else
     {
         //result = HAL_SPI_TransmitReceive(adcConfE->hspi, adcConfE->txBuf, adcConfE->rxBuf, cmdLen, 10);
-            adcConfE->hspi->transfer(adcConfE->txBuf, cmdLen);
+            adcConfE->hspi->transfer(adcConfE->txBuf, cmdLen-1);
     }
     //end SPI transaction
     ADS131E08_control_cs_signal(adcConfE->type, SET_SIGNAL);
@@ -306,7 +309,7 @@ uint32_t ADS131E08_convert_adc_data(const uint8_t* dataBuf)
     uint32_t middleByte = 0;
     uint32_t lowerByte = 0;
 
-    // The output data extends to 32 bits with eight zeroes(0b00000000, 1Byte) added to the least significant bits when using the 32-bit device word length setting, datasheet 38p
+    // The output data extends to 32 bits with eight zeroes(0b00000000, 1Byte) added to the most significant bits when using the 32-bit device word length setting, datasheet 38p
     upperByte    = ((uint32_t)(dataBuf[0] << 16) & 0x00FF0000);
     middleByte   = ((uint32_t)(dataBuf[1] << 8) & 0x0000FF00);
     lowerByte    = ((uint32_t)(dataBuf[2] << 0) & 0x000000FF);
@@ -322,7 +325,7 @@ uint32_t ADS131E08_convert_adc_data(const uint8_t* dataBuf)
 
 float ADS131E08_convert_to_mVolt(uint32_t reg)
 {
-    const float unitFS = 5000.0f / 8388607.0f; // unit: mV (if unit is V, calculated value is out of 'float' range)
+    const float unitFS = 4000.0f / 8388607.0f; // unit: mV (if unit is V, calculated value is out of 'float' range)(4V / (2^24/2))
 	const uint32_t boundaryValue = 0x7FFFFF; // threshold of positive value 
 	int signFlg = 0;		// +: 1, -: -1
 
@@ -385,7 +388,7 @@ void ADS131E08_parse_adc_data(_adcType adcType)
 
     // rxBuf[0] is response for command(RDATA), so status buf start at rxBuf[1]
     temp = ADS131E08_MERGE_BYTE(adcConfE->rxBuf[1], adcConfE->rxBuf[2], adcConfE->rxBuf[3]);
-
+    //Serial.println(temp, HEX);
     recvPreBitCode = (uint8_t)((temp & 0x00F00000) >> 20);
 
     if(recvPreBitCode != preBitCode)
@@ -966,4 +969,12 @@ void ADS131E08_initialize_signal()
     // Initialize Chip Select signal
     ADS131E08_control_cs_signal(ADS131E08_ADC20, SET_SIGNAL);
     //ADS131E08_control_cs_signal(ADS131E08_ADC21, SET_SIGNAL); commented out for only one ADC
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////
+
+
+_adcConfE* getadcConfE0(){
+    return adcConfE0;
 }

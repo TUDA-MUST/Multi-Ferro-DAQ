@@ -27,6 +27,10 @@ SPIClass* hspi = NULL;
 
 ICM42670* IMU = NULL;
 
+int ADC_stat[3];
+float ADC_chan_voltage[8];
+_adcConfE* adcConfRead;
+
 void setup() {
   Serial.begin(115200);
   while(!Serial) {}
@@ -86,10 +90,15 @@ void setup() {
 
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b10000111, 1); //turns on white LED for testing (RREG/ WREG) -> successful
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_GPIO_ADDRESS, 0, 1);
+  
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_SDATAC, 0, 0, 1); //stop continuous data readout
+  //ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CONFIG2_ADDRESS, 0xF7, 1);//configure test signal
+  //ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH1SET_ADDRESS, 0x15, 1);//set CH1 to test signal
+  digitalWrite(ADC_START, HIGH); //start conversion
   }
 
 
- //TODO: Multibyte commands need decoding pause if SPI_CLK exceeds 4MHz 
+ //TODO: Multibyte commands need decoding pause if SPI_CLK exceeds 4MHz (write into library) 
 
 void loop() {
   /*/code to see if SPI works in general
@@ -116,9 +125,35 @@ void loop() {
   */
 
   //TODO: communicate with ADS131E08
+  while(digitalRead(ADC_DRDY)){}
+  ADS131E08_send_rdata_cmd(ADS131E08_ADC20);
+  ADS131E08_parse_adc_data(ADS131E08_ADC20);
+  adcConfRead = getadcConfE0();
+  ADC_stat[0] = adcConfRead->sr.mp[E08_FAULT_STATP_ADDRESS];
+  ADC_stat[1] = adcConfRead->sr.mp[E08_FAULT_STATN_ADDRESS];
+  ADC_stat[2] = adcConfRead->sr.mp[E08_GPIO_ADDRESS];
 
-  leds[1] = CRGB::Black; FastLED.show();
-  delay(300);
-  leds[1] = CRGB::Blue; FastLED.show();
+  for(int i = 0; i < NUMB_ADC_CH; i++){       
+        ADC_chan_voltage[i] = adcConfRead->chData[i].v;
+  }
+
+  Serial.print("The status regs read: ");
+  for(int i = 0; i < 3; i++) {
+    Serial.print(ADC_stat[i], HEX); Serial.print("; ");
+  }
+  Serial.println(" ");
+
+  Serial.print("The channel voltages read: ");
+  for(int i = 0; i < 8; i++){
+    Serial.print(ADC_chan_voltage[i]); Serial.print("mV; ");
+  }
+  Serial.println(" ");
+  
+
+  //End of communication with ADS131E08
+
+  //leds[1] = CRGB::Black; FastLED.show();
+  //delay(300);
+  //leds[1] = CRGB::Blue; FastLED.show();
 	
 }
