@@ -227,7 +227,7 @@ _ADS131E08_ch operator ++( _ADS131E08_ch &id, int )
     #define E08_CONFIG3_ADDRESS													((uint8_t) 0x03)
 
     /* CONFIG3 default (reset) value */
-    #define E08_CONFIG3_DEFAULT													((uint8_t) 0x40) 
+    #define E08_CONFIG3_DEFAULT													((uint8_t) 0xC0) //changed to CO from 40 to set Vref to 4V
 
      /* CONFIG3 register field masks */
     #define E08_CONFIG3_PDB_REFBUF_MASK											((uint8_t) 0x80)
