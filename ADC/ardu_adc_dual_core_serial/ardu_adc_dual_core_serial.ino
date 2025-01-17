@@ -6,6 +6,8 @@ struct chanData_float{
   float chan[8];
 };
 
+
+
 #define NUM_LEDS 2 //setup the SK6812 LEDS
 #define DATA_PIN 21
 
@@ -44,7 +46,7 @@ void setup() {
   Serial.begin(921600);
   while(!Serial) {}
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS); //initialize PWR_ON LED
-  FastLED.setBrightness(100);
+  FastLED.setBrightness(50);
   leds[0] = CRGB::Green; FastLED.show();
   
 
@@ -87,7 +89,7 @@ void setup() {
 
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_CONFIG1_ADDRESS, 0, 1);//configure sample rate
   uint8_t conf1 = adcConfRead->rxBuf[0] & (~E08_CONFIG1_DR_MASK);
-  conf1 |= E08_CONFIG1_DR_MASK & E08_DR_4KSPS;
+  conf1 |= E08_CONFIG1_DR_MASK & E08_DR_1KSPS;
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CONFIG1_ADDRESS, conf1, 1);
   
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_SDATAC, 0, 0, 1); //stop continuous data readout
@@ -103,7 +105,7 @@ void setup() {
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH8SET_ADDRESS, 0x15, 1);//set CH8 to test signal
   digitalWrite(ADC_START, HIGH); //start conversion
 
-  datatransferQueue = xQueueCreate(40, sizeof(struct chanData_float));
+  datatransferQueue = xQueueCreate(50, sizeof(struct chanData_float *));
   if(datatransferQueue == NULL) Serial.println("Queue not initialized");
   xTaskCreatePinnedToCore(sendTaskCode, "sendTask", 10000, NULL, 1, &sendTask, 1);
   xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 10000, NULL, 1, &aquireTask, 0);
@@ -114,9 +116,11 @@ void setup() {
 
 
 void aquireTaskCode(void* params){
-  struct chanData_float chanbuffer;
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b11000011, 1);//turn on red + white LED to signal start of task
+  //ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b11000011, 1);//turn on red + white LED to signal start of task
+  struct chanData_float *chanData_send_ptr;
   while(1){
+    //struct chanData_float chanbuffer;
+
     while(digitalRead(ADC_DRDY)){
       vTaskDelay(0);
     }
@@ -125,12 +129,20 @@ void aquireTaskCode(void* params){
     //ADC_stat[0] = adcConfRead->sr.mp[E08_FAULT_STATP_ADDRESS];    commented out until a need for status information arises
     //ADC_stat[1] = adcConfRead->sr.mp[E08_FAULT_STATN_ADDRESS];
     //ADC_stat[2] = adcConfRead->sr.mp[E08_GPIO_ADDRESS];
-
+  /*
     for(int i = 0; i < NUMB_ADC_CH; i++){       
           chanbuffer.chan[i] = adcConfRead->chData[i].v;
     }
-    xQueueSend(datatransferQueue, (void *) &chanbuffer, portMAX_DELAY);
-    
+    chanData_send_ptr = &chanbuffer;
+    xQueueSend(datatransferQueue, (void *) &chanData_send_ptr, portMAX_DELAY);
+  */
+    chanData_send_ptr = (struct chanData_float*) malloc(sizeof(struct chanData_float));
+    if (chanData_send_ptr != NULL) {
+    for (int i = 0; i < NUMB_ADC_CH; i++) {
+       chanData_send_ptr->chan[i] = adcConfRead->chData[i].v;
+    }
+    xQueueSend(datatransferQueue, (void *) &chanData_send_ptr, portMAX_DELAY);
+    }
   }
 }
 
@@ -138,14 +150,18 @@ void aquireTaskCode(void* params){
 
 
 void sendTaskCode(void* params){
-  struct chanData_float chanbuffer;
+  // struct chanData_float chanbuffer;
+  String sendbuff;
   while(1){
-       if(xQueueReceive(datatransferQueue, &( chanbuffer), portMAX_DELAY)){
-        for(int i = 0; i < 8; i++){
-            Serial.print(chanbuffer.chan[i]); 
-            if(i != 7) Serial.print("\t");
+      struct chanData_float *chanData_recv_ptr;
+       if(xQueueReceive(datatransferQueue, &(chanData_recv_ptr), portMAX_DELAY)){
+        sendbuff = String(chanData_recv_ptr->chan[0]) + "; ";
+        for(int i = 1; i < 8; i++){
+            sendbuff = sendbuff + String(chanData_recv_ptr->chan[i]); 
+            if(i != 7) sendbuff = sendbuff + "; ";
         }
-        Serial.println(" ");
+        Serial.println(sendbuff);
+        free(chanData_recv_ptr);
       }
   }
 }
