@@ -2,14 +2,8 @@
 #include <SPI.h>
 #include "lib\ADS131E08esp32.cpp"
 
-struct Taskin{
-  volatile float (**ppbuffaquire)[1000][8];
-  volatile float (**ppbuffsend)[1000][8];
-  volatile float (*pbuffarray1)[1000][8];
-  volatile float (*pbuffarray2)[1000][8];
-  volatile int *pbuffaquirecntr;
-  volatile int *pbuffsendcntr;
-  _adcConfE* padcConf;
+struct chanData_float{
+  float chan[8];
 };
 
 #define NUM_LEDS 2 //setup the SK6812 LEDS
@@ -37,23 +31,18 @@ SPIClass* hspi = NULL;
 
 TaskHandle_t aquireTask;
 TaskHandle_t sendTask;
+QueueHandle_t datatransferQueue;
+void aquireTaskCode(void* params);
+void sendTaskCode(void* params);
 
 int ADC_stat[3];
 float ADC_chan_voltage[8];
 _adcConfE* adcConfRead;
 
-volatile float buffarray1[1000][8];
-volatile float buffarray2[1000][8];
-volatile float (*buffaquirepointer)[1000][8];
-volatile float (*buffsendpointer)[1000][8];
-volatile int buffaquirecntr = 0;
-volatile int buffsendcntr = 1000;
-
 
 void setup() {
   Serial.begin(921600);
   while(!Serial) {}
-
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS); //initialize PWR_ON LED
   FastLED.setBrightness(100);
   leds[0] = CRGB::Green; FastLED.show();
@@ -98,7 +87,7 @@ void setup() {
 
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_CONFIG1_ADDRESS, 0, 1);//configure sample rate
   uint8_t conf1 = adcConfRead->rxBuf[0] & (~E08_CONFIG1_DR_MASK);
-  conf1 |= E08_CONFIG1_DR_MASK & E08_DR_1KSPS;
+  conf1 |= E08_CONFIG1_DR_MASK & E08_DR_4KSPS;
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CONFIG1_ADDRESS, conf1, 1);
   
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_SDATAC, 0, 0, 1); //stop continuous data readout
@@ -114,17 +103,10 @@ void setup() {
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH8SET_ADDRESS, 0x15, 1);//set CH8 to test signal
   digitalWrite(ADC_START, HIGH); //start conversion
 
-  buffaquirepointer = &buffarray1;
-  struct Taskin taskinput;
-  taskinput.ppbuffaquire = &buffaquirepointer;
-  taskinput.ppbuffsend =   &buffsendpointer;
-  taskinput.pbuffarray1 = &buffarray1;
-  taskinput.pbuffarray2 = &buffarray2;
-  taskinput.pbuffaquirecntr = &buffaquirecntr;
-  taskinput.pbuffsendcntr = &buffsendcntr;
-  taskinput.padcConf = adcConfRead;
-  xTaskCreatePinnedToCore(sendTaskCode, "sendTask", 1000, (void*)&taskinput, 1, &sendTask, 0);
-  xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 1000, (void*)&taskinput, 1, &aquireTask, 1);
+  datatransferQueue = xQueueCreate(40, sizeof(struct chanData_float));
+  if(datatransferQueue == NULL) Serial.println("Queue not initialized");
+  xTaskCreatePinnedToCore(sendTaskCode, "sendTask", 10000, NULL, 1, &sendTask, 1);
+  xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 10000, NULL, 1, &aquireTask, 0);
   }
 
 
@@ -132,10 +114,12 @@ void setup() {
 
 
 void aquireTaskCode(void* params){
-  struct Taskin localin = *((Taskin*)params);
-  
+  struct chanData_float chanbuffer;
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b11000011, 1);//turn on red + white LED to signal start of task
   while(1){
-    while(digitalRead(ADC_DRDY)){}
+    while(digitalRead(ADC_DRDY)){
+      vTaskDelay(0);
+    }
     ADS131E08_send_rdata_cmd(ADS131E08_ADC20);
     ADS131E08_parse_adc_data(ADS131E08_ADC20);
     //ADC_stat[0] = adcConfRead->sr.mp[E08_FAULT_STATP_ADDRESS];    commented out until a need for status information arises
@@ -143,43 +127,29 @@ void aquireTaskCode(void* params){
     //ADC_stat[2] = adcConfRead->sr.mp[E08_GPIO_ADDRESS];
 
     for(int i = 0; i < NUMB_ADC_CH; i++){       
-          (**localin.ppbuffaquire)[*localin.pbuffaquirecntr][i] = localin.padcConf->chData[i].v;
+          chanbuffer.chan[i] = adcConfRead->chData[i].v;
     }
-    (*localin.pbuffaquirecntr)++;
-
-    if(*localin.pbuffaquirecntr == 1000){
-      if(*localin.ppbuffaquire == localin.pbuffarray1){
-         *localin.ppbuffaquire = localin.pbuffarray2;
-         *localin.ppbuffsend = localin.pbuffarray2;
-      }
-      else{
-         *localin.ppbuffaquire = localin.pbuffarray1;
-         *localin.ppbuffsend = localin.pbuffarray2;
-      }
-      *localin.pbuffaquirecntr = 0;
-      *localin.pbuffsendcntr = 0;
-    }
+    xQueueSend(datatransferQueue, (void *) &chanbuffer, portMAX_DELAY);
+    
   }
 }
- 
 
 
 
 
 void sendTaskCode(void* params){
-  struct Taskin localin = *((Taskin*)params);
-  Serial.println("Still alive!!");
+  struct chanData_float chanbuffer;
   while(1){
-    while(*localin.pbuffsendcntr < 1000){
+       if(xQueueReceive(datatransferQueue, &( chanbuffer), portMAX_DELAY)){
         for(int i = 0; i < 8; i++){
-          Serial.print((**localin.ppbuffsend)[*localin.pbuffsendcntr][i]); 
-          if(i != 7) Serial.print("\t");
+            Serial.print(chanbuffer.chan[i]); 
+            if(i != 7) Serial.print("\t");
         }
         Serial.println(" ");
-      (*localin.pbuffsendcntr)++;
-    }
+      }
   }
 }
+
 
 
 
