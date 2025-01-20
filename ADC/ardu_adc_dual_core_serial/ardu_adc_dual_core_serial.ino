@@ -107,8 +107,8 @@ void setup() {
 
   datatransferQueue = xQueueCreate(50, sizeof(struct chanData_float *));
   if(datatransferQueue == NULL) Serial.println("Queue not initialized");
-  xTaskCreatePinnedToCore(sendTaskCode, "sendTask", 10000, NULL, 1, &sendTask, 1);
-  xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 10000, NULL, 1, &aquireTask, 0);
+  xTaskCreatePinnedToCore(sendTaskCode, "sendTask", 8192, NULL, 1, &sendTask, 1);
+  xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 8192, NULL, 1, &aquireTask, 0);
   }
 
 
@@ -119,8 +119,6 @@ void aquireTaskCode(void* params){
   //ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b11000011, 1);//turn on red + white LED to signal start of task
   struct chanData_float *chanData_send_ptr;
   while(1){
-    //struct chanData_float chanbuffer;
-
     while(digitalRead(ADC_DRDY)){
       vTaskDelay(0);
     }
@@ -129,13 +127,7 @@ void aquireTaskCode(void* params){
     //ADC_stat[0] = adcConfRead->sr.mp[E08_FAULT_STATP_ADDRESS];    commented out until a need for status information arises
     //ADC_stat[1] = adcConfRead->sr.mp[E08_FAULT_STATN_ADDRESS];
     //ADC_stat[2] = adcConfRead->sr.mp[E08_GPIO_ADDRESS];
-  /*
-    for(int i = 0; i < NUMB_ADC_CH; i++){       
-          chanbuffer.chan[i] = adcConfRead->chData[i].v;
-    }
-    chanData_send_ptr = &chanbuffer;
-    xQueueSend(datatransferQueue, (void *) &chanData_send_ptr, portMAX_DELAY);
-  */
+
     chanData_send_ptr = (struct chanData_float*) malloc(sizeof(struct chanData_float));
     if (chanData_send_ptr != NULL) {
     for (int i = 0; i < NUMB_ADC_CH; i++) {
@@ -146,15 +138,18 @@ void aquireTaskCode(void* params){
   }
 }
 
-
+//TODO: chanData as array of pointers instead of dynamic
+//TODO: String to char for performance
 
 
 void sendTaskCode(void* params){
-  // struct chanData_float chanbuffer;
-  String sendbuff;
+  //String sendbuff;
+  char *sendbuff = (char *) malloc(256);  
+  int offset;
   while(1){
       struct chanData_float *chanData_recv_ptr;
-       if(xQueueReceive(datatransferQueue, &(chanData_recv_ptr), portMAX_DELAY)){
+      if(xQueueReceive(datatransferQueue, &(chanData_recv_ptr), portMAX_DELAY)){
+        /*
         sendbuff = String(chanData_recv_ptr->chan[0]) + "; ";
         for(int i = 1; i < 8; i++){
             sendbuff = sendbuff + String(chanData_recv_ptr->chan[i]); 
@@ -162,12 +157,25 @@ void sendTaskCode(void* params){
         }
         Serial.println(sendbuff);
         free(chanData_recv_ptr);
+        */
+        offset = 0;
+        for (int i = 0; i < NUMB_ADC_CH; i++) {
+            offset += snprintf(sendbuff + offset, 255 - offset, "%.2f", chanData_recv_ptr->chan[i]);
+            if(i != NUMB_ADC_CH - 1) offset += snprintf(sendbuff + offset, 255 - offset, "; ");
+        }
+        *(sendbuff + offset) = '\0';  
+        Serial.println(sendbuff);
+        free(chanData_recv_ptr); 
+
       }
   }
+  free(sendbuff);
 }
 
 
 
 
 
-void loop() {}
+void loop() {
+  vTaskDelay(portMAX_DELAY);
+}
