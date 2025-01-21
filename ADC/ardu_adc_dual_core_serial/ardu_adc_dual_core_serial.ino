@@ -143,21 +143,25 @@ void aquireTaskCode(void* params){
 
 
 void sendTaskCode(void* params){
-  //String sendbuff;
-  char *sendbuff = (char *) malloc(256);  
-  int offset;
+  String sendbuff;
+  //char *sendbuff = (char *) malloc(256);  
+  //int offset;
   while(1){
       struct chanData_float *chanData_recv_ptr;
       if(xQueueReceive(datatransferQueue, &(chanData_recv_ptr), portMAX_DELAY)){
-        /*
-        sendbuff = String(chanData_recv_ptr->chan[0]) + "; ";
+        
+        sendbuff = String(chanData_recv_ptr->chan[0]) + ";";
         for(int i = 1; i < 8; i++){
             sendbuff = sendbuff + String(chanData_recv_ptr->chan[i]); 
-            if(i != 7) sendbuff = sendbuff + "; ";
+            if(i != 7) sendbuff = sendbuff + ";";
         }
         Serial.println(sendbuff);
+        //Serial.println(ESP.getFreeHeap());
+        //Serial.println(uxTaskGetStackHighWaterMark(sendTask));
+        //Serial.println(uxTaskGetStackHighWaterMark(aquireTask));
+        //vTaskDelay(0);
         free(chanData_recv_ptr);
-        */
+        /*
         offset = 0;
         for (int i = 0; i < NUMB_ADC_CH; i++) {
             offset += snprintf(sendbuff + offset, 255 - offset, "%.2f", chanData_recv_ptr->chan[i]);
@@ -166,10 +170,10 @@ void sendTaskCode(void* params){
         *(sendbuff + offset) = '\0';  
         Serial.println(sendbuff);
         free(chanData_recv_ptr); 
-
+        */
       }
   }
-  free(sendbuff);
+  //free(sendbuff);
 }
 
 
@@ -177,5 +181,5 @@ void sendTaskCode(void* params){
 
 
 void loop() {
-  vTaskDelay(portMAX_DELAY);
+  //vTaskDelay(portMAX_DELAY);
 }
