@@ -227,7 +227,7 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
         memset(adcConfE->rxBuf, 0, adcConfE->bufLen);
         result = HAL_SPI_Receive(adcConfE->hspi, adcConfE->rxBuf, regNo, 500);        
         */
-       Serial.print("The readouts for ADC_RESET, ADC_START, ADC_DRDY, ADC_CS @CMD_RREG are: ");
+       /*Serial.print("The readouts for ADC_RESET, ADC_START, ADC_DRDY, ADC_CS @CMD_RREG are: ");
        Serial.print(digitalRead(adcConfE->nReset.pin)); Serial.print("; ");
        Serial.print(digitalRead(adcConfE->start.pin)); Serial.print("; ");
        Serial.print(digitalRead(adcConfE->nDrdy.pin)); Serial.print("; ");
@@ -238,24 +238,28 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
         Serial.print("; ");
        }
        Serial.println(" ");
+       */
         memset(adcConfE->rxBuf, 0, adcConfE->bufLen);        
         adcConfE->hspi->transfer(adcConfE->txBuf, cmdLen);     //important line doing stuff not debugging  
         
         for(int i = 0; i < regNo; i++){            //important for loop doing stuff not debugging
             adcConfE->rxBuf[i] = adcConfE->hspi->transfer(0);  
         }
+        /*
         Serial.print("rx buffer @CMD_RRREG - read result reads: ");
         for(int i = 0; i < regNo; i++){
             Serial.print(adcConfE->rxBuf[i], BIN);
             Serial.print("; ");
         }
         Serial.println(" ");
+        */
         // Update Register Status
         adcConfE->sr.mp[adcConfE->regAddr] = adcConfE->rxBuf[0];
     }
     else if(cmd == ADS131E08_CMD_WREG)
     {
         //result = HAL_SPI_TransmitReceive(adcConfE->hspi, adcConfE->txBuf, adcConfE->rxBuf, regNo + cmdLen, 10);
+        /*
         Serial.print("The readouts for ADC_RESET, ADC_START, ADC_DRDY, ADC_CS @CMD_WREG are: ");
         Serial.print(digitalRead(adcConfE->nReset.pin)); Serial.print("; ");
         Serial.print(digitalRead(adcConfE->start.pin)); Serial.print("; ");
@@ -268,7 +272,7 @@ HAL_StatusTypeDef ADS131E08_send_command(_adcConfE* adcConfE, uint16_t cmd, uint
         }
         Serial.println(" ");
         //Serial.print("rx buffer @CMD_WRREG reads: ");
-    
+        */
         adcConfE->hspi->transfer(adcConfE->txBuf, cmdLen+ regNo);  //important line doing stuff not debugging
         /*
         for(int i = 0; i < regNo + cmdLen; i++){
