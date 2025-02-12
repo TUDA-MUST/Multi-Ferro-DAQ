@@ -109,8 +109,8 @@ void setup() {
 
   datatransferQueue = xQueueCreate(50, sizeof(struct chanData_float *));
   if(datatransferQueue == NULL) Serial.println("Queue not initialized");
-  xTaskCreatePinnedToCore(sendTaskCode, "sendTask", 8192, NULL, 1, &sendTask, 1);
-  xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 8192, NULL, 1, &aquireTask, 0);
+  xTaskCreatePinnedToCore(sendTaskCode, "sendTask", 8192, NULL, 1, &sendTask, 0);
+  xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 8192, NULL, 1, &aquireTask, 1);
   }
 
 
@@ -175,7 +175,7 @@ void sendTaskCode(void* params){
   while(1){
         // Check if there is any incoming UDP packet
   int packetSize = udp.parsePacket();
-  
+  vTaskDelay(1);
   if (packetSize) {
     // Read the incoming packet into the buffer
     int len = udp.read(incomingPacket, 255);
@@ -191,6 +191,7 @@ void sendTaskCode(void* params){
     if (remoteIP != 0){
       // Convert the floats to byte array using typecast
       while(1){
+        vTaskDelay(1);
         struct chanData_float *chanData_recv_ptr;
         if(xQueueReceive(datatransferQueue, &(chanData_recv_ptr), portMAX_DELAY)){
           for(int i = 0; i < 8; i++){
