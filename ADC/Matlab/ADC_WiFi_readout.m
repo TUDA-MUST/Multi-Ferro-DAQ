@@ -1,6 +1,6 @@
 % This is a test to collect ADC data in a grid
 function size = size_dataBuffer()
-    size = 2000;
+    size = 5000;
 end
 %clear workspace
 clear;
@@ -19,21 +19,24 @@ dataBuffer = zeros(size_dataBuffer(), 8);
 
 % Start listening for incoming UDP packets
 fprintf('Listening for UDP packets on port %d...\n', udpPort);
+while u.NumBytesAvailable == 0
 write(u, "successfully connected to MATLAB", udpIP, udpPort);
+end
 
 % Continuous listening loop (main loop to keep the program alive)
 while time <= size_dataBuffer()
     % Check if there is incoming data from UDP
-    if u.BytesAvailable > 0
+    if u.NumBytesAvailable > 0
         % Read incoming data 
-        data = read(u, 8, "single"); 
+        data = read(u, 64, "single"); 
         
-        % Update the data buffer
-        dataBuffer(time, :) = data;
-        
-        % Increment time (or use actual timestamp from UDP packet)
-        time = time + 1;  
-        
+        for i = 0 : 7
+            % Update the data buffer
+            dataBuffer(time, :) = data(1,i*8+1:(i+1)*8);
+            
+            % Increment time (or use actual timestamp from UDP packet)
+            time = time + 1;  
+        end
     end
 end
 
