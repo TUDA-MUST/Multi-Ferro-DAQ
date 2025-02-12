@@ -90,7 +90,7 @@ void setup() {
 
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_CONFIG1_ADDRESS, 0, 1);//configure sample rate
   uint8_t conf1 = adcConfRead->rxBuf[0] & (~E08_CONFIG1_DR_MASK);
-  conf1 |= E08_CONFIG1_DR_MASK & E08_DR_1KSPS;
+  conf1 |= E08_CONFIG1_DR_MASK & E08_DR_4KSPS;
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CONFIG1_ADDRESS, conf1, 1);
   
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_SDATAC, 0, 0, 1); //stop continuous data readout
@@ -107,10 +107,9 @@ void setup() {
   digitalWrite(ADC_START, HIGH); //start conversion
 
 
-  datatransferQueue = xQueueCreate(50, sizeof(struct chanData_float *));
+  datatransferQueue = xQueueCreate(200, sizeof(struct chanData_float *));
   if(datatransferQueue == NULL) Serial.println("Queue not initialized");
   xTaskCreatePinnedToCore(sendTaskCode, "sendTask", 8192, NULL, 1, &sendTask, 0);
-  xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 8192, NULL, 1, &aquireTask, 1);
   }
 
 
@@ -170,8 +169,8 @@ void sendTaskCode(void* params){
   udp.begin(udpPort);
   Serial.println("UDP listening on port 8080 - start MATLAB script");
   
-  byte buffer[32]; // 8 floats * 4 bytes each = 32 bytes
-  
+  byte buffer[256]; // 8 floats * 4 bytes each = 32 bytes * 8 datasets = 
+  int timer = 0;
   while(1){
         // Check if there is any incoming UDP packet
   int packetSize = udp.parsePacket();
@@ -190,18 +189,28 @@ void sendTaskCode(void* params){
     remoteIP = udp.remoteIP();
     if (remoteIP != 0){
       // Convert the floats to byte array using typecast
+      xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 8192, NULL, 1, &aquireTask, 1);
       while(1){
-        vTaskDelay(1);
+        if(timer < 200) timer ++;
+        else{
+          timer = 0;
+          vTaskDelay(1);
+        }
+
+        for(int j = 0; j < 8; j++){
         struct chanData_float *chanData_recv_ptr;
         if(xQueueReceive(datatransferQueue, &(chanData_recv_ptr), portMAX_DELAY)){
           for(int i = 0; i < 8; i++){
-            memcpy(buffer + (4 * i), &chanData_recv_ptr->chan[i], 4);   
+            memcpy(buffer + (4 * i) + (32*j), &chanData_recv_ptr->chan[i], 4);   
           }
+          free(chanData_recv_ptr);
+        }
+        }
           // Send the buffer over UDP
           udp.beginPacket(udp.remoteIP(), udp.remotePort());
-          udp.write(buffer, sizeof(buffer));  // Send the 16-byte buffer
+          udp.write(buffer, sizeof(buffer));  
           udp.endPacket();
-        }
+        
       }
     }
   }
