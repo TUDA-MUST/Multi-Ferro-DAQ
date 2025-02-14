@@ -1286,6 +1286,18 @@
 		)
 		(uuid "fc9db0d7-fbe2-4ef9-854d-236a9371effa")
 	)
+	(hierarchical_label "Vbias"
+		(shape input)
+		(at 138.43 105.41 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "0e2f9e20-ba09-41a0-9be8-a942f9407637")
+	)
 	(hierarchical_label "Vout_A"
 		(shape output)
 		(at 107.95 72.39 180)
@@ -1298,17 +1310,17 @@
 		)
 		(uuid "1528309c-f4ce-41c6-9811-906f03ce8098")
 	)
-	(hierarchical_label "Vref"
+	(hierarchical_label "Vbias"
 		(shape input)
-		(at 107.95 82.55 180)
+		(at 194.31 87.63 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right)
+			(justify left)
 		)
-		(uuid "160f5cbc-8b05-48ed-9a73-f237a8bd8611")
+		(uuid "1d8700b9-17fc-4ca3-98c1-a60d0a87ca00")
 	)
 	(hierarchical_label "Vin_B"
 		(shape input)
@@ -1346,9 +1358,9 @@
 		)
 		(uuid "26f5b2a7-c605-459b-a5dc-7472ad5ee302")
 	)
-	(hierarchical_label "Vref"
+	(hierarchical_label "Vbias"
 		(shape input)
-		(at 138.43 105.41 180)
+		(at 107.95 82.55 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1356,9 +1368,21 @@
 			)
 			(justify right)
 		)
-		(uuid "4f6faae3-ce90-40ee-88ac-53a2f7ec707d")
+		(uuid "4347203d-3eed-4f59-b6a2-82dfd1b297d7")
 	)
-	(hierarchical_label "Vref"
+	(hierarchical_label "Vbias"
+		(shape input)
+		(at 107.95 87.63 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "6c0a0293-791d-470f-b181-285317dbdcc2")
+	)
+	(hierarchical_label "Vbias"
 		(shape input)
 		(at 194.31 82.55 0)
 		(fields_autoplaced yes)
@@ -1368,7 +1392,7 @@
 			)
 			(justify left)
 		)
-		(uuid "55c4e70e-ec65-4fa8-a215-837844b0319f")
+		(uuid "8c387327-d9ca-4750-8096-069a9963b561")
 	)
 	(hierarchical_label "Vin_C"
 		(shape input)
@@ -1382,18 +1406,6 @@
 		)
 		(uuid "977a9e9c-1e52-472e-96c5-bc48bd26f872")
 	)
-	(hierarchical_label "Vref"
-		(shape input)
-		(at 107.95 87.63 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a6b1cb0b-f512-43aa-b9eb-d4a5e2fd9ab8")
-	)
 	(hierarchical_label "Vin_A"
 		(shape input)
 		(at 107.95 80.01 180)
@@ -1405,18 +1417,6 @@
 			(justify right)
 		)
 		(uuid "b5bf3fde-ab1e-4177-b9f6-9d291778a90e")
-	)
-	(hierarchical_label "Vref"
-		(shape input)
-		(at 194.31 87.63 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "cfa6f666-dd55-405e-8c4e-eef65f6dc067")
 	)
 	(hierarchical_label "5V"
 		(shape input)
@@ -1552,7 +1552,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 183.642 93.98 90)
 			(effects
 				(font
@@ -1622,7 +1622,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 121.412 76.2 90)
 			(effects
 				(font
@@ -1692,7 +1692,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 183.642 76.2 90)
 			(effects
 				(font
@@ -1898,7 +1898,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 119.0752 97.79 0)
 			(effects
 				(font
@@ -1967,7 +1967,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 181.3052 97.79 0)
 			(effects
 				(font
@@ -2036,7 +2036,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 119.0752 80.01 0)
 			(effects
 				(font
@@ -2307,7 +2307,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 181.3052 80.01 0)
 			(effects
 				(font
@@ -2483,7 +2483,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 121.412 93.98 90)
 			(effects
 				(font

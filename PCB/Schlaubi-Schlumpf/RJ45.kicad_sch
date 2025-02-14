@@ -407,6 +407,18 @@
 			)
 		)
 	)
+	(hierarchical_label "Vbias"
+		(shape input)
+		(at 135.89 88.9 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "28cf661f-deb9-4a43-a416-6ef44f9c3fe4")
+	)
 	(hierarchical_label "B"
 		(shape output)
 		(at 135.89 86.36 0)
@@ -418,30 +430,6 @@
 			(justify left)
 		)
 		(uuid "3d687eb8-d5d5-4178-953f-cc5a02529baf")
-	)
-	(hierarchical_label "Vref"
-		(shape input)
-		(at 135.89 88.9 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "48330fb3-1bfd-4bc6-80c1-2d15a769dfbd")
-	)
-	(hierarchical_label "Vref"
-		(shape input)
-		(at 135.89 81.28 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "48c6190d-9b5c-4fd0-ae64-41c86b7be45d")
 	)
 	(hierarchical_label "A"
 		(shape output)
@@ -455,9 +443,9 @@
 		)
 		(uuid "58de3ebe-cd1b-4b2c-933c-e65f793fb288")
 	)
-	(hierarchical_label "Vref"
+	(hierarchical_label "Vbias"
 		(shape input)
-		(at 135.89 73.66 0)
+		(at 135.89 83.82 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -465,7 +453,7 @@
 			)
 			(justify left)
 		)
-		(uuid "6828b48a-b18b-4d27-949a-67529a805525")
+		(uuid "8e140080-2086-4b8f-b067-954f6d22ed88")
 	)
 	(hierarchical_label "D"
 		(shape output)
@@ -479,9 +467,9 @@
 		)
 		(uuid "9e248442-5c28-4e49-97fc-3a50ea9c6212")
 	)
-	(hierarchical_label "Vref"
+	(hierarchical_label "Vbias"
 		(shape input)
-		(at 135.89 83.82 0)
+		(at 135.89 81.28 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -489,7 +477,7 @@
 			)
 			(justify left)
 		)
-		(uuid "ab95e4aa-4417-4cef-9a3d-0bf307e66a3a")
+		(uuid "9f324d5d-3eb0-45c6-b676-23a91183a293")
 	)
 	(hierarchical_label "C"
 		(shape output)
@@ -502,6 +490,18 @@
 			(justify left)
 		)
 		(uuid "b5e65cbc-31b1-4ae1-8d1f-e58acfefbdab")
+	)
+	(hierarchical_label "Vbias"
+		(shape input)
+		(at 135.89 73.66 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ed460a75-8490-43e1-a6ed-82852c884e62")
 	)
 	(symbol
 		(lib_id "Connector:8P8C_Shielded")
