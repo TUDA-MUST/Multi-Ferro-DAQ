@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TL071HIDBVR
+D SINGLE-CHANNEL LOW INPUT BIAS CU
+K
+F https://www.ti.com/lit/ds/symlink/tl071h.pdf?ts=1631522494957
+$ENDCMP
+#
+#End Doc Library

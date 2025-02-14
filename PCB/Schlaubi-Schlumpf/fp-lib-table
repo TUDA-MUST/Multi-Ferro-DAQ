@@ -24,4 +24,7 @@
   (lib (name "ICM-42670-P")(type "KiCad")(uri "${KIPRJMOD}/components/ICM-42670-P")(options "")(descr ""))
   (lib (name "SKRPABE010")(type "KiCad")(uri "${KIPRJMOD}/components/SKRPABE010")(options "")(descr ""))
   (lib (name "DMG2305UX")(type "KiCad")(uri "${KIPRJMOD}/components/DMG2305UX/DMG2305UX.pretty")(options "")(descr ""))
+  (lib (name "TL071HIDBVR")(type "KiCad")(uri "${KIPRJMOD}/components/TL071HIDBVR")(options "")(descr ""))
+  (lib (name "OPA345")(type "KiCad")(uri "${KIPRJMOD}/components/OPA345")(options "")(descr ""))
+  (lib (name "TLV9051IDBVR")(type "KiCad")(uri "${KIPRJMOD}/components/TLV9051IDBVR")(options "")(descr ""))
 )

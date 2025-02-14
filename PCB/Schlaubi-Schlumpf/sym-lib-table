@@ -21,4 +21,7 @@
   (lib (name "SK-12D02-VG3")(type "KiCad")(uri "${KIPRJMOD}/components/SK-12D02-VG3/SK-12D02-VG3.kicad_sym")(options "")(descr ""))
   (lib (name "2024-10-23_12-19-03")(type "KiCad")(uri "${KIPRJMOD}/components/ICM-42670-P/2024-10-23_12-19-03.kicad_sym")(options "")(descr ""))
   (lib (name "SKRPABE010")(type "KiCad")(uri "${KIPRJMOD}/components/SKRPABE010/SKRPABE010.kicad_sym")(options "")(descr ""))
+  (lib (name "TL071HIDBVR")(type "KiCad")(uri "${KIPRJMOD}/components/TL071HIDBVR/TL071HIDBVR.kicad_sym")(options "")(descr ""))
+  (lib (name "OPA345NA_3K")(type "KiCad")(uri "${KIPRJMOD}/components/OPA345/OPA345NA_3K.kicad_sym")(options "")(descr ""))
+  (lib (name "TLV9051IDBVR")(type "KiCad")(uri "${KIPRJMOD}/components/TLV9051IDBVR/TLV9051IDBVR.kicad_sym")(options "")(descr ""))
 )

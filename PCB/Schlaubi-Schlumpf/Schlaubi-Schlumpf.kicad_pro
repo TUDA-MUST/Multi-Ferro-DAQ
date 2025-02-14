@@ -565,7 +565,7 @@
       },
       {
         "netclass": "Power",
-        "pattern": "Vref"
+        "pattern": "Vbias"
       },
       {
         "netclass": "Power",
@@ -574,6 +574,10 @@
       {
         "netclass": "Power",
         "pattern": "AVDD"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "/ADC/Vbias"
       }
     ]
   },

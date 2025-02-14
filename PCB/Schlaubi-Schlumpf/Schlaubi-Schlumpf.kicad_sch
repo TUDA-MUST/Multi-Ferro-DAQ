@@ -1788,12 +1788,6 @@
 		(uuid "4629dc01-2681-49b6-bae2-c71e99b0f505")
 	)
 	(junction
-		(at 158.75 35.56)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "86ca93fa-58fd-46a9-9a14-665d84d4353f")
-	)
-	(junction
 		(at 69.85 26.67)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1903,6 +1897,16 @@
 	)
 	(wire
 		(pts
+			(xy 240.03 27.94) (xy 240.03 69.85)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3bf9c9fc-4146-46b7-96c1-a02ca8900749")
+	)
+	(wire
+		(pts
 			(xy 85.09 44.45) (xy 78.74 44.45)
 		)
 		(stroke
@@ -1920,6 +1924,16 @@
 			(type default)
 		)
 		(uuid "4c4ad762-99cd-4804-bd98-2b3c8195acb8")
+	)
+	(wire
+		(pts
+			(xy 149.86 27.94) (xy 240.03 27.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "570e049e-0e16-44d6-8058-99f0b9e04563")
 	)
 	(bus
 		(pts
@@ -2003,26 +2017,6 @@
 	)
 	(wire
 		(pts
-			(xy 158.75 35.56) (xy 158.75 69.85)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a128d166-adfc-4a84-a38d-124da0a282f3")
-	)
-	(wire
-		(pts
-			(xy 149.86 35.56) (xy 158.75 35.56)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a41fb354-106a-4237-af20-7fd520cabd3c")
-	)
-	(wire
-		(pts
 			(xy 149.86 33.02) (xy 156.21 33.02)
 		)
 		(stroke
@@ -2070,26 +2064,6 @@
 			(type default)
 		)
 		(uuid "d60ddc81-8b02-474f-809a-59c49fb9ac2e")
-	)
-	(wire
-		(pts
-			(xy 158.75 35.56) (xy 240.03 35.56)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e2b34722-e157-4566-9183-a4c429720e5d")
-	)
-	(wire
-		(pts
-			(xy 240.03 35.56) (xy 240.03 69.85)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ef138212-4d8c-4e06-8f85-3323e8e17c65")
 	)
 	(text "Abstandshalter?\nSMTSOM325BTR"
 		(exclude_from_sim no)
@@ -3633,17 +3607,7 @@
 			)
 			(uuid "a560144f-07eb-4176-a347-b7baf8ea360a")
 		)
-		(pin "Vref" input
-			(at 240.03 69.85 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "ea1987e0-5261-4deb-ad07-88734469cf72")
-		)
-		(pin "ADC{MISO SCLK *CS MOSI *DRDY START *RESET}" bidirectional
+		(pin "ADC{MISO SCLK *CS MOSI *DRDY START *RESET *PWDN}" bidirectional
 			(at 219.71 81.28 180)
 			(effects
 				(font
@@ -3652,6 +3616,16 @@
 				(justify left)
 			)
 			(uuid "7000de31-a45f-405b-9ff5-85cda1e63be8")
+		)
+		(pin "non_reg" input
+			(at 240.03 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "802f0960-ad0c-4334-8545-befc5db29702")
 		)
 		(instances
 			(project "Schlaubi-Schlumpf"
@@ -3731,7 +3705,7 @@
 			)
 			(uuid "137bc3c0-37da-4a98-9088-cdf75c7538c0")
 		)
-		(pin "ADC{MISO SCLK *CS MOSI *DRDY START *RESET}" bidirectional
+		(pin "ADC{MISO SCLK *CS MOSI *DRDY START *RESET *PWDN}" bidirectional
 			(at 177.8 81.28 0)
 			(effects
 				(font
@@ -3760,8 +3734,8 @@
 		)
 	)
 	(sheet
-		(at 118.11 27.94)
-		(size 31.75 19.05)
+		(at 118.11 24.13)
+		(size 31.75 22.86)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -3772,7 +3746,7 @@
 		)
 		(uuid "b2b2c764-2d7a-4fe7-b3f5-2bbb716da457")
 		(property "Sheetname" "Power_battery"
-			(at 118.11 27.2284 0)
+			(at 118.11 23.4184 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3809,16 +3783,6 @@
 			)
 			(uuid "4f32c9e1-b3ad-4fcc-a3b1-df91e5cd82b1")
 		)
-		(pin "2V" output
-			(at 149.86 35.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "bf0c6988-9fbe-4387-adc6-5ebe4c717d87")
-		)
 		(pin "3.3V" output
 			(at 149.86 33.02 0)
 			(effects
@@ -3828,6 +3792,16 @@
 				(justify right)
 			)
 			(uuid "33ed0d1d-99a8-48ef-a524-00bbb9542ec5")
+		)
+		(pin "non_reg_in" output
+			(at 149.86 27.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "96a39a0d-09d9-49d1-8e1f-21235d2918c4")
 		)
 		(instances
 			(project "Schlaubi-Schlumpf"
