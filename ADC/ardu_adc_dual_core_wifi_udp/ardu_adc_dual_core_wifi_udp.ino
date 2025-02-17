@@ -5,7 +5,7 @@
 #include <WiFiUdp.h>
 
 struct chanData_float{
-  float chan[8];
+  byte chan[8][3];
 };
 
 
@@ -43,9 +43,42 @@ float ADC_chan_voltage[8];
 _adcConfE* adcConfRead;
 
 
+
+
+
+
+
+struct chanData_float *chanData_send_ptr;
+
+void  IRAM_ATTR DRDY_read_int_handle(){
+    
+    ADS131E08_send_rdata_cmd(ADS131E08_ADC20);
+    //ADS131E08_receive_data(ADS131E08_ADC20); -> needs to be finished in library
+    //ADS131E08_parse_adc_data(ADS131E08_ADC20);
+    
+    
+    chanData_send_ptr = (struct chanData_float*) malloc(sizeof(struct chanData_float));
+    if (chanData_send_ptr != NULL) {
+    for (int i = 0; i < NUMB_ADC_CH; i++) {
+       chanData_send_ptr->chan[i][0] = adcConfRead->rxBuf[3*i+4];
+       chanData_send_ptr->chan[i][1] = adcConfRead->rxBuf[3*i+5];
+       chanData_send_ptr->chan[i][2] = adcConfRead->rxBuf[3*i+6];
+    }
+    xQueueSendFromISR(datatransferQueue, (void *) &chanData_send_ptr, NULL);
+    }
+    
+
+}
+
+
+
+
+
+
+
 void setup() {
   Serial.begin(921600);
-  while(!Serial) {}
+  //while(!Serial) {}               // this line is only to be used if Serial connection should be enforced
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS); //initialize PWR_ON LED
   FastLED.setBrightness(50);
   leds[0] = CRGB::Green; FastLED.show();
@@ -85,10 +118,12 @@ void setup() {
   ADS131E08_control_start_signal(SET_SIGNAL);
   Serial.println("passed control start signal...");
 
+  detachInterrupt(digitalPinToInterrupt(ADC_DRDY));
+
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b10000111, 1); //turns on white LED for testing (RREG/ WREG) -> successful
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_GPIO_ADDRESS, 0, 1);
 
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_CONFIG1_ADDRESS, 0, 1);//configure sample rate
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_CONFIG1_ADDRESS, 0, 1);//configure sample rate (example how to configure with masks)
   uint8_t conf1 = adcConfRead->rxBuf[0] & (~E08_CONFIG1_DR_MASK);
   conf1 |= E08_CONFIG1_DR_MASK & E08_DR_4KSPS;
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CONFIG1_ADDRESS, conf1, 1);
@@ -105,9 +140,10 @@ void setup() {
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH7SET_ADDRESS, 0x15, 1);//set CH7 to test signal
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH8SET_ADDRESS, 0x15, 1);//set CH8 to test signal
   digitalWrite(ADC_START, HIGH); //start conversion
+  //ADS131E08_send_rdatac_command();
 
 
-  datatransferQueue = xQueueCreate(200, sizeof(struct chanData_float *));
+  datatransferQueue = xQueueCreate(512, sizeof(struct chanData_float *));
   if(datatransferQueue == NULL) Serial.println("Queue not initialized");
   xTaskCreatePinnedToCore(sendTaskCode, "sendTask", 8192, NULL, 1, &sendTask, 0);
   }
@@ -118,12 +154,14 @@ void setup() {
 
 void aquireTaskCode(void* params){
   //ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b11000011, 1);//turn on red + white LED to signal start of task
-  struct chanData_float *chanData_send_ptr;
+  attachInterrupt(digitalPinToInterrupt(ADC_DRDY), DRDY_read_int_handle, FALLING);
   while(1){
-    while(digitalRead(ADC_DRDY)){
-      vTaskDelay(0);
+    vTaskDelay(1);
+    /*while(digitalRead(ADC_DRDY)){
+    //  vTaskDelay(0);
     }
     ADS131E08_send_rdata_cmd(ADS131E08_ADC20);
+    //ADS131E08_receive_data(ADS131E08_ADC20); -> needs to be finished in library
     ADS131E08_parse_adc_data(ADS131E08_ADC20);
     //ADC_stat[0] = adcConfRead->sr.mp[E08_FAULT_STATP_ADDRESS];    commented out until a need for status information arises
     //ADC_stat[1] = adcConfRead->sr.mp[E08_FAULT_STATN_ADDRESS];
@@ -135,7 +173,7 @@ void aquireTaskCode(void* params){
        chanData_send_ptr->chan[i] = adcConfRead->chData[i].v;
     }
     xQueueSend(datatransferQueue, (void *) &chanData_send_ptr, portMAX_DELAY);
-    }
+    }*/
   }
 }
 
@@ -169,8 +207,7 @@ void sendTaskCode(void* params){
   udp.begin(udpPort);
   Serial.println("UDP listening on port 8080 - start MATLAB script");
   
-  byte buffer[256]; // 8 floats * 4 bytes each = 32 bytes * 8 datasets = 
-  int timer = 0;
+  byte buffer[2048]; // 8 floats * 4 bytes each => 32 bytes * 64 datasets = 
   while(1){
         // Check if there is any incoming UDP packet
   int packetSize = udp.parsePacket();
@@ -191,17 +228,13 @@ void sendTaskCode(void* params){
       // Convert the floats to byte array using typecast
       xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 8192, NULL, 1, &aquireTask, 1);
       while(1){
-        if(timer < 200) timer ++;
+        if(uxQueueSpacesAvailable(datatransferQueue) > 448)vTaskDelay(1);
         else{
-          timer = 0;
-          vTaskDelay(1);
-        }
-
-        for(int j = 0; j < 8; j++){
+        for(int j = 0; j < 64; j++){
         struct chanData_float *chanData_recv_ptr;
         if(xQueueReceive(datatransferQueue, &(chanData_recv_ptr), portMAX_DELAY)){
           for(int i = 0; i < 8; i++){
-            memcpy(buffer + (4 * i) + (32*j), &chanData_recv_ptr->chan[i], 4);   
+            memcpy(buffer + (4 * i) + (24*j), &chanData_recv_ptr->chan[i], 3);   
           }
           free(chanData_recv_ptr);
         }
@@ -210,7 +243,7 @@ void sendTaskCode(void* params){
           udp.beginPacket(udp.remoteIP(), udp.remotePort());
           udp.write(buffer, sizeof(buffer));  
           udp.endPacket();
-        
+        }
       }
     }
   }
@@ -224,3 +257,6 @@ void sendTaskCode(void* params){
 void loop() {
   //vTaskDelay(portMAX_DELAY);
 }
+
+
+
