@@ -15,7 +15,7 @@ configureTerminator(u, "CR/LF");
 
 % Initialize time and data buffer
 time = 1;
-dataBuffer = zeros(size_dataBuffer(), 8);
+dataBuffer = zeros(size_dataBuffer(), 9);
 
 % Start listening for incoming UDP packets
 fprintf('Listening for UDP packets on port %d...\n', udpPort);
@@ -28,11 +28,11 @@ while time <= size_dataBuffer()
     % Check if there is incoming data from UDP
     if u.NumBytesAvailable > 0
         % Read incoming data 
-        data = read(u, 64, "single"); 
+        data = read(u, 576, "single"); 
         
-        for i = 0 : 7
+        for i = 0 : 63
             % Update the data buffer
-            dataBuffer(time, :) = data(1,i*8+1:(i+1)*8);
+            dataBuffer(time, :) = data(1,i*9+1:(i+1)*9);
             
             % Increment time (or use actual timestamp from UDP packet)
             time = time + 1;  
@@ -43,7 +43,7 @@ end
 figure;
 time = time - 1;
 time_vec = (1:time)';
-plot(time_vec(:,1),dataBuffer(:,:));
+plot(dataBuffer(:,9),dataBuffer(:,1:8));
 
 delete(u);
 clear u;
