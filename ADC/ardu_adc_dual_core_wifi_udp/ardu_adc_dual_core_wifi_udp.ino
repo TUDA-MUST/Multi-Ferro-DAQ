@@ -4,9 +4,11 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 
+
 struct chanData_float{
-  byte chan[8][3];
+  byte chan[8][4];
 };
+
 
 
 #define NUM_LEDS 2 //setup the SK6812 LEDS
@@ -153,7 +155,6 @@ void setup() {
 
 
 void aquireTaskCode(void* params){
-  //ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b11000011, 1);//turn on red + white LED to signal start of task
   attachInterrupt(digitalPinToInterrupt(ADC_DRDY), DRDY_read_int_handle, FALLING);
   while(1){
     vTaskDelay(1);
@@ -177,8 +178,6 @@ void aquireTaskCode(void* params){
   }
 }
 
-//TODO: chanData as array of pointers instead of dynamic
-//TODO: String to char for performance
 
 
 void sendTaskCode(void* params){
@@ -233,8 +232,9 @@ void sendTaskCode(void* params){
         for(int j = 0; j < 64; j++){
         struct chanData_float *chanData_recv_ptr;
         if(xQueueReceive(datatransferQueue, &(chanData_recv_ptr), portMAX_DELAY)){
+          convert_data(chanData_recv_ptr);
           for(int i = 0; i < 8; i++){
-            memcpy(buffer + (4 * i) + (24*j), &chanData_recv_ptr->chan[i], 3);   
+            memcpy(buffer + (4 * i) + (32*j), &chanData_recv_ptr->chan[i], 4);   
           }
           free(chanData_recv_ptr);
         }
@@ -252,11 +252,47 @@ void sendTaskCode(void* params){
 
 
 
+// converts 8 adc channels to mV
+inline void convert_data(struct chanData_float *chanData_recv_ptr){
+
+  // Create union of shared memory space
+  union {
+    float float_variable;
+    byte temp_array[4];
+  } u;
+
+  const float unitFS = 4000.0f / 8388607.0f; // unit: mV (if unit is V, calculated value is out of 'float' range)(4V / (2^24/2))
+	const uint32_t boundaryValue = 0x7FFFFF; // threshold of positive value 
+	int signFlg = 0;		// +: 1, -: -1
+  
+  for(int i = 0; i < 8; i++){
+    uint32_t reg = ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][0] << 16) & 0x00FF0000) | ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][1] << 8) & 0x0000FF00) | ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][2] << 0) & 0x000000FF);
+    // negative value
+    if (reg > boundaryValue)
+    {
+        reg = (0xFFFFFF - reg) + 1; // if value is 0xFFFFFF, register is -FS/2^23. so plus 1 
+        signFlg = -1;
+    }
+    // positive value
+    else
+    {
+        signFlg = 1;
+    }
+
+    // convert register to mVolt
+    u.float_variable = (unitFS * (float)reg * (float)signFlg);
+    memcpy(chanData_recv_ptr->chan[i], u.temp_array, 4);
+  }
+}
+  
+  
+
 
 
 void loop() {
-  //vTaskDelay(portMAX_DELAY);
+  vTaskDelay(portMAX_DELAY);
 }
+
 
 
 
