@@ -6,7 +6,7 @@
 
 
 struct chanData_float{
-  byte chan[8][4];
+  byte chan[9][4];
 };
 
 
@@ -66,6 +66,15 @@ void  IRAM_ATTR DRDY_read_int_handle(){
        chanData_send_ptr->chan[i][1] = adcConfRead->rxBuf[3*i+5];
        chanData_send_ptr->chan[i][2] = adcConfRead->rxBuf[3*i+6];
     }
+
+    union {
+    float float_variable;
+    byte temp_array[4];
+    } u;
+
+    u.float_variable = (float) esp_timer_get_time();
+    memcpy(chanData_send_ptr->chan[8], u.temp_array, 4);
+
     xQueueSendFromISR(datatransferQueue, (void *) &chanData_send_ptr, NULL);
     }
     
@@ -158,23 +167,6 @@ void aquireTaskCode(void* params){
   attachInterrupt(digitalPinToInterrupt(ADC_DRDY), DRDY_read_int_handle, FALLING);
   while(1){
     vTaskDelay(1);
-    /*while(digitalRead(ADC_DRDY)){
-    //  vTaskDelay(0);
-    }
-    ADS131E08_send_rdata_cmd(ADS131E08_ADC20);
-    //ADS131E08_receive_data(ADS131E08_ADC20); -> needs to be finished in library
-    ADS131E08_parse_adc_data(ADS131E08_ADC20);
-    //ADC_stat[0] = adcConfRead->sr.mp[E08_FAULT_STATP_ADDRESS];    commented out until a need for status information arises
-    //ADC_stat[1] = adcConfRead->sr.mp[E08_FAULT_STATN_ADDRESS];
-    //ADC_stat[2] = adcConfRead->sr.mp[E08_GPIO_ADDRESS];
-
-    chanData_send_ptr = (struct chanData_float*) malloc(sizeof(struct chanData_float));
-    if (chanData_send_ptr != NULL) {
-    for (int i = 0; i < NUMB_ADC_CH; i++) {
-       chanData_send_ptr->chan[i] = adcConfRead->chData[i].v;
-    }
-    xQueueSend(datatransferQueue, (void *) &chanData_send_ptr, portMAX_DELAY);
-    }*/
   }
 }
 
@@ -206,7 +198,7 @@ void sendTaskCode(void* params){
   udp.begin(udpPort);
   Serial.println("UDP listening on port 8080 - start MATLAB script");
   
-  byte buffer[2048]; // 8 floats * 4 bytes each => 32 bytes * 64 datasets = 
+  byte buffer[2304]; // 8 floats * 4 bytes each => 32 bytes * 64 datasets = 
   while(1){
         // Check if there is any incoming UDP packet
   int packetSize = udp.parsePacket();
@@ -233,8 +225,8 @@ void sendTaskCode(void* params){
         struct chanData_float *chanData_recv_ptr;
         if(xQueueReceive(datatransferQueue, &(chanData_recv_ptr), portMAX_DELAY)){
           convert_data(chanData_recv_ptr);
-          for(int i = 0; i < 8; i++){
-            memcpy(buffer + (4 * i) + (32*j), &chanData_recv_ptr->chan[i], 4);   
+          for(int i = 0; i < 9; i++){
+            memcpy(buffer + (4 * i) + (36*j), &chanData_recv_ptr->chan[i], 4);   
           }
           free(chanData_recv_ptr);
         }
