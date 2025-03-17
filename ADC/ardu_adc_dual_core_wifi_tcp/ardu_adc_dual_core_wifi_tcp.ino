@@ -13,7 +13,8 @@ struct chanData_float{
 #define NUM_LEDS 2 //setup the SK6812 LEDS
 #define DATA_PIN 21
 
-#define ADC_RESET 7 //setup the ADS131E08
+#define ADC_PWRDWN 6 //setup the ADS131E08
+#define ADC_RESET 7 
 #define ADC_START 8
 #define ADC_DRDY 9
 #define ADC_CS 10
@@ -90,7 +91,7 @@ void setup() {
   Serial.begin(921600);
   //while(!Serial) {}               // this line is only to be used if Serial connection should be enforced
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS); //initialize PWR_ON LED
-  FastLED.setBrightness(50);
+  FastLED.setBrightness(5);        //don't get to bright to save power
   leds[0] = CRGB::Orange; FastLED.show();
 
 
@@ -104,6 +105,9 @@ void setup() {
   pinMode(ADC_START, OUTPUT);
   pinMode(ADC_DRDY, INPUT_PULLUP);
   pinMode(ADC_CS, OUTPUT);
+  pinMode(ADC_PWRDWN, OUTPUT);
+
+  digitalWrite(ADC_PWRDWN, HIGH);
 
   attachInterrupt(digitalPinToInterrupt(ADC_DRDY), ADS131E08_drdy_int_handl, LOW);
 
@@ -132,23 +136,25 @@ void setup() {
 
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b10000111, 1); //turns on white LED for testing (RREG/ WREG) -> successful
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_GPIO_ADDRESS, 0, 1);
-
+  delay(40);
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_CONFIG1_ADDRESS, 0, 1);//configure sample rate (example how to configure with masks)
   uint8_t conf1 = adcConfRead->rxBuf[0] & (~E08_CONFIG1_DR_MASK);
   conf1 |= E08_CONFIG1_DR_MASK & E08_DR_2KSPS;
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CONFIG1_ADDRESS, conf1, 1);
   
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CONFIG3_ADDRESS, 0xEC, 1); //setting V_ref to 4V and activating OPAMP
+  
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_SDATAC, 0, 0, 1); //stop continuous data readout
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CONFIG2_ADDRESS, 0xE3, 1);//configure test signal
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CONFIG2_ADDRESS, 0xE3, 1);//configure test signal E3: extern, F4: intern
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH1SET_ADDRESS, 0x10, 1);//set CH1 to extern measurement
   //ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH1SET_ADDRESS, 0x90, 1);//set CH1 to pwr_dwn
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH2SET_ADDRESS, 0x15, 1);//set CH2 to test signal
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH3SET_ADDRESS, 0x15, 1);//set CH3 to test signal
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH4SET_ADDRESS, 0x15, 1);//set CH4 to test signal
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH5SET_ADDRESS, 0x15, 1);//set CH5 to test signal
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH6SET_ADDRESS, 0x15, 1);//set CH6 to test signal
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH7SET_ADDRESS, 0x15, 1);//set CH7 to test signal
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH8SET_ADDRESS, 0x15, 1);//set CH8 to test signal
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH2SET_ADDRESS, 0x10, 1);//set CH2 to test signal
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH3SET_ADDRESS, 0x10, 1);//set CH3 to test signal
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH4SET_ADDRESS, 0x10, 1);//set CH4 to test signal
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH5SET_ADDRESS, 0x10, 1);//set CH5 to test signal
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH6SET_ADDRESS, 0x10, 1);//set CH6 to test signal
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH7SET_ADDRESS, 0x10, 1);//set CH7 to test signal
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH8SET_ADDRESS, 0x10, 1);//set CH8 to external measurement
   digitalWrite(ADC_START, HIGH); //start conversion
   //ADS131E08_send_rdatac_command();
 
@@ -198,6 +204,7 @@ void sendTaskCode(void* params){
   // Start the TCP communication
   
   Serial.println("TCP waiting on port 8080 - start MATLAB script");
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b00001111, 1); //turns off white LED to save power
   leds[0] = CRGB::Magenta; FastLED.show();
   
   byte buffer[2304]; // 8 floats * 4 bytes each => 32 bytes * 64 datasets = 
@@ -236,7 +243,7 @@ void sendTaskCode(void* params){
 
 
 
-// converts 8 adc channels to mV
+// converts 8 adc channels to mV for Schlaubi 
 inline void convert_data(struct chanData_float *chanData_recv_ptr){
 
   // Create union of shared memory space
