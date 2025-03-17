@@ -1,6 +1,6 @@
 % This is a test to collect ADC data in a grid
 function size = size_dataBuffer()
-    size = 20000;
+    size = 200000; %needs to be in range for int64
 end
 %clear workspace
 clear;
@@ -18,8 +18,9 @@ configureTerminator(u, "CR/LF");
 time = 1;
 dataBuffer = zeros(size_dataBuffer(), 9);
 
+%tell esp how many datapoints to measure
 % Start listening for incoming packets
-%write(u, "successfully connected to MATLAB");
+write(u, size_dataBuffer(),"int64");
 disp("initiadted tcp client");
 
 % Continuous listening loop (main loop to keep the program alive)
