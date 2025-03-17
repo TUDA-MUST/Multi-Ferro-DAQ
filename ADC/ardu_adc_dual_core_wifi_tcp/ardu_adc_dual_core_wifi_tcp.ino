@@ -214,13 +214,25 @@ void sendTaskCode(void* params){
       if(client) break;
       vTaskDelay(1);
     }
-    client.flush();
+
+    delay(20); //give Matlab time to send length
+    union {
+      byte cntarray[8];
+      int64_t cntnmbr;
+    } measurecnt;
+
+    for(int i = 0; i < 8; i++){
+      measurecnt.cntarray[i] = client.read();
+    }    
+    
+
+    
     Serial.println("ESP32 successfully connected to MATLAB");
     leds[0] = CRGB::Green; FastLED.show();
 
     // Convert the floats to byte array using typecast
     xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 8192, NULL, 1, &aquireTask, 1);
-    while(1){
+    for(int i = 0; i < measurecnt.cntnmbr;){
       if(uxQueueSpacesAvailable(datatransferQueue) > 448)vTaskDelay(1);
       else{
       for(int j = 0; j < 64; j++){
@@ -235,8 +247,15 @@ void sendTaskCode(void* params){
       }
       // Send the buffer over TCP
       client.write(buffer, sizeof(buffer));
+      i += 64;
       }
     }
+    vTaskDelete(aquireTask);
+    client.stop();
+    WiFi.disconnect();
+    delay(100);
+    ESP.restart(); //   <- stop gap measure because I can't figure out how to connect to MATLAB again
+    leds[0] = CRGB::Magenta; FastLED.show();
   }
 }
 
