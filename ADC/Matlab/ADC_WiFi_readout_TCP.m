@@ -1,6 +1,6 @@
 % This is a test to collect ADC data in a grid
 function size = size_dataBuffer()
-    size = 200000; %needs to be in range for int64
+    size = 10000; %needs to be in range for int64
 end
 %clear workspace
 clear;
@@ -23,6 +23,7 @@ dataBuffer = zeros(size_dataBuffer(), 9);
 write(u, size_dataBuffer(),"int64");
 disp("initiadted tcp client");
 
+%f0 = figure;
 % Continuous listening loop (main loop to keep the program alive)
 while time <= size_dataBuffer()
     % Check if there is incoming data from UDP
@@ -37,17 +38,35 @@ while time <= size_dataBuffer()
             % Increment time (or use actual timestamp from UDP packet)
             time = time + 1;  
         end
+         
+        %liveplot is working and doesn't obstruct programm, but is to slow,
+        %to be useful...
+        %plot(dataBuffer(1:time-1,9),dataBuffer(1:time-1,1:8));
+        %lgd = legend('CHAN1', 'CHAN2', 'CHAN3', 'CHAN4', 'CHAN5', 'CHAN6', 'CHAN7', 'CHAN8');
+        %lgd.NumColumns = 2;
+        %%lgd.Title.String = 'sensitivecoarse';
+        %xlabel('Zeit in µs');
+        %ylabel('Messauschlag in mV');
+        %drawnow;
     end
 end
+%close(f0);
 
 figure;
 time = time - 1;
 time_vec = (1:time)';
-plot(dataBuffer(1:time-1,9),dataBuffer(1:time-1,1:8));
+plot(dataBuffer(1:time,9),dataBuffer(1:time,1:8));
+lgd = legend('CHAN1', 'CHAN2', 'CHAN3', 'CHAN4', 'CHAN5', 'CHAN6', 'CHAN7', 'CHAN8');
+lgd.NumColumns = 2;
+%lgd.Title.String = 'sensitivecoarse';
+xlabel('Zeit in µs');
+ylabel('Messauschlag in mV');
 %close(f1);
 
 f2 = figure;
-plot(time_vec(:,1),dataBuffer(:,9))
+plot(time_vec(:,1),dataBuffer(:,9));
+xlabel('Samples');
+ylabel('Zeit in µs');
 %close(f2);
 
 
