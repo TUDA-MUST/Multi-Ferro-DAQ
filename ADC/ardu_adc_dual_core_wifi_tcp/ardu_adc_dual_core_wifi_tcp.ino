@@ -45,7 +45,7 @@ float ADC_chan_voltage[8];
 _adcConfE* adcConfRead;
 
 
-
+byte amparr[8];  // save preamp params globally to later access them quicker
 
 
 
@@ -215,16 +215,22 @@ void sendTaskCode(void* params){
       vTaskDelay(1);
     }
 
-    delay(200); //give Matlab time to send length
+    delay(200); //give Matlab time to send initialization data
     union {
       byte cntarray[8];
       int64_t cntnmbr;
     } measurecnt;
 
-    for(int i = 0; i < 8; i++){
+    for(int i = 0; i < 8; i++){  // get sample size
       measurecnt.cntarray[i] = client.read();
-    }    
-    
+    }
+
+    delay(200);
+    for(int i = 0; i < 8; i++){  // get amp values for preamp
+      amparr[i] = client.read();
+    }
+
+    set_preamp(); //sets preamp values in config reg ond ADS131
 
     
     Serial.println("ESP32 successfully connected to MATLAB");
@@ -232,6 +238,7 @@ void sendTaskCode(void* params){
 
     // Convert the floats to byte array using typecast
     xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 8192, NULL, 1, &aquireTask, 1);
+
     for(int i = 0; i < measurecnt.cntnmbr;){
       if(uxQueueSpacesAvailable(datatransferQueue) > 448)vTaskDelay(1);
       else{
@@ -258,6 +265,40 @@ void sendTaskCode(void* params){
     leds[0] = CRGB::Magenta; FastLED.show();
   }
 }
+
+
+
+
+
+
+
+inline void set_preamp(){
+  for(int i = 0; i < 8; i++){
+    ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_CH1SET_ADDRESS + i, 0, 1);//configure sample rate (example how to configure with masks)
+    uint8_t conf1 = adcConfRead->rxBuf[0] & (~E08_CH1SET_GAIN_MASK);
+    switch(amparr[i]){
+      case 1: conf1 |= E08_CH1SET_GAIN_MASK & E08_CH1SET_PGA_GAIN_1;
+              break;
+      case 2: conf1 |= E08_CH1SET_GAIN_MASK & E08_CH1SET_PGA_GAIN_2;
+              break;
+      case 4: conf1 |= E08_CH1SET_GAIN_MASK & E08_CH1SET_PGA_GAIN_4;
+              break;
+      case 8: conf1 |= E08_CH1SET_GAIN_MASK & E08_CH1SET_PGA_GAIN_8;
+              break;
+      case 12: conf1 |= E08_CH1SET_GAIN_MASK & E08_CH1SET_PGA_GAIN_12;
+              break;
+      default: return;
+    }
+    ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH1SET_ADDRESS + i, conf1, 1);
+    //ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_CH1SET_ADDRESS + i, 0, 1);//configure sample rate (example how to configure with masks)
+    //conf1 = adcConfRead->rxBuf[0];
+    //Serial.printf("0x%02X\n", conf1);
+  }
+}
+
+
+
+
 
 
 
@@ -290,7 +331,7 @@ inline void convert_data(struct chanData_float *chanData_recv_ptr){
     }
 
     // convert register to mVolt
-    u.float_variable = (unitFS * (float)reg * (float)signFlg);
+    u.float_variable = (unitFS * (float)reg * (float)signFlg / amparr[i]);
     memcpy(chanData_recv_ptr->chan[i], u.temp_array, 4);
   }
 }
