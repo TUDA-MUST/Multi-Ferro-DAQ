@@ -147,7 +147,7 @@ void setup() {
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_SDATAC, 0, 0, 1); //stop continuous data readout
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CONFIG2_ADDRESS, 0xE3, 1);//configure test signal E3: extern, F4: intern
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH1SET_ADDRESS, 0x10, 1);//set CH1 to extern measurement
-  //ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH1SET_ADDRESS, 0x90, 1);//set CH1 to pwr_dwn
+  //ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH1SET_ADDRESS, 0x90, 1);//set CH1 to pwr_dwn   //10: measurement, 15: test signal, 90: pwr down
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH2SET_ADDRESS, 0x10, 1);//set CH2 to test signal
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH3SET_ADDRESS, 0x10, 1);//set CH3 to test signal
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH4SET_ADDRESS, 0x10, 1);//set CH4 to test signal
@@ -215,7 +215,7 @@ void sendTaskCode(void* params){
       vTaskDelay(1);
     }
 
-    delay(20); //give Matlab time to send length
+    delay(200); //give Matlab time to send length
     union {
       byte cntarray[8];
       int64_t cntnmbr;
@@ -271,7 +271,7 @@ inline void convert_data(struct chanData_float *chanData_recv_ptr){
     byte temp_array[4];
   } u;
 
-  const float unitFS = 4000.0f / 8388607.0f; // unit: mV (if unit is V, calculated value is out of 'float' range)(4V / (2^24/2))
+  const float unitFS = 4000.0f / 8388608.0f; // unit: mV (if unit is V, calculated value is out of 'float' range)(4V / (2^24/2))
 	const uint32_t boundaryValue = 0x7FFFFF; // threshold of positive value 
 	int signFlg = 0;		// +: 1, -: -1
   
