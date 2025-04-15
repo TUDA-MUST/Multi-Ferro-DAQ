@@ -2,6 +2,19 @@
 function size = size_dataBuffer()
     size = 10000; %needs to be in range for int64
 end
+
+%Channel amplification can be set to 1, 2, 4, 8 or 12
+function CHAN_ARRAY = getCHAN_ARRAY()
+    CHAN1_AMP = uint8(1);
+    CHAN2_AMP = uint8(2);
+    CHAN3_AMP = uint8(1);
+    CHAN4_AMP = uint8(1);
+    CHAN5_AMP = uint8(1);
+    CHAN6_AMP = uint8(1);
+    CHAN7_AMP = uint8(1);
+    CHAN8_AMP = uint8(12);
+    CHAN_ARRAY = {CHAN1_AMP, CHAN2_AMP, CHAN3_AMP, CHAN4_AMP, CHAN5_AMP, CHAN6_AMP, CHAN7_AMP, CHAN8_AMP};
+end
 %clear workspace
 clear;
 
@@ -19,10 +32,15 @@ time = 1;
 dataBuffer = zeros(size_dataBuffer(), 9);
 
 %tell esp how many datapoints to measure
-% Start listening for incoming packets
 write(u, size_dataBuffer(),"int64");
+%tell esp how to set preamp
+tempchanarr = getCHAN_ARRAY();
+for i = 1: 8
+    write(u, tempchanarr{i}, "uint8");
+end
 disp("initiadted tcp client");
 
+% Start listening for incoming packets
 %f0 = figure;
 % Continuous listening loop (main loop to keep the program alive)
 while time <= size_dataBuffer()
