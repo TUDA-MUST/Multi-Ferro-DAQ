@@ -6,6 +6,8 @@
 
 struct chanData_float{
   byte chan[9][4];
+  byte faultp;  //saves if inputs exceed threshold on positive input
+  byte faultn;  //saves if inputs exceed threshold on negative input
 };
 
 
@@ -55,7 +57,7 @@ struct chanData_float *chanData_send_ptr;
 void  IRAM_ATTR DRDY_read_int_handle(){
     
     ADS131E08_send_rdata_cmd(ADS131E08_ADC20);
-    //ADS131E08_receive_data(ADS131E08_ADC20); -> needs to be finished in library
+    //ADS131E08_receive_data(ADS131E08_ADC20); 
     //ADS131E08_parse_adc_data(ADS131E08_ADC20);
     
     
@@ -66,6 +68,9 @@ void  IRAM_ATTR DRDY_read_int_handle(){
        chanData_send_ptr->chan[i][1] = adcConfRead->rxBuf[3*i+5];
        chanData_send_ptr->chan[i][2] = adcConfRead->rxBuf[3*i+6];
     }
+
+    chanData_send_ptr->faultp = adcConfRead->rxBuf[1];
+    chanData_send_ptr->faultn = adcConfRead->rxBuf[2];
 
     union {
     float float_variable;
@@ -317,21 +322,28 @@ inline void convert_data(struct chanData_float *chanData_recv_ptr){
 	int signFlg = 0;		// +: 1, -: -1
   
   for(int i = 0; i < 8; i++){
-    uint32_t reg = ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][0] << 16) & 0x00FF0000) | ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][1] << 8) & 0x0000FF00) | ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][2] << 0) & 0x000000FF);
-    // negative value
-    if (reg > boundaryValue)
-    {
-        reg = (0xFFFFFF - reg) + 1; // if value is 0xFFFFFF, register is -FS/2^23. so plus 1 
-        signFlg = -1;
-    }
-    // positive value
-    else
-    {
-        signFlg = 1;
-    }
+    char chanfilter = 1 << i;
+    if(chanData_recv_ptr->faultp & chanfilter){     //the value of +/- 7000 is used to indicate out of bounds errors 
+      u.float_variable = 7000;
+    }else if(chanData_recv_ptr->faultn & chanfilter){
+      u.float_variable = -7000;
+    }else{
+      uint32_t reg = ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][0] << 16) & 0x00FF0000) | ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][1] << 8) & 0x0000FF00) | ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][2] << 0) & 0x000000FF);
+      // negative value
+      if (reg > boundaryValue)
+      {
+          reg = (0xFFFFFF - reg) + 1; // if value is 0xFFFFFF, register is -FS/2^23. so plus 1 
+          signFlg = -1;
+      }
+      // positive value
+      else
+      {
+          signFlg = 1;
+      }
 
-    // convert register to mVolt
-    u.float_variable = (unitFS * (float)reg * (float)signFlg / amparr[i]);
+      // convert register to mVolt
+      u.float_variable = (unitFS * (float)reg * (float)signFlg / amparr[i]);
+    }
     memcpy(chanData_recv_ptr->chan[i], u.temp_array, 4);
   }
 }
