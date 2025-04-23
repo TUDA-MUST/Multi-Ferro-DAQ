@@ -7,28 +7,53 @@
 % the LED on the board turns green, the connecion is established and the
 % measurement underway. After completing the measurement the ESP32 will
 % reset itself and the LED will turn yellow while it is busy.
-% In order to configure the device the sample rate currently has to be
-% programmed into the ESP, while the length of measurement and the pregain
-% of the channels can be set via MATLAB
+% In order to configure the device change the settings struct. Ohterwise
+% the programmed default values of the ESP32 will be used
 
+function settings = getSettings()
+    % set the sample rate to 1000, 2000, 4000, 8000, 16000, 32000, 64000
+    % values above 2000 are not recommended
+    settings.sample_rate = 1000;
+    
+    % set the duration of the measurement in seconds
+    settings.duration = 10;
+    
+    % set the preamp of the cannels to 1, 2, 4, 8 or 12
+    settings.CHAN1_AMP = uint8(1);
+    settings.CHAN2_AMP = uint8(1);
+    settings.CHAN3_AMP = uint8(1);
+    settings.CHAN4_AMP = uint8(1);
+    settings.CHAN5_AMP = uint8(1);
+    settings.CHAN6_AMP = uint8(1);
+    settings.CHAN7_AMP = uint8(1);
+    settings.CHAN8_AMP = uint8(1);
+    
+    % change the config regs of the individual channels
+    % for further reference read the datasheet
+    % the preamp value set seperately will overwrite the
+    % preampvalue set here
+    
+    settings.conf1 = 0x10;
+    settings.conf2 = 0x10;
+    settings.conf3 = 0x10;
+    settings.conf4 = 0x10;
+    settings.conf5 = 0x10;
+    settings.conf6 = 0x10;
+    settings.conf7 = 0x10;
+    settings.conf8 = 0x10;
 
-%set the number of datasets to be collected 
+end
+
+% the number of datasets to be collected 
 function size = size_dataBuffer()
-    size = 10000; %needs to be in range for int64
+    size = getSettings().duration * getSettings().sample_rate;           %needs to be in range for int64
 end
 
-%Channel amplification can be set to 1, 2, 4, 8 or 12
-function CHAN_ARRAY = getCHAN_ARRAY()
-    CHAN1_AMP = uint8(1);
-    CHAN2_AMP = uint8(2);
-    CHAN3_AMP = uint8(1);
-    CHAN4_AMP = uint8(1);
-    CHAN5_AMP = uint8(1);
-    CHAN6_AMP = uint8(1);
-    CHAN7_AMP = uint8(1);
-    CHAN8_AMP = uint8(12);
-    CHAN_ARRAY = {CHAN1_AMP, CHAN2_AMP, CHAN3_AMP, CHAN4_AMP, CHAN5_AMP, CHAN6_AMP, CHAN7_AMP, CHAN8_AMP};
-end
+
+
+% overwrite the config regs of the channels with new values
+% look into the datasheet for further reference
+
 
 %clear workspace
 clear;
@@ -46,10 +71,19 @@ configureTerminator(u, "CR/LF");
 time = 1;
 dataBuffer = zeros(size_dataBuffer(), 9);
 
-%tell esp how many datapoints to measure
+% there is no "protocol" the esp uses to determine the datasets
+% the order and size of the values have to match what it expects
+% tell esp how many datapoints to measure
 write(u, size_dataBuffer(),"int64");
-%tell esp how to set preamp
-tempchanarr = getCHAN_ARRAY();
+% tell esp which sample size to set
+write(u, getSettings().sample_rate, "uint32");
+% tell esp to set the cannels individually
+tempchanarr = [getSettings().conf1, getSettings().conf2, getSettings().conf3, getSettings().conf4, getSettings().conf5, getSettings().conf6, getSettings().conf7, getSettings().conf8];
+for i = 1: 8    
+    write(u, tempchanarr{i},"uint16");
+end
+% tell esp how to set preamp
+tempchanarr = [getSettings().CHAN1_AMP, getSettings().CHAN2_AMP, getSettings().CHAN3_AMP, getSettings().CHAN4_AMP, getSettings().CHAN5_AMP, getSettings().CHAN6_AMP, getSettings().CHAN7_AMP, getSettings().CHAN8_AMP];
 for i = 1: 8
     write(u, tempchanarr{i}, "uint8");
 end
@@ -68,7 +102,7 @@ while time <= size_dataBuffer()
             % Update the data buffer
             dataBuffer(time, :) = data(1,i*9+1:(i+1)*9);
             
-            % Increment time (or use actual timestamp from UDP packet)
+            % Increment time (or use actual timestamp from TCP packet)
             time = time + 1;  
         end
          
@@ -98,6 +132,7 @@ lgd.NumColumns = 2;
 %lgd.Title.String = 'sensitivecoarse';
 xlabel('Zeit in µs');
 ylabel('Messauschlag in mV');
+ylim([-3000 3000]);
 %close(f1);
 
 %plot the time in µs/ number of dataset in array to visually check if packets are missing
@@ -121,7 +156,6 @@ delta_max = max(time_delta);
 delta_min = min(time_delta);
 delta_deviataion = std(time_delta);
 approx_sample_rate = 1 / (delta_mean*10^-6);
-% measurement = "1kSPS";
 
 delete(u);
 clear u;
