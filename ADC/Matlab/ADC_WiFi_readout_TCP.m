@@ -13,13 +13,15 @@
 function settings = getSettings()
     % set the sample rate to 1000, 2000, 4000, 8000, 16000, 32000, 64000
     % values above 2000 are not recommended
-    settings.sample_rate = 1000;
+    settings.sample_rate = 2000;
     
     % set the duration of the measurement in seconds
     settings.duration = 10;
     
     % set the preamp of the cannels to 1, 2, 4, 8 or 12
-    settings.CHAN1_AMP = uint8(1);
+    % this setting is for fast changes and will overwrite the
+    % channel config regs set below
+    settings.CHAN1_AMP = uint8(8);
     settings.CHAN2_AMP = uint8(1);
     settings.CHAN3_AMP = uint8(1);
     settings.CHAN4_AMP = uint8(1);
@@ -33,7 +35,7 @@ function settings = getSettings()
     % the preamp value set seperately will overwrite the
     % preampvalue set here
     
-    settings.conf1 = 0x10;
+    settings.conf1 = 0x10;          % 0x10 = measurement input with gain 1
     settings.conf2 = 0x10;
     settings.conf3 = 0x10;
     settings.conf4 = 0x10;
@@ -78,20 +80,21 @@ write(u, size_dataBuffer(),"int64");
 % tell esp which sample size to set
 write(u, getSettings().sample_rate, "uint32");
 % tell esp to set the cannels individually
-tempchanarr = [getSettings().conf1, getSettings().conf2, getSettings().conf3, getSettings().conf4, getSettings().conf5, getSettings().conf6, getSettings().conf7, getSettings().conf8];
+tempchanarr = uint16([getSettings().conf1, getSettings().conf2, getSettings().conf3, getSettings().conf4, getSettings().conf5, getSettings().conf6, getSettings().conf7, getSettings().conf8]);
 for i = 1: 8    
-    write(u, tempchanarr{i},"uint16");
+    write(u, tempchanarr(i),"uint16");
 end
 % tell esp how to set preamp
 tempchanarr = [getSettings().CHAN1_AMP, getSettings().CHAN2_AMP, getSettings().CHAN3_AMP, getSettings().CHAN4_AMP, getSettings().CHAN5_AMP, getSettings().CHAN6_AMP, getSettings().CHAN7_AMP, getSettings().CHAN8_AMP];
 for i = 1: 8
-    write(u, tempchanarr{i}, "uint8");
+    write(u, tempchanarr(i), "uint8");
 end
 disp("initiadted tcp client");
 
 % Start listening for incoming packets
-%f0 = figure;
+f0 = figure;
 % Continuous listening loop (main loop to keep the program alive)
+drwcnt = 0;
 while time <= size_dataBuffer()
     % Check if there is incoming data from UDP
     if u.NumBytesAvailable > 0
@@ -105,19 +108,23 @@ while time <= size_dataBuffer()
             % Increment time (or use actual timestamp from TCP packet)
             time = time + 1;  
         end
-         
-        %liveplot is working and doesn't obstruct programm, but is too slow,
-        %to be useful...
-        %plot(dataBuffer(1:time-1,9),dataBuffer(1:time-1,1:8));
+        drwcnt = mod((drwcnt + 1),20);
+    end
+    %liveplot is working and doesn't obstruct programm, but is too slow,
+    %to be useful...
+    if drwcnt == 0
+        plot(dataBuffer(1:time-1,9),dataBuffer(1:time-1,1:8));
+        % generating legend in loop will create warnings; to not overshadow
+        % relevant warnings, the lgd is commented out
         %lgd = legend('CHAN1', 'CHAN2', 'CHAN3', 'CHAN4', 'CHAN5', 'CHAN6', 'CHAN7', 'CHAN8');
         %lgd.NumColumns = 2;
-        %%lgd.Title.String = 'sensitivecoarse';
-        %xlabel('Zeit in µs');
-        %ylabel('Messauschlag in mV');
-        %drawnow;
+        xlabel('Zeit in µs');
+        ylabel('Messauschlag in mV');
+        ylim([-3000 3000]);
+        drawnow;
     end
 end
-%close(f0);
+close(f0);
 
 
 %from here on out it's plots to visualize the tested data
@@ -156,6 +163,7 @@ delta_max = max(time_delta);
 delta_min = min(time_delta);
 delta_deviataion = std(time_delta);
 approx_sample_rate = 1 / (delta_mean*10^-6);
+measured_time_sec = (dataBuffer(time, 9) - dataBuffer(1,9))/(10^6);
 
 delete(u);
 clear u;
