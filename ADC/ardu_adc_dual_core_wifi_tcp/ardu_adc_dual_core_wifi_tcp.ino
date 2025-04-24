@@ -1,3 +1,6 @@
+//This program should be uploaded with Events and Arduino running on
+//core 0.
+
 #include <FastLED.h>
 #include <SPI.h>
 #include "../lib/ADS131E08esp32.cpp"
@@ -45,9 +48,7 @@ void sendTaskCode(void* params);
 int ADC_stat[3];
 float ADC_chan_voltage[8];
 _adcConfE* adcConfRead;
-
-
-byte amparr[8];                             // save preamp params globally to later access them quicker
+                            
 
 struct chanData_float *chanData_send_ptr;
 
@@ -98,7 +99,7 @@ void  IRAM_ATTR DRDY_read_int_handle(){
 
 
 
-inline void convert_data(struct chanData_float *chanData_recv_ptr){ // converts 8 adc channels to mV for Schlaubi 
+inline void convert_data(struct chanData_float *chanData_recv_ptr, byte amparr[8]){ // converts 8 adc channels to mV for Schlaubi 
   
   union {                                                           // Create union of shared memory space
     float float_variable;
@@ -111,10 +112,10 @@ inline void convert_data(struct chanData_float *chanData_recv_ptr){ // converts 
   
   for(int i = 0; i < 8; i++){
     char chanfilter = 1 << i;
-    if(chanData_recv_ptr->faultp & chanfilter){                     //the value of +/- 7000 is used to indicate out of bounds errors 
-      u.float_variable = 7000;
+    if(chanData_recv_ptr->faultp & chanfilter){                     //the value of +/- 9999 is used to indicate out of bounds errors 
+      u.float_variable = 9999;
     }else if(chanData_recv_ptr->faultn & chanfilter){
-      u.float_variable = -7000;
+      u.float_variable = -9999;
     }else{
       uint32_t reg = ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][0] << 16) & 0x00FF0000) | ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][1] << 8) & 0x0000FF00) | ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][2] << 0) & 0x000000FF);
       if (reg > boundaryValue)                                      // negative value
@@ -136,6 +137,54 @@ inline void convert_data(struct chanData_float *chanData_recv_ptr){ // converts 
 
 
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+inline void set_sample_rate(uint32_t wordarr[2]){
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_CONFIG1_ADDRESS, 0, 1);       //configure sample rate (example how to configure with masks)
+  uint8_t conf1 = adcConfRead->rxBuf[0] & (~E08_CONFIG1_DR_MASK);
+  switch (wordarr[0]){
+    case 1000: conf1 |= E08_CONFIG1_DR_MASK & E08_DR_1KSPS;
+               break;
+    case 2000: conf1 |= E08_CONFIG1_DR_MASK & E08_DR_2KSPS;
+               break;
+    case 4000: conf1 |= E08_CONFIG1_DR_MASK & E08_DR_4KSPS;
+               break;
+    case 8000: conf1 |= E08_CONFIG1_DR_MASK & E08_DR_8KSPS;
+               break;
+    case 16000: conf1 |= E08_CONFIG1_DR_MASK & E08_DR_16KSPS;
+               break;
+    case 32000: conf1 |= E08_CONFIG1_DR_MASK & E08_DR_32KSPS;
+               break;
+    case 64000: conf1 |= E08_CONFIG1_DR_MASK & E08_DR_64KSPS;
+               break;
+    default: return;
+  }
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CONFIG1_ADDRESS, conf1, 1);
+}
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+inline void set_channels(uint16_t hword[8]){
+  for(int i = 0; i < 8; i++){
+    ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH1SET_ADDRESS+i, hword[i], 1);
+  }
+}
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -143,10 +192,10 @@ inline void convert_data(struct chanData_float *chanData_recv_ptr){ // converts 
 
 
 
-inline void set_preamp(){
+int set_preamp(byte amparr[16]){
   for(int i = 0; i < 8; i++){
-    ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_CH1SET_ADDRESS + i, 0, 1);   //configure sample rate (example how to configure with masks)
-    uint8_t conf1 = adcConfRead->rxBuf[0] & (~E08_CH1SET_GAIN_MASK);
+    ADS131E08_send_command(adcConfE0, ADS131E08_CMD_RREG, E08_CH1SET_ADDRESS + i, 0, 1);
+    uint8_t conf1 = adcConfRead->rxBuf[0] & (~E08_CH1SET_GAIN_MASK);   
     switch(amparr[i]){
       case 1: conf1 |= E08_CH1SET_GAIN_MASK & E08_CH1SET_PGA_GAIN_1;
               break;
@@ -158,10 +207,11 @@ inline void set_preamp(){
               break;
       case 12: conf1 |= E08_CH1SET_GAIN_MASK & E08_CH1SET_PGA_GAIN_12;
               break;
-      default: return;
+      default: return i;
     }
     ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_CH1SET_ADDRESS + i, conf1, 1);
   }
+  return 8;
 }
 
 
@@ -169,6 +219,146 @@ inline void set_preamp(){
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+void aquireTaskCode(void* params){              
+  attachInterrupt(digitalPinToInterrupt(ADC_DRDY), DRDY_read_int_handle, FALLING);
+  while(1){
+    vTaskDelay(1);
+  }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+void sendTaskCode(void* params){
+
+  
+  // Access Point credentials
+  const char *ssid = "ESP32_Hotspot";
+  const char *password = "123456789";                    // Minimum 8 characters
+
+
+  // TCP settings
+  
+  const int serverPort = 8080;                           // Listen on port 8080
+  
+  // Start the ESP32 as an Access Point (Hotspot)
+
+  Serial.println("Setting up Access Point...");
+  WiFi.softAP(ssid, password);
+  WiFiServer server(serverPort);                         // Create a server object to listen for incoming connections
+  WiFiClient client;
+  server.begin();
+
+  // Print the ESP32 AP IP address
+
+  Serial.println("Access Point Started!");               
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.softAPIP());                       // Print the AP's IP address (usually 192.168.4.1)
+
+  // Start the TCP communication
+  
+  Serial.println("TCP waiting on port 8080 - start MATLAB script");
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b00001111, 1);   //turns off white LED to save power
+  leds[0] = CRGB::Magenta; FastLED.show();                                                  // signals that the ESP & ADS131E08 are set up and ready to communicate
+
+  byte buffer[2304];                                                                        // 9 floats * 4 bytes each => 36 bytes * 64 datasets = 2304 bytes buffer
+  byte amparr[8];                                                                       
+
+  
+  while(1){
+    while(1){
+      client = server.available();
+      if(client) break;
+      vTaskDelay(1);
+    }
+
+    // currently the data is given raw by defining the order in which it has to arrive. Maybe in later revision a package can
+    // have a leading identifier for a more elegant solution
+
+    delay(200);                                                               //give Matlab time to send initialization data
+    union {
+      byte cntarray[8];
+      int64_t cntnmbr;
+    } measurecnt;
+    union{
+      byte readarray[16];
+      uint16_t uint_hword[8]; 
+      uint32_t uint_word[4];
+    }inputbuff;
+
+    for(int i = 0; i < 8; i++){                                              // get sample size (int64_t)
+      measurecnt.cntarray[i] = client.read();
+    }
+    delay(200);
+
+    for(int i = 0; i < 4; i++){                                              // get sample rate
+      inputbuff.readarray[i] = client.read();
+    }delay(200);
+    set_sample_rate(inputbuff.uint_word);
+
+    for(int i = 0; i < 16; i++){                                              // get individual channels settings
+      inputbuff.readarray[i] = client.read();
+    }delay(200);
+    set_channels(inputbuff.uint_hword);
+
+
+    for(int i = 0; i < 8; i++){                                              // get amp values for preamp for each channel
+      inputbuff.readarray[i] = client.read();
+    }delay(200);
+    for(int i = 0; i < set_preamp(inputbuff.readarray);i++){                 //sets preamp values in config reg ond ADS131
+      amparr[i] = inputbuff.readarray[i];                                    // saves preampvalues for later use
+    }                                         
+    
+
+    
+    Serial.println("ESP32 successfully connected to MATLAB");
+    leds[0] = CRGB::Green; FastLED.show();                                   //signals that the connection has been established and a measurement is ongoing
+
+    xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 8192, NULL, 1, &aquireTask, 1);         //start collecting data
+
+    
+    for(int i = 0; i < measurecnt.cntnmbr;){                                                      //this loop ends the measurement after the set amount of samples
+      if(uxQueueSpacesAvailable(datatransferQueue) > 448)vTaskDelay(1);
+      else{
+      for(int j = 0; j < 64; j++){                                                                //this loop wil wait for a package of 64 samples to be available and package them into the buffer
+        struct chanData_float *chanData_recv_ptr;
+        if(xQueueReceive(datatransferQueue, &(chanData_recv_ptr), portMAX_DELAY)){
+          convert_data(chanData_recv_ptr, amparr);
+          for(int i = 0; i < 9; i++){
+            memcpy(buffer + (4 * i) + (36*j), &chanData_recv_ptr->chan[i], 4);   
+          }
+          free(chanData_recv_ptr);
+        }
+      }
+      client.write(buffer, sizeof(buffer));                                                      //sending out buffer to MATLAB client via TCP
+      i += 64;
+      }
+    }
+    vTaskDelete(aquireTask);
+    client.stop();
+    WiFi.disconnect();
+    delay(100);
+    ESP.restart();                                                                               //   <- stop gap measure because I can't figure out how to connect to MATLAB again
+    leds[0] = CRGB::Magenta; FastLED.show();
+  }
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 
 
@@ -251,126 +441,6 @@ void setup() {
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-void aquireTaskCode(void* params){              
-  attachInterrupt(digitalPinToInterrupt(ADC_DRDY), DRDY_read_int_handle, FALLING);
-  while(1){
-    vTaskDelay(1);
-  }
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-void sendTaskCode(void* params){
-
-  
-  // Access Point credentials
-  const char *ssid = "ESP32_Hotspot";
-  const char *password = "123456789";                    // Minimum 8 characters
-
-
-  // TCP settings
-  
-  const int serverPort = 8080;                           // Listen on port 8080
-  
-  // Start the ESP32 as an Access Point (Hotspot)
-
-  Serial.println("Setting up Access Point...");
-  WiFi.softAP(ssid, password);
-  WiFiServer server(serverPort);                         // Create a server object to listen for incoming connections
-  WiFiClient client;
-  server.begin();
-
-  // Print the ESP32 AP IP address
-
-  Serial.println("Access Point Started!");               
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.softAPIP());                       // Print the AP's IP address (usually 192.168.4.1)
-
-  // Start the TCP communication
-  
-  Serial.println("TCP waiting on port 8080 - start MATLAB script");
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b00001111, 1);   //turns off white LED to save power
-  leds[0] = CRGB::Magenta; FastLED.show();                                                  // signals that the ESP & ADS131E08 are set up and ready to communicate
-
-  byte buffer[2304];                                                                        // 9 floats * 4 bytes each => 36 bytes * 64 datasets = 2304 bytes buffer
-
-  
-  while(1){
-    while(1){
-      client = server.available();
-      if(client) break;
-      vTaskDelay(1);
-    }
-
-    // currently the data is given raw by defining the order in which it has to arrive. Maybe in later revision a package can
-    // have a leading identifier for a more elegant solution
-
-    delay(200);                                                               //give Matlab time to send initialization data
-    union {
-      byte cntarray[8];
-      int64_t cntnmbr;
-    } measurecnt;
-
-    for(int i = 0; i < 8; i++){                                              // get sample size (int64_t)
-      measurecnt.cntarray[i] = client.read();
-    }
-
-    delay(200);
-    for(int i = 0; i < 8; i++){                                              // get amp values for preamp for each channel
-      amparr[i] = client.read();
-    }
-
-    set_preamp();                                                            //sets preamp values in config reg ond ADS131
-
-    
-    Serial.println("ESP32 successfully connected to MATLAB");
-    leds[0] = CRGB::Green; FastLED.show();                                   //signals that the connection has been established and a measurement is ongoing
-
-    xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 8192, NULL, 1, &aquireTask, 1);         //start collecting data
-
-    
-    for(int i = 0; i < measurecnt.cntnmbr;){                                                      //this loop ends the measurement after the set amount of samples
-      if(uxQueueSpacesAvailable(datatransferQueue) > 448)vTaskDelay(1);
-      else{
-      for(int j = 0; j < 64; j++){                                                                //this loop wil wait for a package of 64 samples to be available and package them into the buffer
-        struct chanData_float *chanData_recv_ptr;
-        if(xQueueReceive(datatransferQueue, &(chanData_recv_ptr), portMAX_DELAY)){
-          convert_data(chanData_recv_ptr);
-          for(int i = 0; i < 9; i++){
-            memcpy(buffer + (4 * i) + (36*j), &chanData_recv_ptr->chan[i], 4);   
-          }
-          free(chanData_recv_ptr);
-        }
-      }
-      client.write(buffer, sizeof(buffer));                                                      //sending out buffer to MATLAB client via TCP
-      i += 64;
-      }
-    }
-    vTaskDelete(aquireTask);
-    client.stop();
-    WiFi.disconnect();
-    delay(100);
-    ESP.restart();                                                                               //   <- stop gap measure because I can't figure out how to connect to MATLAB again
-    leds[0] = CRGB::Magenta; FastLED.show();
-  }
-}
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
