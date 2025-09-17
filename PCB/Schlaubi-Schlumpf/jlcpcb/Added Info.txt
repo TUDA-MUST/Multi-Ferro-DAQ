@@ -1,2 +1,3 @@
 JLC041611-3313 Stackup
+inner copper weight 1 oz
 2d Barcode 5x5mm
