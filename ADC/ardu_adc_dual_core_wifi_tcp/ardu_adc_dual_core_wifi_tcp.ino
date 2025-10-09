@@ -112,10 +112,11 @@ inline void convert_data(struct chanData_float *chanData_recv_ptr, byte amparr[8
   
   for(int i = 0; i < 8; i++){
     char chanfilter = 1 << i;
-    //if(chanData_recv_ptr->faultp & chanfilter){                     //the value of +/- 9999 is used to indicate out of bounds errors 
-    //  u.float_variable = 9999;
-    //}else if(chanData_recv_ptr->faultn & chanfilter){
-    //  u.float_variable = -9999;
+    if(chanData_recv_ptr->faultp & chanfilter){                     //the value of +/- 9999 is used to indicate out of bounds errors 
+      u.float_variable = 9999;
+    }else if(chanData_recv_ptr->faultn & chanfilter){
+      u.float_variable = -9999;
+    }
     if(0 ==1){}else{
       uint32_t reg = ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][0] << 16) & 0x00FF0000) | ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][1] << 8) & 0x0000FF00) | ((uint32_t)((uint8_t)chanData_recv_ptr->chan[i][2] << 0) & 0x000000FF);
       if (reg > boundaryValue)                                      // negative value
