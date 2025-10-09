@@ -56,9 +56,9 @@ end
 % overwrite the config regs of the channels with new values
 % look into the datasheet for further reference
 
-
 %clear workspace
 clear;
+close all;
 
 % Define TCP connection parameters
 tcpPort = 8080; 
@@ -72,6 +72,8 @@ configureTerminator(u, "CR/LF");
 % Initialize time and data buffer
 time = 1;
 dataBuffer = zeros(size_dataBuffer(), 9);
+
+
 
 % there is no "protocol" the esp uses to determine the datasets
 % the order and size of the values have to match what it expects
@@ -92,10 +94,47 @@ end
 disp("initiadted tcp client");
 
 % Start listening for incoming packets
-f0 = figure;
+f0 = figure('Position', [100 100 400 300]);
+
+% Create a struct to hold shared state
+stateStruct.stop = false;
+
+% Store it in the figure using guidata
+guidata(f0, stateStruct);
+
+
+% Get the figure size
+figPos = get(f0, 'Position');
+figWidth = figPos(3);
+figHeight = figPos(4);
+
+% Define button size
+btnWidth = 150;
+btnHeight = 50;
+
+% Calculate centered position
+btnX = (figWidth - btnWidth) / 2;
+btnY = (figHeight - btnHeight) / 2;
+
+% Create button 
+btn = uicontrol('Style', 'pushbutton', ...
+                'String', 'Stop Measurement', ...
+                'Position', [btnX btnY btnWidth btnHeight], ...
+                'FontSize', 12, ...
+                'Callback', @(src, event) stopCallback(f0));
+
 % Continuous listening loop (main loop to keep the program alive)
 drwcnt = 0;
 while time <= size_dataBuffer()
+
+    currentState = guidata(f0);
+    if currentState.stop
+        disp("Sende Abbruch-Befehl per TCP...");
+        % send signal per TCP
+        write(u, "STOP", "string");
+        break; 
+    end
+
     % Check if there is incoming data from UDP
     if u.NumBytesAvailable > 0
         % Read incoming data 
@@ -108,21 +147,21 @@ while time <= size_dataBuffer()
             % Increment time (or use actual timestamp from TCP packet)
             time = time + 1;  
         end
-        drwcnt = mod((drwcnt + 1),20);
+        % drwcnt = mod((drwcnt + 1),20);
     end
     %liveplot is working and doesn't obstruct programm, but is too slow,
     %to be useful...
-    if drwcnt == 0
-        plot(dataBuffer(1:time-1,9),dataBuffer(1:time-1,1:8));
-        % generating legend in loop will create warnings; to not overshadow
-        % relevant warnings, the lgd is commented out
-        %lgd = legend('CHAN1', 'CHAN2', 'CHAN3', 'CHAN4', 'CHAN5', 'CHAN6', 'CHAN7', 'CHAN8');
-        %lgd.NumColumns = 2;
-        xlabel('Zeit in µs');
-        ylabel('Messauschlag in mV');
-        ylim([-3000 3000]);
-        drawnow;
-    end
+    % if drwcnt == 0
+    %     plot(dataBuffer(1:time-1,9),dataBuffer(1:time-1,1:8));
+    %     % generating legend in loop will create warnings; to not overshadow
+    %     % relevant warnings, the lgd is commented out
+    %     %lgd = legend('CHAN1', 'CHAN2', 'CHAN3', 'CHAN4', 'CHAN5', 'CHAN6', 'CHAN7', 'CHAN8');
+    %     %lgd.NumColumns = 2;
+    %     xlabel('Zeit in µs');
+    %     ylabel('Messauschlag in mV');
+    %     ylim([-3000 3000]);
+    %     drawnow;
+    % end
 end
 close(f0);
 
@@ -145,12 +184,13 @@ ylim([-3000 3000]);
 %plot the time in µs/ number of dataset in array to visually check if packets are missing
 %(in theory a tcp connection shouldn't lose packtets, in reality a packageloss was 
 % observed over greater distances)
-f2 = figure;
-plot(time_vec(:,1),dataBuffer(:,9));
-xlabel('Samples');
-ylabel('Zeit in µs');
+if(currentState.stop == false)
+    f2 = figure;
+    plot(time_vec(:,1),dataBuffer(:,9));
+    xlabel('Samples');
+    ylabel('Zeit in µs');
 %close(f2);
-
+end
 
 for j = 1 : size_dataBuffer()-2
     time_delta(j) = dataBuffer(j+1,9) -dataBuffer(j,9);
@@ -167,3 +207,15 @@ measured_time_sec = (dataBuffer(time, 9) - dataBuffer(1,9))/(10^6);
 
 delete(u);
 clear u;
+
+
+
+function stopCallback(figHandle)
+    % Get the state from the figure
+    state = guidata(figHandle);
+    state.stop = true;
+    % Save it back
+    guidata(figHandle, state);
+    disp("Stop button pressed!");
+end
+
