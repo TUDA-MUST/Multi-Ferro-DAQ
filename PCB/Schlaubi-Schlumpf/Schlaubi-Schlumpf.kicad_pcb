@@ -716,7 +716,7 @@
 				)
 			)
 		)
-		(property "Value" "15k"
+		(property "Value" "1G"
 			(at 0 1.65 0)
 			(layer "F.Fab")
 			(uuid "cd4f2e4b-c10a-44c0-a476-fdcda5e585f5")
@@ -753,7 +753,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17475"
+		(property "LCSC" "C2484710"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -1144,7 +1144,7 @@
 				)
 			)
 		)
-		(property "Value" "330n"
+		(property "Value" "680p"
 			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "feb42ca3-5c93-43f0-a735-1c286fe93ab5")
@@ -1181,7 +1181,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1740"
+		(property "LCSC" "C1754"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -1358,7 +1358,7 @@
 				)
 			)
 		)
-		(property "Value" "330n"
+		(property "Value" "680p"
 			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "91b8fc72-c5a7-4c43-8e93-65a64e630ce9")
@@ -1395,7 +1395,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1740"
+		(property "LCSC" "C1754"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -5875,7 +5875,7 @@
 				)
 			)
 		)
-		(property "Value" "15k"
+		(property "Value" "1G"
 			(at 0 1.65 0)
 			(layer "F.Fab")
 			(uuid "1796fa70-a6d3-4226-a9b1-c9a509fb1b29")
@@ -5912,7 +5912,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17475"
+		(property "LCSC" "C2484710"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -6089,7 +6089,7 @@
 				)
 			)
 		)
-		(property "Value" "15k"
+		(property "Value" "1G"
 			(at 0 1.65 0)
 			(layer "F.Fab")
 			(uuid "3598b7cd-a19e-4690-9a7b-00b12fc58203")
@@ -6126,7 +6126,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17475"
+		(property "LCSC" "C2484710"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -7221,7 +7221,7 @@
 				)
 			)
 		)
-		(property "Value" "330n"
+		(property "Value" "680p"
 			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "b966db1f-0340-440f-8ef5-a6b573a9a76c")
@@ -7258,7 +7258,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1740"
+		(property "LCSC" "C1754"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -7852,7 +7852,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "CS17"
-			(at -1 0.99 0)
+			(at -1 0.79 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "283180be-80b8-4ed3-9f8f-dbb04415306d")
@@ -9166,7 +9166,7 @@
 				)
 			)
 		)
-		(property "Value" "15k"
+		(property "Value" "1G"
 			(at 0 1.65 0)
 			(layer "F.Fab")
 			(uuid "dfda8735-6271-41d7-b642-91e3f5f6b638")
@@ -9203,7 +9203,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17475"
+		(property "LCSC" "C2484710"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -9861,7 +9861,7 @@
 		(path "/5509f61c-8a57-450f-8279-a49a1ae29ff5/b4c9c6e8-d678-46fc-b3be-1d0ce8d5ec66")
 		(sheetname "/ESP32/")
 		(sheetfile "ESP32.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 0.7)
@@ -9924,7 +9924,7 @@
 				)
 			)
 		)
-		(property "Value" "15k"
+		(property "Value" "1G"
 			(at 0 1.65 0)
 			(layer "F.Fab")
 			(uuid "21d01087-bbe1-49a4-9daf-65d43af49ac8")
@@ -9961,7 +9961,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17475"
+		(property "LCSC" "C2484710"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -15032,7 +15032,7 @@
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor handsolder")
 		(property "Reference" "RF2"
-			(at -1.9 0 90)
+			(at 1.9 0 270)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "aa76bc19-1600-4981-8a70-45abc444bb6e")
@@ -15043,7 +15043,7 @@
 				)
 			)
 		)
-		(property "Value" "15k"
+		(property "Value" "1G"
 			(at 0 1.65 0)
 			(layer "F.Fab")
 			(uuid "1ee7a57b-90eb-4bdf-94e8-30811145d274")
@@ -15080,7 +15080,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17475"
+		(property "LCSC" "C2484710"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -18898,7 +18898,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor handsolder")
 		(property "Reference" "CF2"
-			(at -2 0 90)
+			(at 1.9 0 270)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "9848a99d-cd80-4670-983f-3fb87eb29c2d")
@@ -18909,7 +18909,7 @@
 				)
 			)
 		)
-		(property "Value" "330n"
+		(property "Value" "680p"
 			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "fd50f6c5-9add-4755-8280-f20f4e8a3a36")
@@ -18946,7 +18946,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1740"
+		(property "LCSC" "C1754"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -21376,7 +21376,7 @@
 		(path "/5509f61c-8a57-450f-8279-a49a1ae29ff5/70120c92-f2d5-4eb0-8f7b-8f8a2ed22210")
 		(sheetname "/ESP32/")
 		(sheetfile "ESP32.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 0.7)
@@ -21644,7 +21644,7 @@
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor handsolder")
 		(property "Reference" "RF8"
-			(at -2 0 90)
+			(at 1.9 0 270)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "9ecebad2-a07f-4e7c-9c0a-8bfbb9ddc2ba")
@@ -21655,7 +21655,7 @@
 				)
 			)
 		)
-		(property "Value" "15k"
+		(property "Value" "1G"
 			(at 0 1.65 0)
 			(layer "F.Fab")
 			(uuid "cc4721eb-caf8-48f8-b2ff-b420e7d5983b")
@@ -21692,7 +21692,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17475"
+		(property "LCSC" "C2484710"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -21869,7 +21869,7 @@
 				)
 			)
 		)
-		(property "Value" "15k"
+		(property "Value" "1G"
 			(at 0 1.65 0)
 			(layer "F.Fab")
 			(uuid "e30591ad-8072-4f49-a116-6dd42252f966")
@@ -21906,7 +21906,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C17475"
+		(property "LCSC" "C2484710"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -23045,7 +23045,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "CS28"
-			(at -2.5 -0.15 0)
+			(at -2.2 0.05 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "5f1d12ef-9ed7-45a6-8e65-50a31e464e10")
@@ -24238,7 +24238,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R13"
-			(at 0 -1.1 180)
+			(at -2 0 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "92b8b1be-a01b-4261-aac5-b5fa5365f821")
@@ -25961,7 +25961,7 @@
 				)
 			)
 		)
-		(property "Value" "330n"
+		(property "Value" "680p"
 			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "aa53bdf5-6e0c-40a6-b7a5-3c59f95001e4")
@@ -25998,7 +25998,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1740"
+		(property "LCSC" "C1754"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -27437,7 +27437,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "CS40"
-			(at -1.875 0 90)
+			(at 0.025 -0.8 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "e73c8a86-a744-419b-9bd1-5777706351f4")
@@ -28090,7 +28090,7 @@
 				)
 			)
 		)
-		(property "Value" "330n"
+		(property "Value" "680p"
 			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "baefda1f-29ef-4a0f-84e5-93a779599191")
@@ -28127,7 +28127,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1740"
+		(property "LCSC" "C1754"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -28579,7 +28579,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "CS29"
-			(at -2.5 -0.85 0)
+			(at -2.2 0.05 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "bf0f98bd-edaf-417b-8c09-f02ba4e4742b")
@@ -29273,7 +29273,7 @@
 		(path "/5509f61c-8a57-450f-8279-a49a1ae29ff5/0c55ee9c-19a2-418f-9dc7-c50387b61f52")
 		(sheetname "/ESP32/")
 		(sheetfile "ESP32.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 0.7)
@@ -29377,7 +29377,7 @@
 		(path "/5509f61c-8a57-450f-8279-a49a1ae29ff5/8e4036d4-6655-4eba-a7f5-a2a808f32180")
 		(sheetname "/ESP32/")
 		(sheetfile "ESP32.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 0.7)
@@ -30186,7 +30186,7 @@
 		(path "/5509f61c-8a57-450f-8279-a49a1ae29ff5/d66daac4-defc-4e8d-bb1c-70553aadc75f")
 		(sheetname "/ESP32/")
 		(sheetfile "ESP32.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 0.7)
@@ -31867,7 +31867,7 @@
 				)
 			)
 		)
-		(property "Value" "330n"
+		(property "Value" "680p"
 			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "7940166c-907f-4a8a-ab69-145241a371da")
@@ -31904,7 +31904,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1740"
+		(property "LCSC" "C1754"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -32284,7 +32284,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor handsolder")
 		(property "Reference" "CF8"
-			(at -2 0 90)
+			(at 1.9 0 270)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "507e6c1f-b831-4efa-91b9-53582549e9ea")
@@ -32295,7 +32295,7 @@
 				)
 			)
 		)
-		(property "Value" "330n"
+		(property "Value" "680p"
 			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "127ec884-47e7-43dd-8f1f-e5bfcd1e81ce")
@@ -32332,7 +32332,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1740"
+		(property "LCSC" "C1754"
 			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
@@ -32550,7 +32550,7 @@
 		(path "/5509f61c-8a57-450f-8279-a49a1ae29ff5/a5d2c54c-313f-4170-abf6-29dce9ff4309")
 		(sheetname "/ESP32/")
 		(sheetfile "ESP32.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 0.7)
@@ -32972,7 +32972,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "CS52"
-			(at 0.9 -1 0)
+			(at 0.9 -0.8 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "a4fabc36-57cd-4553-b4f8-69185f688253")
@@ -36620,7 +36620,7 @@
 		(path "/2131c80a-ce05-49b0-92ac-52a13fef390c/78624570-330d-4784-ba1f-d87c564ff25d")
 		(sheetname "/ADC/")
 		(sheetfile "ADC.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 -0.7)
@@ -36728,7 +36728,7 @@
 		(path "/2131c80a-ce05-49b0-92ac-52a13fef390c/032e6475-411e-423f-a2dd-f5d27c64d501")
 		(sheetname "/ADC/")
 		(sheetfile "ADC.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 -0.7)
@@ -36836,7 +36836,7 @@
 		(path "/2131c80a-ce05-49b0-92ac-52a13fef390c/cc9593d5-edde-4f91-b370-ccf1d70d017c")
 		(sheetname "/ADC/")
 		(sheetfile "ADC.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 -0.7)
@@ -36944,7 +36944,7 @@
 		(path "/b2b2c764-2d7a-4fe7-b3f5-2bbb716da457/1dcb9206-59e9-4734-96f2-17d165adb8e9")
 		(sheetname "/Power_battery/")
 		(sheetfile "Power.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 -0.7)
@@ -37559,7 +37559,7 @@
 		(path "/5509f61c-8a57-450f-8279-a49a1ae29ff5/528fd956-3db3-4e92-817e-da5bb0f640f0")
 		(sheetname "/ESP32/")
 		(sheetfile "ESP32.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 -0.7)
@@ -37667,7 +37667,7 @@
 		(path "/2131c80a-ce05-49b0-92ac-52a13fef390c/de2c1adb-69ea-47a9-a4c8-e2868d9d5b9f")
 		(sheetname "/ADC/")
 		(sheetfile "ADC.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 -0.7)
@@ -37775,7 +37775,7 @@
 		(path "/2131c80a-ce05-49b0-92ac-52a13fef390c/9724dafc-96e6-4cc0-9e99-172c47ef347c")
 		(sheetname "/ADC/")
 		(sheetfile "ADC.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 -0.7)
@@ -37883,7 +37883,7 @@
 		(path "/2131c80a-ce05-49b0-92ac-52a13fef390c/8b6c6302-eb84-452b-8447-6a545a233605")
 		(sheetname "/ADC/")
 		(sheetfile "ADC.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 -0.7)
@@ -37991,7 +37991,7 @@
 		(path "/2131c80a-ce05-49b0-92ac-52a13fef390c/2118b276-d76a-4912-a215-5a5ad7d33499")
 		(sheetname "/ADC/")
 		(sheetfile "ADC.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 -0.7)
@@ -38388,7 +38388,7 @@
 		(path "/2131c80a-ce05-49b0-92ac-52a13fef390c/fb78b27a-b9b6-45f5-905a-bd12b3ba2a4c")
 		(sheetname "/ADC/")
 		(sheetfile "ADC.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 -0.7)
@@ -38496,7 +38496,7 @@
 		(path "/2131c80a-ce05-49b0-92ac-52a13fef390c/2b644267-4c5a-42b0-85a1-e9c40beeaadb")
 		(sheetname "/ADC/")
 		(sheetfile "ADC.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 -0.7)
@@ -38604,7 +38604,7 @@
 		(path "/2131c80a-ce05-49b0-92ac-52a13fef390c/e37934a2-a681-45fd-876e-fc4d12f92f57")
 		(sheetname "/ADC/")
 		(sheetfile "ADC.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 -0.7)
@@ -39000,7 +39000,7 @@
 		(path "/b2b2c764-2d7a-4fe7-b3f5-2bbb716da457/b5453502-673a-4c93-976e-e6eb3698a6e2")
 		(sheetname "/Power_battery/")
 		(sheetfile "Power.kicad_sch")
-		(attr exclude_from_pos_files exclude_from_bom)
+		(attr exclude_from_pos_files)
 		(fp_circle
 			(center 0 0)
 			(end 0 -0.7)
