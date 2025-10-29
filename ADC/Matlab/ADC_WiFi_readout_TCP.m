@@ -16,19 +16,21 @@ function settings = getSettings()
     settings.sample_rate = 2000;
     
     % set the duration of the measurement in seconds
-    settings.duration = 10;
+    settings.duration = 300;
     
     % set the preamp of the cannels to 1, 2, 4, 8 or 12
     % this setting is for fast changes and will overwrite the
     % channel config regs set below
-    settings.CHAN1_AMP = uint8(8);
-    settings.CHAN2_AMP = uint8(1);
-    settings.CHAN3_AMP = uint8(1);
-    settings.CHAN4_AMP = uint8(1);
-    settings.CHAN5_AMP = uint8(1);
-    settings.CHAN6_AMP = uint8(1);
-    settings.CHAN7_AMP = uint8(1);
-    settings.CHAN8_AMP = uint8(1);
+    % the amplification will be divided out by the ESP32 before sending
+    % the data
+    settings.CHAN1_AMP = uint8(2);
+    settings.CHAN2_AMP = uint8(2);
+    settings.CHAN3_AMP = uint8(2);
+    settings.CHAN4_AMP = uint8(2);
+    settings.CHAN5_AMP = uint8(2);
+    settings.CHAN6_AMP = uint8(2);
+    settings.CHAN7_AMP = uint8(2);
+    settings.CHAN8_AMP = uint8(2);
     
     % change the config regs of the individual channels
     % for further reference read the datasheet
@@ -172,11 +174,11 @@ close(f0);
 figure;
 time = time - 1;
 time_vec = (1:time)';
-plot(dataBuffer(1:time,9),dataBuffer(1:time,1:8));
+plot(dataBuffer(1:time,9)*1E-6,dataBuffer(1:time,1:8));
 lgd = legend('CHAN1', 'CHAN2', 'CHAN3', 'CHAN4', 'CHAN5', 'CHAN6', 'CHAN7', 'CHAN8');
 lgd.NumColumns = 2;
 %lgd.Title.String = 'sensitivecoarse';
-xlabel('Zeit in µs');
+xlabel('Zeit in s');
 ylabel('Messauschlag in mV');
 ylim([-3000 3000]);
 %close(f1);
@@ -186,9 +188,9 @@ ylim([-3000 3000]);
 % observed over greater distances)
 if(currentState.stop == false)
     f2 = figure;
-    plot(time_vec(:,1),dataBuffer(:,9));
+    plot(time_vec(:,1),dataBuffer(:,9)*1E-6);
     xlabel('Samples');
-    ylabel('Zeit in µs');
+    ylabel('Zeit in s');
 %close(f2);
 end
 
