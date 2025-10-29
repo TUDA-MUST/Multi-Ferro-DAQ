@@ -74,8 +74,8 @@ void  IRAM_ATTR DRDY_read_int_handle(){
        chanData_send_ptr->chan[i][2] = adcConfRead->rxBuf[3*i+6];
     }
 
-    chanData_send_ptr->faultp = adcConfRead->rxBuf[1];
-    chanData_send_ptr->faultn = adcConfRead->rxBuf[2];
+    chanData_send_ptr->faultp = (adcConfRead->rxBuf[1] & 0x0F) << 4 + (adcConfRead->rxBuf[2] & 0xF0) >> 4;
+    chanData_send_ptr->faultn = (adcConfRead->rxBuf[2] & 0x0F) << 4 + (adcConfRead->rxBuf[3] & 0xF0) >> 4;
 
     union {
     float float_variable;
@@ -109,7 +109,7 @@ inline void convert_data(struct chanData_float *chanData_recv_ptr, byte amparr[8
   const float unitFS = 4000.0f / 8388608.0f;                        // unit: mV (if unit is V, calculated value is out of 'float' range)(4V / (2^24/2))
 	const uint32_t boundaryValue = 0x7FFFFF;                          // threshold of positive value 
 	int signFlg = 0;		                                              // +: 1, -: -1
-  
+  //Serial.printf("The faultbytes read to: %#X for positive and %#X for negative flags.\n", chanData_recv_ptr->faultp, chanData_recv_ptr->faultn);
   for(int i = 0; i < 8; i++){
     char chanfilter = 1 << i;
     if(chanData_recv_ptr->faultp & chanfilter){                     //the value of +/- 9999 is used to indicate out of bounds errors 
