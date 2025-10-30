@@ -1,12 +1,12 @@
 # Multi-Ferro-DAQ
-Measurement Setup to analyze upt to eight sources of charge (e.g. ferroelectric sensors) simultaneously. Those can be connected via two RJ45 connectors, four sorces per connector.
+Measurement Setup to analyze up to eight sources of charge (e.g. ferroelectric sensors) simultaneously. Those can be connected via two RJ45 connectors, four sorces per connector.
 The PCB aims to be used mobile, strapped to the test person, therefore it batterypowered and transmits its data in mV per WiFi with up to 2000 samples per second.
 The ESP32 microcontrolers on the PCB should be flashed with the Arduino script in /ADC/ardu_adc_dual_core_wifi_tcp/ardu_adc_dual_core_wifi_tcp.ino.
 
 
 # Setup:
 
-At startup the ESP32 cycles through a setup phase during which the status LED turns YELLOW. When the status LED turns MAGENTA, the EPS32 is ready to start a measurement. A white Flash under the shielding of the charge amplifiers and the ADC signals that the ADC was setup and is communicating. Connect to the WiFi Hotspot the ESP32 creates with the 
+After flipping the powerswitch to ON or resetting the PCB, at startup, the ESP32 cycles through a setup phase during which the status LED turns YELLOW. When the status LED turns MAGENTA, the EPS32 is ready to start a measurement. A white Flash under the shielding of the charge amplifiers and the ADC signals that the ADC was setup and is communicating. Connect to the WiFi Hotspot the ESP32 creates with the 
 
 SSID "ESP32_Hotspot" and 
 
