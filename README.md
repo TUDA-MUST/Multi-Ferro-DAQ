@@ -1,4 +1,103 @@
 # Multi-Ferro-DAQ
+
+**Measurement setup to analyze up to eight charge sources (e.g. ferroelectric sensors) simultaneously.**
+
+The system connects up to **8 channels** via **two RJ45 connectors** (4 sources per connector).  
+The PCB is designed for **mobile use** — it can be strapped to a test person, runs on **battery power**, and transmits data in **millivolts (mV)** via **WiFi** at up to **2000 samples per second**.
+
+The **ESP32 microcontrollers** on the PCB should be flashed with the Arduino script located at:  
+`/ADC/ardu_adc_dual_core_wifi_tcp/ardu_adc_dual_core_wifi_tcp.ino`
+
+---
+
+## 🧩 Setup
+
+### 1. Power On
+- Flip the power switch to **ON** or **reset** the powered on PCB.  
+- During startup, the **status LED** turns **YELLOW**, indicating the setup phase.
+
+### 2. Ready State
+- When the LED turns **MAGENTA**, the ESP32 is ready to start a measurement.  
+- A **white flash** under the shielding of the charge amplifiers and ADC indicates that the ADC is set up and communicating.
+
+### 3. WiFi Connection
+Connect to the ESP32’s WiFi hotspot:
+
+- SSID: ESP32_Hotspot
+- Password: 123456789
+
+
+Then connect to **TCP port 8080** to communicate.
+
+### 4. Initialization
+The ESP32 expects initialization values in a **hardcoded format and order**.  
+Garbage bytes can be sent to initialize with default values.
+
+| Data Type | Count | Description |
+|------------|--------|-------------|
+| `int64` | 1 | Maximum number of samples to collect (PCB resets afterward). |
+| `uint32` | 1 | ADC sample rate — choose from: `1000, 2000, 4000, 8000, 16000, 32000, 64000`. <br>Rates above **2000** cause data loss and are **not recommended**. |
+| `uint16` | 8 | ADC settings registers for **CHAN1–CHAN8**. <br>Only the lower byte is used; set the upper byte to zero. |
+| `uint8` | 8 | Preamp values for **CHAN1–CHAN8**. <br>These overwrite previously set register values. The preamp value is factored out by the microcontroller before data transmission. |
+
+For a working example, see the MATLAB script:  
+`/ADC/Matlab/ADC_WiFi_readout_TCP.m`
+
+### 5. Start Measurement
+Once initialized, the **status LED turns GREEN** and remains green until:
+- The measurement **times out**, or  
+- It is **stopped** manually.
+
+---
+
+## 🔋 Power Supply
+
+- The PCB can be powered via **USB-C** or **battery port**.  
+- The battery can be **charged directly by the PCB**.
+
+**Battery indicator LED behavior:**
+- **Solid RED:** Battery is charging.  
+- **Fast blinking RED (while powered on):** No battery detected.
+
+---
+
+## 📡 Usage
+
+After setup, the microcontroller begins sending data via **TCP packets** to the client until:
+- The measurement **times out**, or  
+- It is **stopped** by being sent **any byte** via TCP by the recieving client.
+
+### Data Output Format
+
+The TCP stream contains **segments of nine floats** per sample:
+
+| Channel | Description |
+|----------|--------------|
+| **CHAN1–CHAN8** | ADC values in mV (`–2500 mV` to `+2500 mV`) |
+| **CHAN9** | Timestamp (in µs) since the last ESP32 reset |
+
+**Fault Flags:**
+- A value of `–9999 mV` or `+9999 mV` indicates that the ADC’s **negative or positive fault flag** was triggered.  
+  This occurs when the measured value exceeds **±2375 mV** (≈95% of input range).
+
+---
+
+## 🔁 Post-Measurement
+
+- After a measurement ends, the PCB **automatically reinitializes**.  
+- It is ready again when the **status LED turns MAGENTA**.  
+- The PCB can also be **reinitialized manually** by pressing the **RESET** button.
+
+---
+
+## 🧭 Additional Features
+
+- An **IMU** is included on the PCB.  
+  Although tested, it is **not used** in the current firmware version running on the ESP32.
+
+---
+
+<!--# Multi-Ferro-DAQ
 Measurement Setup to analyze up to eight sources of charge (e.g. ferroelectric sensors) simultaneously. Those can be connected via two RJ45 connectors, four sorces per connector.
 The PCB aims to be used mobile, strapped to the test person, therefore it batterypowered and transmits its data in mV per WiFi with up to 2000 samples per second.
 The ESP32 microcontrolers on the PCB should be flashed with the Arduino script in /ADC/ardu_adc_dual_core_wifi_tcp/ardu_adc_dual_core_wifi_tcp.ino.
@@ -33,4 +132,4 @@ After setup the microcontroller will send the data in TCP packages to a client u
 
 After a measurement has ended, the PCB will automatically be reinitialized and is ready again, as soon as the status LED turns MAGENTA. Alternatively the PCB can be reinitialized by pressing the RESET button.
 
-There is also an IMU placed on the PCB which is tested, but not used in the current version of the code running on the ESP32.
+There is also an IMU placed on the PCB which is tested, but not used in the current version of the code running on the ESP32. -->
