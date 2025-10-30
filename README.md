@@ -36,7 +36,7 @@ Garbage bytes can be sent to initialize with the ADCs own default values.
 | Data Type | Count | Description |
 |------------|--------|-------------|
 | `int64` | 1 | Maximum number of samples to collect (PCB resets afterward). |
-| `uint32` | 1 | ADC sample rate — choose from: `1000, 2000, 4000, 8000, 16000, 32000, 64000`. <br>Rates above **2000** cause data loss and are **not recommended**. |
+| `uint32` | 1 | ADC sample rate — choose from: `1000, 2000, 4000, 8000, 16000, 32000, 64000`. <br>Rates above **2000** cause sample loss and are **not recommended**. |
 | `uint16` | 8 | ADC settings registers for **CHAN1–CHAN8**. <br>Only the lower byte is used; set the upper byte to zero. |
 | `uint8` | 8 | Preamp values for **CHAN1–CHAN8**. <br>These overwrite previously set register values. The preamp value is factored out by the microcontroller before data transmission. |
 
