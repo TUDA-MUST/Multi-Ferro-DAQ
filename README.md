@@ -31,7 +31,7 @@ Then connect to **TCP port 8080** to communicate.
 
 ### 4. Initialization
 The ESP32 expects initialization values in a **hardcoded format and order**.  
-Garbage bytes can be sent to initialize with default values.
+Garbage bytes can be sent to initialize with the ADCs own default values.
 
 | Data Type | Count | Description |
 |------------|--------|-------------|
