@@ -27,7 +27,7 @@ Connect to the ESP32’s WiFi hotspot:
 - Password: 123456789
 
 
-Then connect to **TCP port 8080** to communicate.
+Then connect to **IP Adress 192.168.4.1** under **TCP port 8080** to communicate.
 
 ### 4. Initialization
 The ESP32 expects initialization values in a **hardcoded format and order**.  
