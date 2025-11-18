@@ -14,7 +14,7 @@ The **ESP32 microcontrollers** on the PCB should be flashed with the Arduino scr
 The ESP32 microcontroller can be flashed with the Arduiono IDE, using the .ino script mentioned above. 
 Make sure you have the necessary libraries installed as well as the `/Software/ADC_readout/lib/` directory.
 
-Select an ESP32-S3 board without SRAM and make shure that Events and Arduino run on Core 0.
+Select an ESP32-S3 board without SRAM and make sure that Events and Arduino run on Core 0.
 
 
 <img src="Tools.png" alt="Tools" style="width:450px;"/>
