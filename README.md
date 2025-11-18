@@ -6,7 +6,7 @@ The system connects up to **8 channels** via **two RJ45 connectors** (4 sources 
 The PCB is designed for **mobile use** — it can be strapped to a test person, runs on **battery power**, and transmits data in **millivolts (mV)** via **WiFi** at up to **2000 samples per second**.
 
 The **ESP32 microcontrollers** on the PCB should be flashed with the Arduino script located at:  
-`/ADC/ardu_adc_dual_core_wifi_tcp/ardu_adc_dual_core_wifi_tcp.ino`
+`/Software/ADC_readout/ardu_adc_dual_core_wifi_tcp/ardu_adc_dual_core_wifi_tcp.ino`
 
 ---
 
@@ -41,7 +41,7 @@ Garbage bytes can be sent to initialize with the ADCs own default values.
 | `uint8` | 8 | Preamp values for **CHAN1–CHAN8**. <br>These overwrite previously set register values. The preamp value is factored out by the microcontroller before data transmission. |
 
 For a working example, see the MATLAB script:  
-`/ADC/Matlab/ADC_WiFi_readout_TCP.m`
+`/Software/ADC_readout/Matlab/ADC_WiFi_readout_TCP.m`
 
 ### 5. Start Measurement
 Once initialized, the **status LED turns GREEN** and remains green until:

@@ -1,4 +1,0 @@
-bbb131E08: 
-	ist für BeagleBone PRU in ARM Assembly geschrieben -> ungeeignet
-ads131e08:
-	ist für stm32 in c geschrieben, muss auf andere HW umgeschrieben werden
