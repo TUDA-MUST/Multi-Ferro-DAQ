@@ -21,7 +21,7 @@ Select an ESP32-S3 board without SRAM and make shure that Events and Arduino run
 
 
 
-If you do an initial flashing of the board or encounter some issues during upload try to restart the ESP32 into programming mode by pressing and holding the "BOOT" button whil shortly pressing the "RESET" button. Afterwards the ESP32 will be detected automatically as a target or can be selected as an "ESP32 Family Device" under the port/device selection.
+If you do an initial flashing of the board or encounter some issues during upload try to restart the ESP32 into programming mode by pressing and holding the "BOOT" button while shortly pressing the "RESET" button. Afterwards the ESP32 will be detected automatically as a target or can be selected as an "ESP32 Family Device" under the port/device selection.
 
 Use this programming-mode procedure only after a compile/ upload process for an ESP32-S3 without SRAM was started, as the IDE otherwise tries and fails to build for an "ESP32 Family Device".
 
