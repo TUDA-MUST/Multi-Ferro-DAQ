@@ -10,6 +10,25 @@ The **ESP32 microcontrollers** on the PCB should be flashed with the Arduino scr
 
 ---
 
+## ⚡ Flashing
+The ESP32 microcontroller can be flashed with the Arduiono IDE, using the .ino script mentioned above. 
+Make sure you have the necessary libraries installed as well as the `/Software/ADC_readout/lib/` directory.
+
+Select an ESP32-S3 board without SRAM and make shure that Events and Arduino run on Core 0.
+
+
+<img src="Tools.png" alt="Tools" style="width:450px;"/>
+
+
+
+If you do an initial flashing of the board or encounter some issues during upload try to restart the ESP32 into programming mode by pressing and holding the "BOOT" button whil shortly pressing the "RESET" button. Afterwards the ESP32 will be detected automatically as a target or can be selected as an "ESP32 Family Device" under the port/device selection.
+
+Use this programming-mode procedure only after a compile/ upload process for an ESP32-S3 without SRAM was started, as the IDE otherwise tries and fails to build for an "ESP32 Family Device".
+
+The Arduino script is tested to be working with the MATLAB script `/Software/ADC_readout/Matlab/ADC_WiFi_readout_TCP.m` using MATLAB R2024b.
+
+---
+
 ## 🧩 Setup
 
 ### 1. Power On
