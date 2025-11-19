@@ -168,6 +168,28 @@ end
 close(f0);
 
 
+% Find the first row that is all zeros
+zeroRow = find(all(dataBuffer == 0, 2), 1);
+% If such a row exists, keep data only up to the row before it
+if ~isempty(zeroRow)
+    dataToSave = dataBuffer(1:zeroRow-1, :);
+else
+    dataToSave = dataBuffer;   % No zero row found → save entire matrix
+end
+
+% Create a table with column names
+colNames = {'CAHN1','CHAN2','CHAN3','CHAN4','CHAN5','CHAN6','CHAN7','CHAN8','TIME'};  
+saveTable = array2table(dataToSave, 'VariableNames', colNames);
+
+% Save Updated Data
+[saveFileName, savePath] = uiputfile('*.csv', 'Save updated data as');
+if isequal(saveFileName, 0)
+    disp('User canceled saving.');
+else
+    writetable(saveTable, fullfile(savePath, saveFileName));
+    fprintf('Saved updated data to %s\n', fullfile(savePath, saveFileName));
+end
+
 %from here on out it's plots to visualize the tested data
 
 %plot the eight Channels regarding aplitude in mv/ time in µs
