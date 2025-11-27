@@ -1,0 +1,15 @@
+{
+  "sample_rate": 1000,
+  "duration_sec": 300,
+  "channels": [
+    { "preamp": 1,  "settings_reg_hex": "10" },
+    { "preamp": 1,  "settings_reg_hex": "10" },
+    { "preamp": 1,  "settings_reg_hex": "10" },
+    { "preamp": 1,  "settings_reg_hex": "10" },
+    { "preamp": 1,  "settings_reg_hex": "10" },
+    { "preamp": 1,  "settings_reg_hex": "10" },
+    { "preamp": 1,  "settings_reg_hex": "10" },
+    { "preamp": 1,  "settings_reg_hex": "10" }
+  ]
+}
+
