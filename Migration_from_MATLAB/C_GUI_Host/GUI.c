@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+
 GQueue *waiting_tabs = NULL;
 GMutex queue_lock;
 
@@ -58,6 +59,10 @@ void free_client_info(ClientInfo *info)
     // Free ClientSettings
     if (info->settings)
         g_free(info->settings);
+
+    // Free measurement buffer
+    if (info->measurement_data)
+        g_free(info->measurement_data);
 
     //remove connection statur monitor
     info->destroying = 1;
@@ -589,6 +594,18 @@ static void on_send_btn_clicked(GtkButton *button, gpointer user_data) {
     // Activate Stop button
     GtkWidget *stop_btn = g_object_get_data(G_OBJECT(info->tab_content), "stop_btn");
     if (stop_btn) gtk_widget_set_sensitive(stop_btn, TRUE);
+
+    /* ---- Allocate Measurement Buffer ---- */
+    uint64_t n = info->settings->sample_number;
+    uint64_t alloc_n = n + n / 10;   // +10% tolerance
+
+    if (info->measurement_data)
+        g_free(info->measurement_data);
+
+    info->measurement_data = g_malloc0(sizeof(float) * 9 * alloc_n);
+    info->allocated_samples = alloc_n;
+    info->write_index = 0;
+    info->measurement_active = TRUE;
 }
 
 
@@ -599,6 +616,8 @@ static void on_send_btn_clicked(GtkButton *button, gpointer user_data) {
 static void on_stop_btn_clicked(GtkButton *button, gpointer user_data) {
     ClientInfo *info = (ClientInfo *)user_data;
     if (!info || !info->conn) return;
+
+    info->measurement_active = FALSE;
 
     // --- Send empty STOP_PACKAGE ---
     TcpPackage pkg;
@@ -739,6 +758,8 @@ static gboolean monitor_client_connection(gpointer user_data) {
 //----------DISCONNECT TCP CLIENT ----------------------------
 static void disconnect_client(ClientInfo *info) {
     if (!info) return;
+
+    info->measurement_active = FALSE;
 
     // Stop future pings
     if (info->monitor_id > 0) {
