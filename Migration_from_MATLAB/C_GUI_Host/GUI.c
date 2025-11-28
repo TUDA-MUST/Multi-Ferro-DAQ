@@ -59,6 +59,12 @@ void free_client_info(ClientInfo *info)
     if (info->settings)
         g_free(info->settings);
 
+    //remove connection statur monitor
+    if (info->monitor_id > 0) {
+      g_source_remove(info->monitor_id);
+      info->monitor_id = 0;
+    }
+
     // Remove notebook page (destroys all children, including widgets holding PreampData)
     if (info->notebook && info->tab_content) {
         gint page_num = gtk_notebook_page_num(GTK_NOTEBOOK(info->notebook),
@@ -105,8 +111,19 @@ void assign_client_to_waiting_tab(GSocketConnection *conn, unsigned char id, Gtk
     g_mutex_lock(&queue_lock);
     if (g_queue_is_empty(waiting_tabs)) {
         g_mutex_unlock(&queue_lock);
-        g_warning("No waiting tabs available!\n");
-        return;
+
+        g_warning("No waiting tabs available! Creating one automatically...\n");
+
+        // Create new waiting tab
+        ClientInfo *new_info = create_waiting_tab(notebook);
+
+        // Put it into the queue so the standard logic works
+        g_mutex_lock(&queue_lock);
+        g_queue_push_tail(waiting_tabs, new_info);
+        g_mutex_unlock(&queue_lock);
+
+        // Now proceed exactly as if a waiting tab already existed
+        g_mutex_lock(&queue_lock);
     }
 
     ClientInfo *info = g_queue_pop_head(waiting_tabs);
@@ -125,6 +142,9 @@ void assign_client_to_waiting_tab(GSocketConnection *conn, unsigned char id, Gtk
 
     info->conn = g_object_ref(conn);
 
+    // Start periodic connection check (once per 2 seconds)
+    info->monitor_id = g_timeout_add(2000, monitor_client_connection, info);
+    
     GtkWidget *remove_btn = gtk_button_new_with_label("Remove Client");
     gtk_box_pack_start(GTK_BOX(info->tab_content), remove_btn, FALSE, FALSE, 4);
     g_signal_connect(remove_btn, "clicked", G_CALLBACK(on_remove_client_clicked), info);
@@ -145,8 +165,17 @@ gboolean on_client_incoming(GSocketService *service,
     GtkWidget *notebook = GTK_WIDGET(user_data);
     unsigned char id = 0;
     GInputStream *in = g_io_stream_get_input_stream(G_IO_STREAM(conn));
+    GOutputStream *out = g_io_stream_get_output_stream(G_IO_STREAM(conn));
     gssize n = g_input_stream_read(in, &id, 1, NULL, NULL);
     if (n <= 0) return FALSE;
+    //send zero byte as connection ack
+    unsigned char ack = 0;
+    g_output_stream_write(out, &ack, 1, NULL, NULL); 
+    // If client sent more than 1 byte, discard it now
+    //unsigned char dump[64];
+    //while (g_input_stream_read(in, dump, sizeof(dump), NULL, NULL) > 0) {
+    //    // keep reading until NO more data
+    //}
     assign_client_to_waiting_tab(conn, id, notebook);
     return TRUE;
 }
@@ -230,6 +259,8 @@ void build_client_ui(ClientInfo *info)
   gtk_box_pack_start(GTK_BOX(left_box), dur_label, FALSE, FALSE, 3);
   gtk_box_pack_start(GTK_BOX(left_box), dur_entry, FALSE, FALSE, 3);
   
+  
+
   // 8x Preamp + Settings Register
   for (int i = 0; i < 8; i++) {
       char lbltxt[64];
@@ -265,6 +296,14 @@ void build_client_ui(ClientInfo *info)
       g_signal_connect(reg_entry, "changed", G_CALLBACK(settings_reg_changed), pdata2);
       gtk_box_pack_start(GTK_BOX(left_box), reg_label, FALSE, FALSE, 3);
       gtk_box_pack_start(GTK_BOX(left_box), reg_entry, FALSE, FALSE, 3);
+      
+      //Store widgets in tab_content so we can access later
+      char preamp_key[32], reg_key[32];
+      snprintf(preamp_key, sizeof(preamp_key), "preamp_combo_%d", i);
+      snprintf(reg_key, sizeof(reg_key), "reg_entry_%d", i);
+      g_object_set_data(G_OBJECT(tab_box), preamp_key, pre_combo);
+      g_object_set_data(G_OBJECT(tab_box), reg_key, reg_entry);
+
       // Optional: track widgets in preamp_data array if needed
       g_ptr_array_add(info->preamp_data, pre_combo);
       g_ptr_array_add(info->preamp_data, reg_entry);
@@ -273,31 +312,34 @@ void build_client_ui(ClientInfo *info)
   gtk_box_pack_start(GTK_BOX(right_box), load_btn, FALSE, FALSE, 5);
   g_signal_connect(load_btn, "clicked", G_CALLBACK(on_load_json_clicked), info);
   
+  //Sample number to zero
+  info->settings->sample_number = 0;
+
+  //send settings & start measurement button
+  GtkWidget *start_btn = gtk_button_new_with_label("Start Measurement");
+  gtk_box_pack_start(GTK_BOX(right_box), start_btn, FALSE, FALSE, 5);
+  g_signal_connect(start_btn, "clicked", G_CALLBACK(on_send_btn_clicked), info);
+
+  //connection status label
+  GtkWidget *status_label = gtk_label_new("DISCONNECTED");
+  gtk_box_pack_end(GTK_BOX(right_box), status_label, FALSE, FALSE, 5);
+  info->status_label = status_label;
+
 }
 
 // ----------------- ADD CLIENT BUTTON -------------------
 void on_add_client_clicked(GtkButton *btn, gpointer user_data) {
     GtkWidget *notebook = GTK_WIDGET(user_data);
-    GtkWidget *label = gtk_label_new("Waiting...");
-    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL,10);
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),box,label);
 
-    ClientInfo *info = g_new0(ClientInfo,1);
-    info->tab_label = label;
-    info->tab_content = box;
-    info->notebook = notebook;
-
-    GtkWidget *btn_close = gtk_button_new_with_label("Close Tab");
-    gtk_box_pack_start(GTK_BOX(box),btn_close,FALSE,FALSE,4);
-    info->close_button = btn_close;
-    g_signal_connect(btn_close,"clicked",G_CALLBACK(on_close_waiting_tab_clicked),info);
+    ClientInfo *info = create_waiting_tab(notebook);
 
     g_mutex_lock(&queue_lock);
-    g_queue_push_tail(waiting_tabs,info);
+    g_queue_push_tail(waiting_tabs, info);
     g_mutex_unlock(&queue_lock);
 
     gtk_widget_show_all(notebook);
 }
+
 
 
 //-------------HELPER SET PREAMP SETTINGS FILE-----------------
@@ -422,9 +464,199 @@ static void on_load_json_clicked(GtkButton *btn, ClientInfo *info)
         set_preamp_combo(pre_combo, info->settings->preamp[i]);
 
         char hexbuf[4];
-        snprintf(hexbuf, sizeof(hexbuf), "%02X", info->settings->settings_reg[i]);
+        snprintf(hexbuf, sizeof(hexbuf), "%02X", (__uint8_t)info->settings->settings_reg[i]);
         gtk_entry_set_text(GTK_ENTRY(reg_entry), hexbuf);
     }
 
     g_object_unref(parser);
 }
+
+
+
+
+
+
+//-----------------SEND SETTINGS TO CONNECTED CLIENT --------------------
+
+static void send_settings_to_client(ClientInfo *info) {
+    if (!info || !info->conn || !info->settings) return;
+
+    ClientSettings *s = info->settings;
+    GtkWidget *tab = info->tab_content;
+
+    // --- Read Sample Rate ---
+    GtkWidget *sr_combo = g_object_get_data(G_OBJECT(tab), "sr_combo");
+    if (sr_combo) {
+        const gchar *sr_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(sr_combo));
+        if (sr_text) s->sample_rate = (uint32_t)atoi(sr_text);
+    }
+
+    // --- Read Duration ---
+    GtkWidget *dur_entry = g_object_get_data(G_OBJECT(tab), "dur_entry");
+    if (dur_entry) {
+        const gchar *dur_text = gtk_entry_get_text(GTK_ENTRY(dur_entry));
+        if (dur_text) s->duration_seconds = atoi(dur_text);
+    }
+
+    // --- Read Preamp and Settings Registers ---
+    for (int i = 0; i < 8; i++) {
+        // Preamp
+        char preamp_key[32];
+        snprintf(preamp_key, sizeof(preamp_key), "preamp_combo_%d", i);
+        GtkWidget *pre_combo = g_object_get_data(G_OBJECT(tab), preamp_key);
+        if (pre_combo) {
+            const gchar *pre_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(pre_combo));
+            if (pre_text) s->preamp[i] = (uint8_t)atoi(pre_text);
+        }
+
+        // Settings register
+        char reg_key[32];
+        snprintf(reg_key, sizeof(reg_key), "reg_entry_%d", i);
+        GtkWidget *reg_entry = g_object_get_data(G_OBJECT(tab), reg_key);
+        if (reg_entry) {
+            const gchar *reg_text = gtk_entry_get_text(GTK_ENTRY(reg_entry));
+            if (reg_text) s->settings_reg[i] = (uint16_t)strtol(reg_text, NULL, 16);
+        }
+    }
+
+    // --- Compute sample_number ---
+    s->sample_number = (uint64_t)s->sample_rate * (s->duration_seconds + 20);
+
+    // --- Pack into buffer ---
+    size_t buf_size = sizeof(uint64_t) + sizeof(uint32_t) + 8*sizeof(uint16_t) + 8*sizeof(uint8_t);
+    uint8_t *buf = g_malloc(buf_size);
+    uint8_t *p = buf;
+
+    memcpy(p, &s->sample_number, sizeof(s->sample_number)); p += sizeof(s->sample_number);
+    memcpy(p, &s->sample_rate, sizeof(s->sample_rate));     p += sizeof(s->sample_rate);
+    memcpy(p, s->settings_reg, 8*sizeof(uint16_t));         p += 8*sizeof(uint16_t);
+    memcpy(p, s->preamp, 8*sizeof(uint8_t));                p += 8;
+
+    // --- Send over TCP ---
+    GError *err = NULL;
+    
+    // Get underlying socket from connection
+    GSocket *sock = g_socket_connection_get_socket(info->conn);
+    if (!sock || !G_IS_SOCKET(sock)) {
+        g_warning("Client socket is not valid. Skipping send.");
+        g_free(buf);
+        return;
+    }
+
+
+    // Send the data
+    gssize bytes_sent = g_socket_send(sock, buf, buf_size, NULL, &err);
+    if (bytes_sent != buf_size) {
+        g_warning("Failed to send full settings packet: %s",
+                  err ? err->message : "unknown error");
+        if (err) g_error_free(err);
+
+        // Mark client as disconnected and clean up
+        free_client_info(info);
+        return;
+    }
+} 
+
+
+//----------HANDLER FOR SEND BUTTON @CLIENT------------------
+static void on_send_btn_clicked(GtkButton *button, gpointer user_data) {
+    ClientInfo *info = (ClientInfo *)user_data;
+    send_settings_to_client(info);
+}
+
+
+//---------------CREATE A WAITING TAB TO BE ASSIGNED-----------------------
+
+ClientInfo* create_waiting_tab(GtkWidget *notebook) {
+    GtkWidget *label = gtk_label_new("Waiting...");
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL,10);
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), box, label);
+
+    ClientInfo *info = g_new0(ClientInfo,1);
+    info->tab_label = label;
+    info->tab_content = box;
+    info->notebook = notebook;
+
+    GtkWidget *btn_close = gtk_button_new_with_label("Close Tab");
+    gtk_box_pack_start(GTK_BOX(box), btn_close, FALSE, FALSE, 4);
+    info->close_button = btn_close;
+    g_signal_connect(btn_close, "clicked", G_CALLBACK(on_close_waiting_tab_clicked), info);
+
+    gtk_widget_show_all(box);
+    return info;
+}
+
+
+//-----------------NONBLOCKING PEEK AT CONNECTION------------------
+static gboolean socket_is_disconnected(GSocket *sock)
+{
+    if (!sock) return TRUE;
+
+    g_socket_set_blocking(sock, FALSE); // non-blocking
+
+    char buf;
+    GError *err = NULL;
+
+    gssize r = g_socket_receive(sock, &buf, 1, NULL, &err); // old GLib version
+
+    if (r == 0) {
+        // Peer closed connection
+        return TRUE;
+    }
+
+    if (r < 0) {
+        if (err) {
+            gboolean would_block = err->code == G_IO_ERROR_WOULD_BLOCK;
+            gboolean conn_closed = err->code == G_IO_ERROR_CONNECTION_CLOSED;
+            g_error_free(err);
+            if (would_block) return FALSE;  // alive, just no data
+            if (conn_closed) return TRUE;   // disconnected
+        }
+        return TRUE; // any other error, assume disconnected
+    }
+
+    return FALSE; // data available, socket alive
+}
+
+
+
+
+
+//--------------HELPER TO SET CONNECTION LABEL-------------------
+static void set_status_label(GtkWidget *label, gboolean connected)
+{
+    if (!label) return;
+
+    if (connected)
+        gtk_label_set_markup(GTK_LABEL(label),
+            "<span foreground=\"green\" weight=\"bold\">CONNECTED</span>");
+    else
+        gtk_label_set_markup(GTK_LABEL(label),
+            "<span foreground=\"red\" weight=\"bold\">DISCONNECTED</span>");
+}
+
+
+
+//-----------------HELPER FOR CONNECTION STATUS-------------------
+static gboolean monitor_client_connection(gpointer user_data) {
+    ClientInfo *info = user_data;
+
+    if (!info || !info->conn) return G_SOURCE_CONTINUE;
+
+    GSocket *sock = g_socket_connection_get_socket(info->conn);
+    if (!sock) {
+        set_status_label(info->status_label, FALSE);
+        return G_SOURCE_CONTINUE;
+    }
+
+    if (socket_is_disconnected(sock)) {
+        set_status_label(info->status_label, FALSE);
+        return G_SOURCE_CONTINUE;
+    }
+
+    set_status_label(info->status_label, TRUE);
+    return G_SOURCE_CONTINUE;
+}
+
+
+

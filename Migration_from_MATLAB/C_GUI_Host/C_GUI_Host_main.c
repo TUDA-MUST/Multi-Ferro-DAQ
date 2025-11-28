@@ -3,9 +3,102 @@
 #include "GUI.h"
 #include <gtk/gtk.h>
 #include <gio/gio.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <ifaddrs.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 
 GSocketService *global_service = NULL;
+
+typedef struct {
+    int sock;
+    struct sockaddr_in addr;
+} BroadcastInfo;
+BroadcastInfo *broadcast_info = NULL;
+
+
+// Helper: check if an IP is private (typical hotspot IP ranges)
+static int is_private_ip(uint32_t ip)
+{
+    // 10.0.0.0/8
+    if ((ip & 0xFF000000) == 0x0A000000) return 1;
+    // 172.16.0.0/12
+    if ((ip & 0xFFF00000) == 0xAC100000) return 1;
+    // 192.168.0.0/16
+    if ((ip & 0xFFFF0000) == 0xC0A80000) return 1;
+    return 0;
+}
+
+// detect a valid hotspot ip
+static uint32_t detect_hotspot_ip()
+{
+    struct ifaddrs *ifaddr, *ifa;
+    char buf[INET_ADDRSTRLEN];
+
+    if (getifaddrs(&ifaddr) == -1) {
+        perror("getifaddrs");
+        exit(1);
+    }
+
+    uint32_t hotspot_ip = 0;
+
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == NULL) continue;
+        if (ifa->ifa_addr->sa_family != AF_INET) continue;
+
+        struct sockaddr_in *sa = (struct sockaddr_in *)ifa->ifa_addr;
+        uint32_t ip = ntohl(sa->sin_addr.s_addr);
+
+        // Skip loopback
+        if ((ip & 0xFF000000) == 0x7F000000) continue;
+
+        // Take the first private IP (typical hotspot IP)
+        if (is_private_ip(ip)) {
+            hotspot_ip = ip;
+            inet_ntop(AF_INET, &sa->sin_addr, buf, sizeof(buf));
+            printf("Detected hotspot IP: %s on interface %s\n", buf, ifa->ifa_name);
+            break;
+        }
+    }
+
+    freeifaddrs(ifaddr);
+
+    if (hotspot_ip == 0) {
+        fprintf(stderr, "No private hotspot IP detected, using 255.255.255.255\n");
+        hotspot_ip = 0xFFFFFFFF; // fallback limited broadcast
+    }
+
+    return hotspot_ip;
+}
+
+//helper for cumputing broadcast adress
+static uint32_t compute_broadcast(uint32_t ip)
+{
+    uint32_t netmask = 0xFFFFFF00; // assume /24 for hotspot
+    return (ip & netmask) | (~netmask & 0xFF);
+}
+
+//callback for doing broadcast
+gboolean broadcast_callback(gpointer data)
+{
+    BroadcastInfo *info = (BroadcastInfo *)data;
+    const char *msg = "SERVER_ALIVE";
+
+    ssize_t sent = sendto(info->sock, msg, strlen(msg), 0,
+                          (struct sockaddr *)&info->addr,
+                          sizeof(info->addr));
+
+    if (sent < 0) g_warning("Broadcast send failed: %m");
+    // else g_message("Broadcast sent");
+
+    return TRUE; // repeat
+}
+
 
 
 // Shutdown handler
@@ -18,6 +111,13 @@ static void on_close_clicked(GtkButton *button, gpointer user_data)
         g_socket_service_stop(global_service);
         g_object_unref(global_service);
         global_service = NULL;
+    }
+
+    // Close broadcast socket
+    if (broadcast_info) {
+        close(broadcast_info->sock);
+        g_free(broadcast_info);
+        broadcast_info = NULL;
     }
 
     // Free queue
@@ -74,7 +174,7 @@ int main(int argc, char **argv)
     g_signal_connect(win, "destroy", G_CALLBACK(on_close_clicked), NULL);
 
     //
-    // SOCKET SERVICE
+    // TCP SOCKET SERVICE ON PORT 8080
     //
     global_service = g_socket_service_new();
     GInetAddress *addr = g_inet_address_new_any(G_SOCKET_FAMILY_IPV4);
@@ -101,6 +201,34 @@ int main(int argc, char **argv)
                      G_CALLBACK(on_client_incoming), notebook);
 
     g_socket_service_start(global_service);
+
+
+    // UDP BROADCAST INITIALIZATION
+
+    // Initialize broadcast_info
+    // -----------------------------
+    uint32_t host_ip = detect_hotspot_ip();
+    uint32_t broadcast_ip = compute_broadcast(host_ip);
+
+    broadcast_info = g_new0(BroadcastInfo, 1);
+
+    broadcast_info->sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if (broadcast_info->sock < 0)
+        g_error("Broadcast socket() failed: %m");
+
+    int broadcastEnable = 1;
+    if (setsockopt(broadcast_info->sock, SOL_SOCKET, SO_BROADCAST,
+                &broadcastEnable, sizeof(broadcastEnable)) < 0)
+        g_error("setsockopt(SO_BROADCAST) failed: %m");
+
+    memset(&broadcast_info->addr, 0, sizeof(broadcast_info->addr));
+    broadcast_info->addr.sin_family = AF_INET;
+    broadcast_info->addr.sin_port = htons(5000);
+    broadcast_info->addr.sin_addr.s_addr = htonl(broadcast_ip);
+
+    // Send broadcast every 5000 ms
+    g_timeout_add(5000, broadcast_callback, broadcast_info);
+
 
     // Run GUI
     gtk_widget_show_all(win);

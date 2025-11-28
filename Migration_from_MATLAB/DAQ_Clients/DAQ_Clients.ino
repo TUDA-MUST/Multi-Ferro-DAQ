@@ -6,6 +6,7 @@
 #include "../lib/ADS131E08esp32.cpp"
 #include <WiFi.h>
 #include <WiFiClient.h>
+#include <WiFiUdp.h>
 
 struct chanData_float{
   byte chan[9][4];                  //stores data measured in channels, ninth entry stores time
@@ -240,92 +241,133 @@ void aquireTaskCode(void* params){
 
 void sendTaskCode(void* params){
 
-  
-  // Access Point credentials
-  const char *ssid = "ESP32_Hotspot";
-  const char *password = "123456789";                    // Minimum 8 characters
+  // Connect to Wi-Fi network
+  const char* ssid     = "MultiFerroSpot";
+  const char* password = "12345qwe";
+  // const char* hostIP   = "172.17.0.1";  // <- REMOVE hardcoded IP
+  const int serverPort = 8080;
 
+  Serial.println("Connecting to Wi-Fi...");
+  WiFi.begin(ssid, password);
 
-  // TCP settings
-  
-  const int serverPort = 8080;                           // Listen on port 8080
-  
-  // Start the ESP32 as an Access Point (Hotspot)
+  while (WiFi.status() != WL_CONNECTED) {
+      vTaskDelay(500 / portTICK_PERIOD_MS);
+      Serial.print(".");
+  }
 
-  Serial.println("Setting up Access Point...");
-  WiFi.softAP(ssid, password);
-  WiFiServer server(serverPort);                         // Create a server object to listen for incoming connections
+  Serial.println();
+  Serial.print("Connected! IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  //
+  // ------------------------
+  // DISCOVER HOST VIA UDP
+  // ------------------------
+  WiFiUDP udp;
+  udp.begin(5000);   // same port laptop broadcasts to
+
+  Serial.println("Waiting for host broadcast...");
+
+  // buffer for reading packets
+  char buf[64];
+  IPAddress hostIP;
+
+  while (true) {
+      int len = udp.parsePacket();
+      if (len > 0) {
+          int n = udp.read(buf, sizeof(buf)-1);
+          buf[n] = 0;
+
+          if (strcmp(buf, "SERVER_ALIVE") == 0) {
+              // sender address = host IP
+              hostIP = udp.remoteIP();
+              Serial.print("Discovered host IP: ");
+              Serial.println(hostIP);
+              break;
+          }
+      }
+      vTaskDelay(100);
+  }
+
+  //
+  // ------------------------
+  // CONNECT TO HOST
+  // ------------------------
   WiFiClient client;
-  server.begin();
+  Serial.print("Connecting to host ");
+  Serial.println(hostIP);
 
-  // Print the ESP32 AP IP address
+  while (!client.connect(hostIP, serverPort)) {
+      Serial.println("Connection failed, retrying...");
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
 
-  Serial.println("Access Point Started!");               
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.softAPIP());                       // Print the AP's IP address (usually 192.168.4.1)
+  Serial.println("Connected to host!");
+
+
+  // Send a single initialization byte
+  byte initByte = 0x40;  // ClientID
+  client.flush();
+  while(client.available() < 1){
+    client.write(initByte);
+    vTaskDelay(40);
+  }
+  Serial.printf("Sent initialization %d byte to host.\n", initByte);
+  client.flush();
+  
 
   // Start the TCP communication
   
-  Serial.println("TCP waiting on port 8080 - start MATLAB script");
+  Serial.println("TCP waiting on port 8080 - connected to client monitor");
   ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b00001111, 1);   //turns off white LED to save power
   leds[0] = CRGB::Magenta; FastLED.show();                                                  // signals that the ESP & ADS131E08 are set up and ready to communicate
 
   byte buffer[2304];                                                                        // 9 floats * 4 bytes each => 36 bytes * 64 datasets = 2304 bytes buffer
   byte amparr[8];                                                                       
 
+  // Wait for settings data instead of fixed delay
+  while (client.available() < 36) {  
+      vTaskDelay(1); 
+  }
   
+  // currently the data is given raw by defining the order in which it has to arrive. Maybe in later revision a package can
+  // have a leading identifier for a more elegant solution
+  union {
+    byte cntarray[8];
+    int64_t cntnmbr;
+  } measurecnt;
+  union{
+    byte readarray[16];
+    uint16_t uint_hword[8]; 
+    uint32_t uint_word[4];
+  }inputbuff;
+  for(int i = 0; i < 8; i++){                                              // get sample size (int64_t)
+    measurecnt.cntarray[i] = client.read();
+  }
+  delay(200);
+  for(int i = 0; i < 4; i++){                                              // get sample rate
+    inputbuff.readarray[i] = client.read();
+  }delay(200);
+  set_sample_rate(inputbuff.uint_word);
+  for(int i = 0; i < 16; i++){                                              // get individual channels settings
+    inputbuff.readarray[i] = client.read();
+  }delay(200);
+  set_channels(inputbuff.uint_hword);
+  for(int i = 0; i < 8; i++){                                              // get amp values for preamp for each channel
+    inputbuff.readarray[i] = client.read();
+  }delay(200);
+  for(int i = 0; i < set_preamp(inputbuff.readarray);i++){                 //sets preamp values in config reg ond ADS131
+    amparr[i] = inputbuff.readarray[i];                                    // saves preampvalues for later use
+  }                                         
+  
+    
+  Serial.println("ESP32 successfully connected to Client Monitor for Measurement");
+  leds[0] = CRGB::Green; FastLED.show();                                   //signals that the connection has been established and a measurement is ongoing
+  xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 8192, NULL, 1, &aquireTask, 1);         //start collecting data
+  client.flush();
+
   while(1){
-    while(1){
-      client = server.available();
-      if(client) break;
-      vTaskDelay(1);
-    }
 
-    // currently the data is given raw by defining the order in which it has to arrive. Maybe in later revision a package can
-    // have a leading identifier for a more elegant solution
-
-    delay(200);                                                               //give Matlab time to send initialization data
-    union {
-      byte cntarray[8];
-      int64_t cntnmbr;
-    } measurecnt;
-    union{
-      byte readarray[16];
-      uint16_t uint_hword[8]; 
-      uint32_t uint_word[4];
-    }inputbuff;
-
-    for(int i = 0; i < 8; i++){                                              // get sample size (int64_t)
-      measurecnt.cntarray[i] = client.read();
-    }
-    delay(200);
-
-    for(int i = 0; i < 4; i++){                                              // get sample rate
-      inputbuff.readarray[i] = client.read();
-    }delay(200);
-    set_sample_rate(inputbuff.uint_word);
-
-    for(int i = 0; i < 16; i++){                                              // get individual channels settings
-      inputbuff.readarray[i] = client.read();
-    }delay(200);
-    set_channels(inputbuff.uint_hword);
-
-
-    for(int i = 0; i < 8; i++){                                              // get amp values for preamp for each channel
-      inputbuff.readarray[i] = client.read();
-    }delay(200);
-    for(int i = 0; i < set_preamp(inputbuff.readarray);i++){                 //sets preamp values in config reg ond ADS131
-      amparr[i] = inputbuff.readarray[i];                                    // saves preampvalues for later use
-    }                                         
-    
-
-    
-    Serial.println("ESP32 successfully connected to MATLAB");
-    leds[0] = CRGB::Green; FastLED.show();                                   //signals that the connection has been established and a measurement is ongoing
-
-    xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 8192, NULL, 1, &aquireTask, 1);         //start collecting data
-    client.flush();
-    
     for(int i = 0; i < measurecnt.cntnmbr;){                                                      //this loop ends the measurement after the set amount of samples
       if(client.read() >= 0) break;                                                               //exit measurement loop, if client sends something
       
