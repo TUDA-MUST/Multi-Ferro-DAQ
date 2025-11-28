@@ -507,6 +507,7 @@ wait_for_settings:
       while (client.available() > 0) {
         getNextTcpPackage(client, settingsPkg);
         if (settingsPkg.package_type == STOP_PACKAGE) {
+          Serial.println("STOP requested by host.");
           vTaskDelete(aquireTask);
           client.stop();
           WiFi.disconnect();
