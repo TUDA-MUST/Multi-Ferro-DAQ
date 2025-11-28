@@ -14,6 +14,22 @@ struct chanData_float{
   byte faultn;                      //saves if inputs exceed threshold on negative input
 };
 
+typedef enum {
+    PING_PACKAGE      = 0,
+    STOP_PACKAGE      = 1,
+    SETTINGS_PACKAGE  = 2,
+    DATA_PACKAGE      = 3,
+    TIMESTAMP_PACKAGE = 4
+} PackageType_e;
+
+typedef uint8_t PackageType8_t; // storage type
+
+typedef struct {
+    PackageType8_t package_type; // 1 byte storage
+    uint32_t package_size;
+    unsigned char *package;
+} TcpPackage;
+
 
 
 #define NUM_LEDS 2                  //setup the SK6812 LEDS
@@ -219,7 +235,117 @@ int set_preamp(byte amparr[16]){
 
 
 
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+// Helper function to read exactly n bytes from the client
+bool readBytes(WiFiClient &client, uint8_t *buffer, size_t n, uint32_t timeoutMs = 2000) {
+    uint32_t start = millis();
+    size_t readSoFar = 0;
+    while (readSoFar < n) {
+        if (client.available()) {
+            int c = client.read();
+            if (c < 0) continue;
+            buffer[readSoFar++] = (uint8_t)c;
+        }
+        if (millis() - start > timeoutMs) return false; // timeout
+        vTaskDelay(1);
+    }
+    return true;
+}
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+// Helper to read a TcpPackage from the client
+bool readTcpPackage(WiFiClient &client, TcpPackage &pkg) {
+    uint8_t header[5]; // 1 byte type + 4 bytes size
+    if (!readBytes(client, header, 5)) return false;
+
+    pkg.package_type = header[0];
+    pkg.package_size = (uint32_t)header[1] << 24 |
+                       (uint32_t)header[2] << 16 |
+                       (uint32_t)header[3] << 8 |
+                       (uint32_t)header[4];
+
+    if (pkg.package_size > 0) {
+        pkg.package = (unsigned char *)malloc(pkg.package_size);
+        if (!pkg.package) return false;
+        if (!readBytes(client, pkg.package, pkg.package_size)) {
+            free(pkg.package);
+            return false;
+        }
+    } else {
+        pkg.package = nullptr;
+    }
+    return true;
+}
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+// Helper to free package memory
+void freeTcpPackage(TcpPackage &pkg) {
+    if (pkg.package) free(pkg.package);
+    pkg.package = nullptr;
+}
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+// --- Getter function: returns the next TCP package from the client ---
+// Returns true if a package was successfully read, false on timeout/error
+// Caller is responsible for freeing pkg.package using freeTcpPackage()
+bool getNextTcpPackage(WiFiClient &client, TcpPackage &pkg) {
+    if (!readTcpPackage(client, pkg)) return false; // failed read, retry
+    return false;
+}
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 
 
 
@@ -233,7 +359,12 @@ void aquireTaskCode(void* params){
 
 
 
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 
 
 
@@ -247,11 +378,11 @@ void sendTaskCode(void* params){
   // const char* hostIP   = "172.17.0.1";  // <- REMOVE hardcoded IP
   const int serverPort = 8080;
 
-  Serial.println("Connecting to Wi-Fi...");
+  Serial.print("Connecting to Wi-Fi...");
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
-      vTaskDelay(500 / portTICK_PERIOD_MS);
+      vTaskDelay(300);
       Serial.print(".");
   }
 
@@ -267,6 +398,7 @@ void sendTaskCode(void* params){
   udp.begin(5000);   // same port laptop broadcasts to
 
   Serial.println("Waiting for host broadcast...");
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b00001111, 1);   //turns off white LED to save power
 
   // buffer for reading packets
   char buf[64];
@@ -289,10 +421,9 @@ void sendTaskCode(void* params){
       vTaskDelay(100);
   }
 
-  //
-  // ------------------------
+
   // CONNECT TO HOST
-  // ------------------------
+
   WiFiClient client;
   Serial.print("Connecting to host ");
   Serial.println(hostIP);
@@ -317,49 +448,53 @@ void sendTaskCode(void* params){
   
 
   // Start the TCP communication
-  
-  Serial.println("TCP waiting on port 8080 - connected to client monitor");
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b00001111, 1);   //turns off white LED to save power
-  leds[0] = CRGB::Magenta; FastLED.show();                                                  // signals that the ESP & ADS131E08 are set up and ready to communicate
 
-  byte buffer[2304];                                                                        // 9 floats * 4 bytes each => 36 bytes * 64 datasets = 2304 bytes buffer
-  byte amparr[8];                                                                       
-
-  // Wait for settings data instead of fixed delay
-  while (client.available() < 36) {  
-      vTaskDelay(1); 
-  }
-  
-  // currently the data is given raw by defining the order in which it has to arrive. Maybe in later revision a package can
-  // have a leading identifier for a more elegant solution
+  byte buffer[2304]; // 9 floats * 4 bytes each => 36 bytes * 64 datasets = 2304 bytes buffer 
+  byte amparr[8];
   union {
     byte cntarray[8];
     int64_t cntnmbr;
   } measurecnt;
-  union{
+
+  union {
     byte readarray[16];
-    uint16_t uint_hword[8]; 
+    uint16_t uint_hword[8];
     uint32_t uint_word[4];
-  }inputbuff;
-  for(int i = 0; i < 8; i++){                                              // get sample size (int64_t)
-    measurecnt.cntarray[i] = client.read();
-  }
-  delay(200);
-  for(int i = 0; i < 4; i++){                                              // get sample rate
-    inputbuff.readarray[i] = client.read();
-  }delay(200);
-  set_sample_rate(inputbuff.uint_word);
-  for(int i = 0; i < 16; i++){                                              // get individual channels settings
-    inputbuff.readarray[i] = client.read();
-  }delay(200);
-  set_channels(inputbuff.uint_hword);
-  for(int i = 0; i < 8; i++){                                              // get amp values for preamp for each channel
-    inputbuff.readarray[i] = client.read();
-  }delay(200);
-  for(int i = 0; i < set_preamp(inputbuff.readarray);i++){                 //sets preamp values in config reg ond ADS131
-    amparr[i] = inputbuff.readarray[i];                                    // saves preampvalues for later use
-  }                                         
+  } inputbuff;
+
   
+  Serial.println("TCP waiting on port 8080 - connected to client monitor");
+
+  TcpPackage settingsPkg;
+
+wait_for_settings:
+
+  leds[0] = CRGB::Magenta; FastLED.show();                                                  // signals that the ESP & ADS131E08 are set up and ready to communicate
+
+  settingsPkg.package_type = PING_PACKAGE;
+  Serial.print("Waiting for settings package...");
+  while(settingsPkg.package_type != SETTINGS_PACKAGE){
+    getNextTcpPackage(client, settingsPkg);
+    Serial.print(".");
+  }
+  Serial.print("\n");
+
+  //first 8 bytes = sample count
+  memcpy(measurecnt.cntarray, settingsPkg.package, 8);
+  // next 4 bytes = sample rate
+  memcpy(inputbuff.readarray, settingsPkg.package + 8, 4);
+  set_sample_rate(inputbuff.uint_word);
+  // next 16 bytes = channel settings
+  memcpy(inputbuff.readarray, settingsPkg.package + 12, 16);
+  set_channels(inputbuff.uint_hword);
+  // next 8 bytes = preamp
+  memcpy(inputbuff.readarray, settingsPkg.package + 28, 8);
+  for (int i = 0; i < set_preamp(inputbuff.readarray); i++) {
+      amparr[i] = inputbuff.readarray[i];
+  }
+  //freeTcpPackage(settingsPkg); // done with package
+  
+
     
   Serial.println("ESP32 successfully connected to Client Monitor for Measurement");
   leds[0] = CRGB::Green; FastLED.show();                                   //signals that the connection has been established and a measurement is ongoing
@@ -368,8 +503,18 @@ void sendTaskCode(void* params){
 
   while(1){
 
-    for(int i = 0; i < measurecnt.cntnmbr;){                                                      //this loop ends the measurement after the set amount of samples
-      if(client.read() >= 0) break;                                                               //exit measurement loop, if client sends something
+    for(int i = 0; i < measurecnt.cntnmbr;){                                                     //this loop ends the measurement after the set amount of samples
+      while (client.available() > 0) {
+        getNextTcpPackage(client, settingsPkg);
+        if (settingsPkg.package_type == STOP_PACKAGE) {
+          vTaskDelete(aquireTask);
+          client.stop();
+          WiFi.disconnect();
+          delay(100);
+          ESP.restart();                                                                               //   <- stop gap measure because I can't figure out how to connect to MATLAB again
+        }
+      }
+                                                                 
       
       if(uxQueueSpacesAvailable(datatransferQueue) > 448)vTaskDelay(1);
       else{

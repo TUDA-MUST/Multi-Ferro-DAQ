@@ -24,7 +24,31 @@ typedef struct {
     ClientSettings *settings;
     GPtrArray *preamp_data;
     guint monitor_id;
+    char destroying;
+    /* ---- Measurement Buffer Fields ---- */
+    float *measurement_data;        // Contiguous buffer: rows of 9 floats
+    uint64_t allocated_samples;     // Allocated number of rows
+    uint64_t write_index;           // Current row index
+    gboolean measurement_active;    // TRUE after Start, FALSE after stop/end
 } ClientInfo;
+
+
+typedef enum {
+    PING_PACKAGE      = 0,
+    STOP_PACKAGE      = 1,
+    SETTINGS_PACKAGE  = 2,
+    DATA_PACKAGE      = 3,
+    TIMESTAMP_PACKAGE = 4
+} PackageType_e;
+
+typedef uint8_t PackageType8_t; // storage type
+
+typedef struct {
+    PackageType8_t package_type; // 1 byte storage
+    uint32_t package_size;
+    unsigned char *package;
+} TcpPackage;
+
 
 // Preamp helper
 struct PreampData;
@@ -47,9 +71,11 @@ static void set_preamp_combo(GtkWidget *combo, int value);
 static void on_load_json_clicked(GtkButton *btn, ClientInfo *info);
 static void send_settings_to_client(ClientInfo *info);
 static void on_send_btn_clicked(GtkButton *button, gpointer user_data);
+static void on_stop_btn_clicked(GtkButton *button, gpointer user_data);
 ClientInfo* create_waiting_tab(GtkWidget *notebook);
 static gboolean socket_is_disconnected(GSocket *sock);
 static void set_status_label(GtkWidget *label, gboolean connected);
 static gboolean monitor_client_connection(gpointer user_data);
+static void disconnect_client(ClientInfo *info);
 #endif // GUI_H
 
