@@ -60,6 +60,7 @@ void free_client_info(ClientInfo *info)
         g_free(info->settings);
 
     //remove connection statur monitor
+    info->destroying = 1;
     if (info->monitor_id > 0) {
       g_source_remove(info->monitor_id);
       info->monitor_id = 0;
@@ -130,6 +131,8 @@ void assign_client_to_waiting_tab(GSocketConnection *conn, unsigned char id, Gtk
     g_mutex_unlock(&queue_lock);
 
     if (!info) return;
+
+    info -> destroying = 0;
 
     if (info->close_button) {
         gtk_widget_destroy(info->close_button);
@@ -319,6 +322,13 @@ void build_client_ui(ClientInfo *info)
   GtkWidget *start_btn = gtk_button_new_with_label("Start Measurement");
   gtk_box_pack_start(GTK_BOX(right_box), start_btn, FALSE, FALSE, 5);
   g_signal_connect(start_btn, "clicked", G_CALLBACK(on_send_btn_clicked), info);
+  
+  //Stop Measurement button
+  GtkWidget *stop_btn = gtk_button_new_with_label("Stop Measurement");
+  gtk_widget_set_sensitive(stop_btn, FALSE); // initially inactive
+  gtk_box_pack_start(GTK_BOX(right_box), stop_btn, FALSE, FALSE, 5);
+  g_object_set_data(G_OBJECT(info->tab_content), "stop_btn", stop_btn);
+  g_signal_connect(stop_btn, "clicked", G_CALLBACK(on_stop_btn_clicked), info);
 
   //connection status label
   GtkWidget *status_label = gtk_label_new("DISCONNECTED");
@@ -476,7 +486,7 @@ static void on_load_json_clicked(GtkButton *btn, ClientInfo *info)
 
 
 
-//-----------------SEND SETTINGS TO CONNECTED CLIENT --------------------
+//-----------------SEND SETTINGS TO CONNECTED CLIENT AND START MEASUREMENT --------------------
 
 static void send_settings_to_client(ClientInfo *info) {
     if (!info || !info->conn || !info->settings) return;
@@ -484,85 +494,142 @@ static void send_settings_to_client(ClientInfo *info) {
     ClientSettings *s = info->settings;
     GtkWidget *tab = info->tab_content;
 
-    // --- Read Sample Rate ---
+    // --- Read UI values and update settings struct ---
     GtkWidget *sr_combo = g_object_get_data(G_OBJECT(tab), "sr_combo");
     if (sr_combo) {
         const gchar *sr_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(sr_combo));
         if (sr_text) s->sample_rate = (uint32_t)atoi(sr_text);
     }
 
-    // --- Read Duration ---
     GtkWidget *dur_entry = g_object_get_data(G_OBJECT(tab), "dur_entry");
     if (dur_entry) {
         const gchar *dur_text = gtk_entry_get_text(GTK_ENTRY(dur_entry));
         if (dur_text) s->duration_seconds = atoi(dur_text);
     }
 
-    // --- Read Preamp and Settings Registers ---
+    // Read Preamp and Settings Registers from widgets
     for (int i = 0; i < 8; i++) {
-        // Preamp
-        char preamp_key[32];
+        char preamp_key[32], reg_key[32];
         snprintf(preamp_key, sizeof(preamp_key), "preamp_combo_%d", i);
-        GtkWidget *pre_combo = g_object_get_data(G_OBJECT(tab), preamp_key);
-        if (pre_combo) {
-            const gchar *pre_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(pre_combo));
-            if (pre_text) s->preamp[i] = (uint8_t)atoi(pre_text);
-        }
-
-        // Settings register
-        char reg_key[32];
         snprintf(reg_key, sizeof(reg_key), "reg_entry_%d", i);
+
+        GtkWidget *pre_combo = g_object_get_data(G_OBJECT(tab), preamp_key);
         GtkWidget *reg_entry = g_object_get_data(G_OBJECT(tab), reg_key);
+
+        if (pre_combo) {
+            const gchar *txt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(pre_combo));
+            if (txt) s->preamp[i] = (uint8_t)atoi(txt);
+        }
         if (reg_entry) {
-            const gchar *reg_text = gtk_entry_get_text(GTK_ENTRY(reg_entry));
-            if (reg_text) s->settings_reg[i] = (uint16_t)strtol(reg_text, NULL, 16);
+            const gchar *txt = gtk_entry_get_text(GTK_ENTRY(reg_entry));
+            if (txt) s->settings_reg[i] = (uint16_t)strtol(txt, NULL, 16);
         }
     }
 
-    // --- Compute sample_number ---
+    // Compute sample_number for measurement
     s->sample_number = (uint64_t)s->sample_rate * (s->duration_seconds + 20);
 
-    // --- Pack into buffer ---
-    size_t buf_size = sizeof(uint64_t) + sizeof(uint32_t) + 8*sizeof(uint16_t) + 8*sizeof(uint8_t);
-    uint8_t *buf = g_malloc(buf_size);
-    uint8_t *p = buf;
+    // --- Pack data into TcpPackage ---
+    TcpPackage pkg;
+    pkg.package_type = SETTINGS_PACKAGE; 
+    pkg.package_size = sizeof(uint64_t) + sizeof(uint32_t) + 8*sizeof(uint16_t) + 8*sizeof(uint8_t);
+    pkg.package = g_malloc(pkg.package_size); // Allocate memory for data
 
+    unsigned char *p = pkg.package;
     memcpy(p, &s->sample_number, sizeof(s->sample_number)); p += sizeof(s->sample_number);
     memcpy(p, &s->sample_rate, sizeof(s->sample_rate));     p += sizeof(s->sample_rate);
     memcpy(p, s->settings_reg, 8*sizeof(uint16_t));         p += 8*sizeof(uint16_t);
     memcpy(p, s->preamp, 8*sizeof(uint8_t));                p += 8;
 
-    // --- Send over TCP ---
-    GError *err = NULL;
-    
-    // Get underlying socket from connection
+    // --- Send package over TCP ---
     GSocket *sock = g_socket_connection_get_socket(info->conn);
     if (!sock || !G_IS_SOCKET(sock)) {
-        g_warning("Client socket is not valid. Skipping send.");
-        g_free(buf);
+        g_warning("Client socket invalid. Aborting send.");
+        g_free(pkg.package);
         return;
     }
 
+    // --- Send 5-byte header (type + size) ---
+    uint8_t header[5];
+    header[0] = pkg.package_type;
+    uint32_t size_net = g_htonl(pkg.package_size);  // Convert to network byte order
+    memcpy(header+1, &size_net, 4);
 
-    // Send the data
-    gssize bytes_sent = g_socket_send(sock, buf, buf_size, NULL, &err);
-    if (bytes_sent != buf_size) {
-        g_warning("Failed to send full settings packet: %s",
-                  err ? err->message : "unknown error");
+    GError *err = NULL;
+    gssize bytes_sent = g_socket_send(sock, header, sizeof(header), NULL, &err);
+    if (bytes_sent != sizeof(header)) {
+        g_warning("Failed to send package header: %s", err ? err->message : "unknown");
         if (err) g_error_free(err);
-
-        // Mark client as disconnected and clean up
-        free_client_info(info);
+        g_free(pkg.package);
+        free_client_info(info);  // Disconnect client safely
         return;
     }
-} 
+
+    // --- Send actual package data ---
+    bytes_sent = g_socket_send(sock, pkg.package, pkg.package_size, NULL, &err);
+    if (bytes_sent != pkg.package_size) {
+        g_warning("Failed to send full settings package: %s",
+                  err ? err->message : "partial send");
+        if (err) g_error_free(err);
+        g_free(pkg.package);
+        free_client_info(info);  // Disconnect client
+        return;
+    }
+
+    // --- Clean up memory ---
+    g_free(pkg.package);
+}
 
 
-//----------HANDLER FOR SEND BUTTON @CLIENT------------------
+
+//----------HANDLER FOR SEND SETTINGS AND START BUTTON @CLIENT------------------
 static void on_send_btn_clicked(GtkButton *button, gpointer user_data) {
     ClientInfo *info = (ClientInfo *)user_data;
     send_settings_to_client(info);
+    // Activate Stop button
+    GtkWidget *stop_btn = g_object_get_data(G_OBJECT(info->tab_content), "stop_btn");
+    if (stop_btn) gtk_widget_set_sensitive(stop_btn, TRUE);
 }
+
+
+
+
+
+//----------HANDLER FOR STOP BUTTON @CLIENT------------------
+static void on_stop_btn_clicked(GtkButton *button, gpointer user_data) {
+    ClientInfo *info = (ClientInfo *)user_data;
+    if (!info || !info->conn) return;
+
+    // --- Send empty STOP_PACKAGE ---
+    TcpPackage pkg;
+    pkg.package_type = STOP_PACKAGE;
+    pkg.package_size = 0;
+    pkg.package = NULL;
+
+    GSocket *sock = g_socket_connection_get_socket(info->conn);
+    if (!sock) return;
+
+    // Send 5-byte header (type + size)
+    uint8_t header[5];
+    header[0] = pkg.package_type;
+    uint32_t size_net = g_htonl(pkg.package_size);
+    memcpy(header + 1, &size_net, 4);
+
+    GError *err = NULL;
+    g_socket_send(sock, header, sizeof(header), NULL, &err);
+    if (err) {
+        g_warning("Failed to send STOP_PACKAGE: %s", err->message);
+        g_error_free(err);
+    }
+
+    // Disable Stop button
+    gtk_widget_set_sensitive(GTK_WIDGET(button), FALSE);
+}
+
+
+
+
+
 
 
 //---------------CREATE A WAITING TAB TO BE ASSIGNED-----------------------
@@ -587,37 +654,6 @@ ClientInfo* create_waiting_tab(GtkWidget *notebook) {
 }
 
 
-//-----------------NONBLOCKING PEEK AT CONNECTION------------------
-static gboolean socket_is_disconnected(GSocket *sock)
-{
-    if (!sock) return TRUE;
-
-    g_socket_set_blocking(sock, FALSE); // non-blocking
-
-    char buf;
-    GError *err = NULL;
-
-    gssize r = g_socket_receive(sock, &buf, 1, NULL, &err); // old GLib version
-
-    if (r == 0) {
-        // Peer closed connection
-        return TRUE;
-    }
-
-    if (r < 0) {
-        if (err) {
-            gboolean would_block = err->code == G_IO_ERROR_WOULD_BLOCK;
-            gboolean conn_closed = err->code == G_IO_ERROR_CONNECTION_CLOSED;
-            g_error_free(err);
-            if (would_block) return FALSE;  // alive, just no data
-            if (conn_closed) return TRUE;   // disconnected
-        }
-        return TRUE; // any other error, assume disconnected
-    }
-
-    return FALSE; // data available, socket alive
-}
-
 
 
 
@@ -638,25 +674,86 @@ static void set_status_label(GtkWidget *label, gboolean connected)
 
 
 //-----------------HELPER FOR CONNECTION STATUS-------------------
+// Returns G_SOURCE_REMOVE if disconnected, G_SOURCE_CONTINUE otherwise
 static gboolean monitor_client_connection(gpointer user_data) {
     ClientInfo *info = user_data;
+    if (!info || info->destroying) return FALSE;   // stop immediately
 
-    if (!info || !info->conn) return G_SOURCE_CONTINUE;
+    // If client is already disconnected, stop monitoring
+    if (!info || !info->conn) {
+        set_status_label(info ? info->status_label : NULL, FALSE);
+        return G_SOURCE_REMOVE;
+    }
 
     GSocket *sock = g_socket_connection_get_socket(info->conn);
     if (!sock) {
         set_status_label(info->status_label, FALSE);
-        return G_SOURCE_CONTINUE;
+        return G_SOURCE_REMOVE;
     }
 
-    if (socket_is_disconnected(sock)) {
-        set_status_label(info->status_label, FALSE);
-        return G_SOURCE_CONTINUE;
+    // --- Build a ping package ---
+    TcpPackage pkg;
+    pkg.package_type = PING_PACKAGE;
+    pkg.package_size = 256;
+    pkg.package = g_malloc0(pkg.package_size); // Zeroed 256-byte ping
+
+    // --- Send 5-byte header ---
+    uint8_t header[5];
+    header[0] = pkg.package_type;
+    uint32_t size_net = g_htonl(pkg.package_size);
+    memcpy(header+1, &size_net, 4);
+
+    GError *err = NULL;
+    gssize bytes_sent = g_socket_send(sock, header, sizeof(header), NULL, &err);
+    if (bytes_sent != sizeof(header)) {
+        g_warning("Ping header send failed: %s", err ? err->message : "unknown");
+        if (err) g_error_free(err);
+        g_free(pkg.package);
+        disconnect_client(info); // Disconnect client safely
+        return G_SOURCE_REMOVE;
     }
 
+    // --- Send ping data ---
+    bytes_sent = g_socket_send(sock, pkg.package, pkg.package_size, NULL, &err);
+    g_free(pkg.package);
+
+    // If ping fails, disconnect client
+    if (bytes_sent != pkg.package_size) {
+        g_warning("Ping failed: sent %zd of %u bytes, %s",
+                  bytes_sent, pkg.package_size, err ? err->message : "unknown");
+        if (err) g_error_free(err);
+        disconnect_client(info); // Disconnect client
+        return G_SOURCE_REMOVE;
+    }
+
+    // Ping successful, mark client as connected
     set_status_label(info->status_label, TRUE);
-    return G_SOURCE_CONTINUE;
+    return G_SOURCE_CONTINUE; // Continue monitoring
 }
 
 
 
+
+
+
+//----------DISCONNECT TCP CLIENT ----------------------------
+static void disconnect_client(ClientInfo *info) {
+    if (!info) return;
+
+    // Stop future pings
+    if (info->monitor_id > 0) {
+        g_source_remove(info->monitor_id);
+        info->monitor_id = 0;
+    }
+
+    // Close connection, but DO NOT free the GUI
+    if (info->conn) {
+        GSocket *sock = g_socket_connection_get_socket(info->conn);
+        if (sock) g_socket_close(sock, NULL);
+        g_object_unref(info->conn);
+        info->conn = NULL;
+    }
+
+    // Update the status label
+    set_status_label(info->status_label, FALSE);
+}
