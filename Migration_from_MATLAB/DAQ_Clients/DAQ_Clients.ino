@@ -7,6 +7,10 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiUdp.h>
+#include <Preferences.h>
+
+
+Preferences prefs;
 
 struct chanData_float{
   byte chan[9][4];                  //stores data measured in channels, ninth entry stores time
@@ -342,6 +346,68 @@ bool getNextTcpPackage(WiFiClient &client, TcpPackage &pkg) {
 
 
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+String waitForLine() {
+    String line = "";
+    while (true) {
+        if (Serial.available()) {
+            char c = Serial.read();
+            if (c == '\r' || c == '\n') {
+                if (line.length() > 0) return line;  // only return once we actually have input
+            } else {
+                line += c;
+            }
+        }
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+    }
+}
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+// --- Function to enter WiFi credentials and save them ---
+void setWifiCredentials() {
+    Serial.println("\n=== WiFi Setup Mode ===");
+
+    Serial.println("Enter new SSID: ");
+    String newSSID = waitForLine();   
+
+    Serial.println("Enter new password: ");
+    String newPASS = waitForLine();   
+
+    prefs.begin("wifi", false);
+    prefs.putString("ssid", newSSID);
+    prefs.putString("pass", newPASS);
+    prefs.end();
+
+    Serial.println("\nCredentials saved. Rebooting...");
+    delay(1000);
+    ESP.restart();
+}
+
+
+
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -372,19 +438,36 @@ void aquireTaskCode(void* params){
 
 void sendTaskCode(void* params){
 
-  // Connect to Wi-Fi network
-  const char* ssid     = "MultiFerroSpot";
-  const char* password = "12345qwe";
+
+  prefs.begin("wifi", false);
+
+    // Load stored WiFi credentials (if any)
+  String savedSSID = prefs.getString("ssid", "");
+  String savedPASS = prefs.getString("pass", "");
+  prefs.end();
+
+  // Use stored credentials if exist, otherwise defaults
+  const char* ssid     = savedSSID.length() ? savedSSID.c_str() : "MultiFerroSpot";
+  const char* password = savedPASS.length() ? savedPASS.c_str() : "12345qwe";
   // const char* hostIP   = "172.17.0.1";  // <- REMOVE hardcoded IP
   const int serverPort = 8080;
 
-  Serial.print("Connecting to Wi-Fi...");
+  Serial.printf("\nTo change the WiFi credential, press ENTER or CARRIAGE RETURN before a network connection is established.\n\n");
+  Serial.printf("Connecting to Wi-Fi under SSID: %s with password: %s ...", ssid, password);
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
-      vTaskDelay(300);
-      Serial.print(".");
-  }
+    vTaskDelay(300);
+    Serial.print(".");
+
+    // If user presses ENTER → call config function
+    if (Serial.available()) {
+        char c = Serial.read();
+        if (c == '\n' || c == '\r') {
+            setWifiCredentials();   
+        }
+    }
+}
 
   Serial.println();
   Serial.print("Connected! IP Address: ");

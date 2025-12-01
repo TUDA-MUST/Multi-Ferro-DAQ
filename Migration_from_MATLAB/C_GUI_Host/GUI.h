@@ -77,5 +77,5 @@ static gboolean socket_is_disconnected(GSocket *sock);
 static void set_status_label(GtkWidget *label, gboolean connected);
 static gboolean monitor_client_connection(gpointer user_data);
 static void disconnect_client(ClientInfo *info);
+static void set_tab_label_color_text(GtkWidget *label, const char *text, gboolean connected);
 #endif // GUI_H
-
