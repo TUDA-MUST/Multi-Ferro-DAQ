@@ -778,3 +778,18 @@ static void disconnect_client(ClientInfo *info) {
     // Update the status label
     set_status_label(info->status_label, FALSE);
 }
+
+
+
+//----------------HELPER TO COLOR IN TAB LABELS------------------------
+static void set_tab_label_color_text(GtkWidget *label, const char *text, gboolean connected){
+    if (!label || !text) return;
+
+    char buf[128];
+    snprintf(buf, sizeof(buf),
+             "<span foreground=\"%s\" weight=\"bold\">%s</span>",
+             connected ? "green" : "red",
+             text);
+
+    gtk_label_set_markup(GTK_LABEL(label), buf);
+}
