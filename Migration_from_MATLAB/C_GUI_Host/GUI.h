@@ -7,11 +7,11 @@
 
 // Forward structs
 typedef struct {
-    __uint32_t sample_rate;
+    uint32_t sample_rate;
     int duration_seconds;
-    __uint8_t preamp[8];
-    __uint16_t settings_reg[8];
-    __uint64_t sample_number;
+    uint8_t preamp[8];
+    uint16_t settings_reg[8];
+    uint64_t sample_number;
 } ClientSettings;
 
 typedef struct {
@@ -30,7 +30,8 @@ typedef struct {
     uint64_t allocated_samples;     // Allocated number of rows
     uint64_t write_index;           // Current row index
     gboolean measurement_active;    // TRUE after Start, FALSE after stop/end
-} ClientInfo;
+    GThread *measurement_thread;    // New: background thread for measurement
+    } ClientInfo;
 
 
 typedef enum {
@@ -78,4 +79,11 @@ static void set_status_label(GtkWidget *label, gboolean connected);
 static gboolean monitor_client_connection(gpointer user_data);
 static void disconnect_client(ClientInfo *info);
 static void set_tab_label_color_text(GtkWidget *label, const char *text, gboolean connected);
+static gboolean read_bytes(GSocket *sock, guint8 *buffer, gsize n, guint32 timeout_ms);
+gboolean read_tcp_package(GSocket *sock, TcpPackage *pkg, guint32 timeout_ms);
+void free_tcp_package(TcpPackage *pkg);
+gboolean get_next_tcp_package(GSocket *sock, TcpPackage *pkg, guint32 timeout_ms);
+//static gboolean read_measurement_data(gpointer user_data);
+static gpointer measurement_thread_func(gpointer user_data);
+static void on_export_csv_clicked(GtkButton *button, gpointer user_data);
 #endif // GUI_H

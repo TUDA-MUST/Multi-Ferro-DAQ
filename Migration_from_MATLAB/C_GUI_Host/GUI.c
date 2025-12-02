@@ -147,6 +147,7 @@ void assign_client_to_waiting_tab(GSocketConnection *conn, unsigned char id, Gtk
     char text[64];
     snprintf(text, sizeof(text), "Client %u", id);
     gtk_label_set_text(GTK_LABEL(info->tab_label), text);
+    set_tab_label_color_text(info->tab_label, text, TRUE);
 
     info->conn = g_object_ref(conn);
 
@@ -334,6 +335,14 @@ void build_client_ui(ClientInfo *info)
   gtk_box_pack_start(GTK_BOX(right_box), stop_btn, FALSE, FALSE, 5);
   g_object_set_data(G_OBJECT(info->tab_content), "stop_btn", stop_btn);
   g_signal_connect(stop_btn, "clicked", G_CALLBACK(on_stop_btn_clicked), info);
+
+  //Export Measurement data button
+  GtkWidget *export_btn = gtk_button_new_with_label("Export to CSV");
+  gtk_widget_set_sensitive(export_btn, FALSE); // initially inactive
+  gtk_box_pack_start(GTK_BOX(right_box), export_btn, FALSE, FALSE, 5);
+  g_signal_connect(export_btn, "clicked", G_CALLBACK(on_export_csv_clicked), info);
+  g_object_set_data(G_OBJECT(info->tab_content), "export_btn", export_btn);
+  
 
   //connection status label
   GtkWidget *status_label = gtk_label_new("DISCONNECTED");
@@ -532,7 +541,7 @@ static void send_settings_to_client(ClientInfo *info) {
     }
 
     // Compute sample_number for measurement
-    s->sample_number = (uint64_t)s->sample_rate * (s->duration_seconds + 20);
+    s->sample_number = (uint64_t)s->sample_rate * (s->duration_seconds);   
 
     // --- Pack data into TcpPackage ---
     TcpPackage pkg;
@@ -594,10 +603,13 @@ static void on_send_btn_clicked(GtkButton *button, gpointer user_data) {
     // Activate Stop button
     GtkWidget *stop_btn = g_object_get_data(G_OBJECT(info->tab_content), "stop_btn");
     if (stop_btn) gtk_widget_set_sensitive(stop_btn, TRUE);
-
+    // Activate CSV export button
+    GtkWidget *export_btn = g_object_get_data(G_OBJECT(info->tab_content), "export_btn");
+    if (export_btn) gtk_widget_set_sensitive(export_btn, TRUE);
+    
     /* ---- Allocate Measurement Buffer ---- */
     uint64_t n = info->settings->sample_number;
-    uint64_t alloc_n = n + n / 10;   // +10% tolerance
+    uint64_t alloc_n = n + 2000;
 
     if (info->measurement_data)
         g_free(info->measurement_data);
@@ -606,6 +618,9 @@ static void on_send_btn_clicked(GtkButton *button, gpointer user_data) {
     info->allocated_samples = alloc_n;
     info->write_index = 0;
     info->measurement_active = TRUE;
+    // Start reading measurement data on new thread
+    info->measurement_thread = g_thread_new("measurement-reader", measurement_thread_func, info);
+
 }
 
 
@@ -618,6 +633,11 @@ static void on_stop_btn_clicked(GtkButton *button, gpointer user_data) {
     if (!info || !info->conn) return;
 
     info->measurement_active = FALSE;
+    // Remove the GSource polling
+    if (info->measurement_thread) {
+        g_thread_join(info->measurement_thread);
+        info->measurement_thread = NULL;
+    }
 
     // --- Send empty STOP_PACKAGE ---
     TcpPackage pkg;
@@ -643,6 +663,7 @@ static void on_stop_btn_clicked(GtkButton *button, gpointer user_data) {
 
     // Disable Stop button
     gtk_widget_set_sensitive(GTK_WIDGET(button), FALSE);
+    g_message("Measurement stopped by user.");
 }
 
 
@@ -713,8 +734,8 @@ static gboolean monitor_client_connection(gpointer user_data) {
     // --- Build a ping package ---
     TcpPackage pkg;
     pkg.package_type = PING_PACKAGE;
-    pkg.package_size = 256;
-    pkg.package = g_malloc0(pkg.package_size); // Zeroed 256-byte ping
+    pkg.package_size = 16;
+    pkg.package = g_malloc0(pkg.package_size); // Zeroed 16-byte ping
 
     // --- Send 5-byte header ---
     uint8_t header[5];
@@ -747,6 +768,7 @@ static gboolean monitor_client_connection(gpointer user_data) {
 
     // Ping successful, mark client as connected
     set_status_label(info->status_label, TRUE);
+    set_tab_label_color_text(info->tab_label, gtk_label_get_text(GTK_LABEL(info->tab_label)), TRUE);
     return G_SOURCE_CONTINUE; // Continue monitoring
 }
 
@@ -777,6 +799,7 @@ static void disconnect_client(ClientInfo *info) {
 
     // Update the status label
     set_status_label(info->status_label, FALSE);
+    set_tab_label_color_text(info->tab_label, gtk_label_get_text(GTK_LABEL(info->tab_label)), FALSE);
 }
 
 
@@ -792,4 +815,252 @@ static void set_tab_label_color_text(GtkWidget *label, const char *text, gboolea
              text);
 
     gtk_label_set_markup(GTK_LABEL(label), buf);
+}
+
+
+
+
+
+
+// ---------------- Helper: read exactly n bytes from GSocket ----------------
+static gboolean read_bytes(GSocket *sock, guint8 *buffer, gsize n, guint32 timeout_ms) {
+    if (!sock || !buffer || n == 0) return FALSE;
+
+    gsize read_so_far = 0;
+    GError *err = NULL;
+    gint64 start_time = g_get_real_time();
+
+    while (read_so_far < n) {
+        gssize bytes = g_socket_receive(sock, buffer + read_so_far, n - read_so_far, NULL, &err);
+        if (bytes > 0) {
+            read_so_far += bytes;
+        } else if (bytes == 0) {
+            // Peer closed connection
+            return FALSE;
+        } else {
+            // bytes < 0, error
+            if (err) {
+                g_warning("Socket read error: %s", err->message);
+                g_error_free(err);
+            }
+            return FALSE;
+        }
+
+        // Timeout check
+        gint64 now = g_get_real_time();
+        gint64 elapsed_us = now - start_time;
+        if (elapsed_us > timeout_ms*1000) return FALSE;
+    }
+
+    return TRUE;
+}
+
+
+
+
+
+// ----------------Read TcpPackage from socket ----------------
+gboolean read_tcp_package(GSocket *sock, TcpPackage *pkg, guint32 timeout_ms) {
+    if (!sock || !pkg) return FALSE;
+
+    guint8 header[5]; // 1 byte type + 4 bytes size
+    if (!read_bytes(sock, header, sizeof(header), timeout_ms)) return FALSE;
+
+    pkg->package_type = header[0];
+    pkg->package_size = (uint32_t)header[1] << 24 |
+                        (uint32_t)header[2] << 16 |
+                        (uint32_t)header[3] << 8 |
+                        (uint32_t)header[4];
+
+    if (pkg->package_size > 0) {
+        pkg->package = g_malloc(pkg->package_size);
+        if (!pkg->package) return FALSE;
+
+        if (!read_bytes(sock, pkg->package, pkg->package_size, timeout_ms)) {
+            g_free(pkg->package);
+            pkg->package = NULL;
+            return FALSE;
+        }
+    } else {
+        pkg->package = NULL;
+    }
+
+    return TRUE;
+}
+
+
+
+
+
+
+// ---------------- Helper: free TcpPackage ----------------
+void free_tcp_package(TcpPackage *pkg) {
+    if (!pkg) return;
+    if (pkg->package) g_free(pkg->package);
+    pkg->package = NULL;
+}
+
+
+
+
+
+// ---------------- Getter: next TCP package ----------------
+gboolean get_next_tcp_package(GSocket *sock, TcpPackage *pkg, guint32 timeout_ms) {
+    if (!sock || !pkg) return FALSE;
+    return read_tcp_package(sock, pkg, timeout_ms);
+}
+
+
+
+
+//----------------handle measurement on different thread
+static gpointer measurement_thread_func(gpointer user_data) {
+    ClientInfo *info = (ClientInfo *)user_data;
+    if (!info || !info->conn) return NULL;
+
+    GSocket *sock = g_socket_connection_get_socket(info->conn);
+    if (!sock) return NULL;
+
+    while (info->measurement_active) {
+        TcpPackage pkg;
+        gboolean ok = get_next_tcp_package(sock, &pkg, 20); // 100 ms timeout
+        if (!ok) {
+            //g_usleep(5000); // sleep 10ms to avoid busy loop
+            continue;
+        }
+
+        if (pkg.package_type == DATA_PACKAGE && pkg.package_size > 0) {
+            size_t row_size = 9 * sizeof(float);
+            size_t n_rows = pkg.package_size / row_size;
+
+            if (info->write_index + n_rows > info->settings->sample_number) {
+                g_warning("Measurement buffer full. Stopping measurement.");
+                info->measurement_active = FALSE;
+
+                // Schedule GUI stop button click
+                GtkWidget *stop_btn = g_object_get_data(G_OBJECT(info->tab_content), "stop_btn");
+                if (stop_btn) {
+                    g_idle_add((GSourceFunc)on_stop_btn_clicked, stop_btn);
+                }
+
+                free_tcp_package(&pkg);
+                break;
+            }
+
+            memcpy(&info->measurement_data[info->write_index * 9],
+                   pkg.package,
+                   n_rows * row_size);
+
+            info->write_index += n_rows;
+
+            // Schedule GUI update
+            //g_idle_add(update_gui_callback, info);
+        }
+
+        free_tcp_package(&pkg);
+    }
+
+    return NULL;
+}
+
+
+
+
+/*
+//-------------------read all available measurement data in bulk-------------------------
+static gboolean read_measurement_data(gpointer user_data) {
+    ClientInfo *info = (ClientInfo *)user_data;
+    if (!info || !info->conn || !info->measurement_active) return G_SOURCE_REMOVE;
+
+    GSocket *sock = g_socket_connection_get_socket(info->conn);
+    if (!sock) return G_SOURCE_REMOVE;
+
+    GtkWidget *stop_btn = g_object_get_data(G_OBJECT(info->tab_content), "stop_btn");
+
+    while (TRUE) {
+        TcpPackage pkg;
+        gboolean ok = get_next_tcp_package(sock, &pkg, 2); 
+        if (!ok) {
+            // No more packages available right now
+            break;
+        }
+
+        if (pkg.package_type == DATA_PACKAGE && pkg.package_size > 0) {
+            size_t row_size = 9 * sizeof(float);
+            size_t n_rows = pkg.package_size / row_size;
+
+            // If the buffer cannot hold the entire package, stop measurement
+            if (info->write_index + n_rows > info->allocated_samples) {
+                g_warning("Measurement buffer full. Stopping measurement.");
+                if (stop_btn) on_stop_btn_clicked(GTK_BUTTON(stop_btn), info);
+                free_tcp_package(&pkg);
+                return G_SOURCE_REMOVE;
+            }
+
+            // Copy all rows in one shot
+            memcpy(&info->measurement_data[info->write_index * 9],
+                   pkg.package,
+                   n_rows * row_size);
+
+            info->write_index += n_rows;
+        }
+
+        free_tcp_package(&pkg);
+    }
+
+    return G_SOURCE_CONTINUE;
+} */
+
+
+
+
+
+
+
+//---------------EXPORT MEASUREMENT TO CSV--------------------
+static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
+    ClientInfo *client = (ClientInfo *)user_data;
+
+    printf("allocated_samples: %ld, write_index: %ld\n", client -> allocated_samples, client -> write_index);
+    if (!client->measurement_data || client->write_index == 0) {
+        g_print("No measurement data available.\n");
+        return;
+    }
+
+    GtkWidget *dialog = gtk_file_chooser_dialog_new(
+        "Save CSV",
+        GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button))),
+        GTK_FILE_CHOOSER_ACTION_SAVE,
+        "_Cancel", GTK_RESPONSE_CANCEL,
+        "_Save", GTK_RESPONSE_ACCEPT,
+        NULL
+    );
+
+    gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), "measurement.csv");
+
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+        char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+        FILE *fp = fopen(filename, "w");
+        if (!fp) {
+            g_printerr("Failed to open file %s\n", filename);
+            g_free(filename);
+            gtk_widget_destroy(dialog);
+            return;
+        }
+
+        for (uint64_t i = 0; i < client->write_index; i++) {
+            for (int j = 0; j < 9; j++) {
+                fprintf(fp, "%.6f", client->measurement_data[i * 9 + j]);
+                if (j < 8) fprintf(fp, ";");
+            }
+            fprintf(fp, "\n");
+        }
+
+        fclose(fp);
+        g_print("Data exported to %s\n", filename);
+        g_free(filename);
+    }
+
+    gtk_widget_destroy(dialog);
 }

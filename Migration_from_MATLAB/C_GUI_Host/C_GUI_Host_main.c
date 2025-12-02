@@ -3,7 +3,7 @@
 #include "GUI.h"
 #include <gtk/gtk.h>
 #include <gio/gio.h>
-#include <arpa/inet.h>
+//#include <arpa/inet.h>   <- not usable on windows
 #include <sys/socket.h>
 #include <unistd.h>
 #include <ifaddrs.h>
@@ -34,7 +34,13 @@ static int is_private_ip(uint32_t ip)
     return 0;
 }
 
-// detect a valid hotspot ip
+
+
+
+
+
+
+// Detect a valid hotspot IP without using inet_ntop
 static uint32_t detect_hotspot_ip()
 {
     struct ifaddrs *ifaddr, *ifa;
@@ -52,16 +58,28 @@ static uint32_t detect_hotspot_ip()
         if (ifa->ifa_addr->sa_family != AF_INET) continue;
 
         struct sockaddr_in *sa = (struct sockaddr_in *)ifa->ifa_addr;
+
+        // Convert network -> host byte order
         uint32_t ip = ntohl(sa->sin_addr.s_addr);
 
-        // Skip loopback
+        // Skip loopback (127.x.x.x)
         if ((ip & 0xFF000000) == 0x7F000000) continue;
 
-        // Take the first private IP (typical hotspot IP)
+        // First private IP wins
         if (is_private_ip(ip)) {
             hotspot_ip = ip;
-            inet_ntop(AF_INET, &sa->sin_addr, buf, sizeof(buf));
-            printf("Detected hotspot IP: %s on interface %s\n", buf, ifa->ifa_name);
+
+            // Manually convert 32-bit IP to dotted-decimal
+            unsigned char b1 = (ip >> 24) & 0xFF;
+            unsigned char b2 = (ip >> 16) & 0xFF;
+            unsigned char b3 = (ip >> 8)  & 0xFF;
+            unsigned char b4 =  ip        & 0xFF;
+
+            snprintf(buf, sizeof(buf), "%u.%u.%u.%u", b1, b2, b3, b4);
+
+            printf("Detected hotspot IP: %s on interface %s\n",
+                   buf, ifa->ifa_name);
+
             break;
         }
     }
@@ -70,11 +88,19 @@ static uint32_t detect_hotspot_ip()
 
     if (hotspot_ip == 0) {
         fprintf(stderr, "No private hotspot IP detected, using 255.255.255.255\n");
-        hotspot_ip = 0xFFFFFFFF; // fallback limited broadcast
+        hotspot_ip = 0xFFFFFFFF;
     }
 
     return hotspot_ip;
 }
+
+
+
+
+
+
+
+
 
 //helper for cumputing broadcast adress
 static uint32_t compute_broadcast(uint32_t ip)
