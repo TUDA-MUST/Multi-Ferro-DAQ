@@ -290,6 +290,7 @@ bool readTcpPackage(WiFiClient &client, TcpPackage &pkg) {
                        (uint32_t)header[4];
 
     if (pkg.package_size > 0) {
+        //Serial.printf("package size: %d\n", pkg.package_size);
         pkg.package = (unsigned char *)malloc(pkg.package_size);
         if (!pkg.package) return false;
         if (!readBytes(client, pkg.package, pkg.package_size)) {
@@ -452,7 +453,7 @@ void sendTaskCode(void* params){
   // const char* hostIP   = "172.17.0.1";  // <- REMOVE hardcoded IP
   const int serverPort = 8080;
 
-  Serial.printf("\nTo change the WiFi credential, press ENTER or CARRIAGE RETURN before a network connection is established.\n\n");
+  Serial.printf("\nTo change the WiFi credentials, press ENTER or CARRIAGE RETURN before a network connection is established.\n\n");
   Serial.printf("Connecting to Wi-Fi under SSID: %s with password: %s ...", ssid, password);
   WiFi.begin(ssid, password);
 
@@ -526,14 +527,14 @@ void sendTaskCode(void* params){
     client.write(initByte);
     vTaskDelay(40);
   }
-  Serial.printf("Sent initialization %d byte to host.\n", initByte);
+  Serial.printf("Sent initialization byte %d to host.\n", initByte);
   client.flush();
   
 
   // Start the TCP communication
 
-  byte buffer[2304]; // 9 floats * 4 bytes each => 36 bytes * 64 datasets = 2304 bytes buffer 
   byte amparr[8];
+
   union {
     byte cntarray[8];
     int64_t cntnmbr;
@@ -550,12 +551,12 @@ void sendTaskCode(void* params){
 
   TcpPackage settingsPkg;
 
-wait_for_settings:
+//wait_for_settings:    //tag for return point if no restart desired
 
   leds[0] = CRGB::Magenta; FastLED.show();                                                  // signals that the ESP & ADS131E08 are set up and ready to communicate
 
   settingsPkg.package_type = PING_PACKAGE;
-  Serial.print("Waiting for settings package...");
+  Serial.print("Waiting for settings package to start measurement...");
   while(settingsPkg.package_type != SETTINGS_PACKAGE){
     getNextTcpPackage(client, settingsPkg);
     Serial.print(".");
@@ -583,6 +584,22 @@ wait_for_settings:
   leds[0] = CRGB::Green; FastLED.show();                                   //signals that the connection has been established and a measurement is ongoing
   xTaskCreatePinnedToCore(aquireTaskCode, "aquireTask", 8192, NULL, 1, &aquireTask, 1);         //start collecting data
   client.flush();
+
+  //create data package
+  byte buffer[2304]; // 9 floats * 4 bytes each => 36 bytes * 64 datasets = 2304 bytes buffer 
+  TcpPackage dataPkg;
+  dataPkg.package_type = DATA_PACKAGE;      // mark as DATA_PACKAGE
+  dataPkg.package_size = sizeof(buffer);    // size of the binary blob
+  dataPkg.package = buffer;                 // pointer to  buffer
+  // Send package header first: 1 byte type + 4 bytes size
+  uint8_t header[5];
+  header[0] = dataPkg.package_type;
+  header[1] = (dataPkg.package_size >> 24) & 0xFF;
+  header[2] = (dataPkg.package_size >> 16) & 0xFF;
+  header[3] = (dataPkg.package_size >> 8) & 0xFF;
+  header[4] = (dataPkg.package_size >> 0) & 0xFF;
+
+  //Serial.printf("There are %ld samples to be collected\n", measurecnt.cntnmbr);
 
   while(1){
 
@@ -612,7 +629,8 @@ wait_for_settings:
           free(chanData_recv_ptr);
         }
       }
-      client.write(buffer, sizeof(buffer));                                                      //sending out buffer to MATLAB client via TCP
+      client.write(header, 5);                              // send header
+      client.write(dataPkg.package, dataPkg.package_size);  // send binary blob
       i += 64;
       }
     }
