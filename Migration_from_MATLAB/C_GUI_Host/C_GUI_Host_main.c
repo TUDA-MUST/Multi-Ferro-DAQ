@@ -23,6 +23,10 @@ typedef struct {
 BroadcastInfo *broadcast_info = NULL;
 
 
+
+
+
+
 // Helper: check if an IP is private (typical hotspot IP ranges)
 static int is_private_ip(uint32_t ip)
 {
@@ -129,6 +133,13 @@ gboolean broadcast_callback(gpointer data)
 
 
 
+
+
+
+
+
+
+
 // Shutdown handler
 static void on_close_clicked(GtkButton *button, gpointer user_data)
 {
@@ -180,14 +191,47 @@ int main(int argc, char **argv)
     //
     // MAIN TAB
     //
+    GtkWidget *main_overlay = gtk_overlay_new();
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     GtkWidget *main_label = gtk_label_new("Main");
 
+    // Place main_box inside the overlay
+    gtk_overlay_add_overlay(GTK_OVERLAY(main_overlay), main_box);
+    gtk_widget_set_halign(main_box, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(main_box, GTK_ALIGN_FILL);
+
+    // Create bottom-right label ONLY for the main tab
+    GtkWidget *corner_label =
+        gtk_label_new("Author: Thomas Schreck - written for:\nMeasurement and Sensor Technology Group\nTU Darmstadt");
+
+    gtk_widget_set_halign(corner_label, GTK_ALIGN_END);   // right aligned
+    gtk_widget_set_valign(corner_label, GTK_ALIGN_END);   // bottom aligned
+    gtk_widget_set_margin_end(corner_label, 10);
+    gtk_widget_set_margin_bottom(corner_label, 10);
+
+    // Add the label to the overlay
+    gtk_overlay_add_overlay(GTK_OVERLAY(main_overlay), corner_label);
+    gtk_widget_set_opacity(corner_label, 0.75); // optional fade
+
+
     // Add Client button
-    GtkWidget *btn_add = gtk_button_new_with_label("Add Client");
-    gtk_box_pack_start(GTK_BOX(main_box), btn_add, FALSE, FALSE, 5);
-    g_signal_connect(btn_add, "clicked",
-                     G_CALLBACK(on_add_client_clicked), notebook);
+    //GtkWidget *btn_add = gtk_button_new_with_label("Add Client");
+    //gtk_box_pack_start(GTK_BOX(main_box), btn_add, FALSE, FALSE, 5);
+    //g_signal_connect(btn_add, "clicked",
+    //                 G_CALLBACK(on_add_client_clicked), notebook);
+
+    // --- START ALL ---
+    GtkWidget *btn_start_all = gtk_button_new_with_label("Start all Clients");
+    gtk_box_pack_start(GTK_BOX(main_box), btn_start_all, FALSE, FALSE, 5);
+    g_signal_connect(btn_start_all, "clicked",
+                     G_CALLBACK(on_start_all_clicked), notebook);
+
+    // --- STOP ALL ---
+    GtkWidget *btn_stop_all = gtk_button_new_with_label("Stop all Clients");
+    gtk_box_pack_start(GTK_BOX(main_box), btn_stop_all, FALSE, FALSE, 5);
+    g_signal_connect(btn_stop_all, "clicked",
+                     G_CALLBACK(on_stop_all_clicked), notebook);
+
 
     // Close Client Monitor button
     GtkWidget *btn_close = gtk_button_new_with_label("Close Client Monitor");
@@ -196,7 +240,7 @@ int main(int argc, char **argv)
                      G_CALLBACK(on_close_clicked), NULL);
 
     // Add main tab to notebook
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), main_box, main_label);
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), main_overlay, main_label);
 
     // Close window event
     g_signal_connect(win, "destroy", G_CALLBACK(on_close_clicked), NULL);

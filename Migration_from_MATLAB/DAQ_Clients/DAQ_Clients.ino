@@ -23,7 +23,8 @@ typedef enum {
     STOP_PACKAGE      = 1,
     SETTINGS_PACKAGE  = 2,
     DATA_PACKAGE      = 3,
-    TIMESTAMP_PACKAGE = 4
+    TIMESTAMP_PACKAGE = 4, 
+    HANDSHAKE_PACKAGE = 5
 } PackageType_e;
 
 typedef uint8_t PackageType8_t; // storage type
@@ -56,6 +57,7 @@ typedef struct {
 #define BUFFERSIZE 39              //utilizes TCP packges only 98.2%
 #define DATASET_SIZE_BYTES 36      // 9 floats * 4 bytes
 #define DATAQUEUE_SIZE 512
+
 
 
 CRGB leds[NUM_LEDS];
@@ -253,6 +255,98 @@ int set_preamp(byte amparr[16]){
 
 
 
+
+
+// set the client name in preferences
+void setClientHandshakePreferences() {
+    Serial.println("\n=== Configure Handshake ===");
+
+    //Serial.print("Enter float count: ");
+    //uint8_t f = waitForLine().toInt();
+
+    Serial.print("Enter client name: ");
+    String nm = waitForLine();
+
+    prefs.begin("client", false);
+    //prefs.putUChar("float_count", f);
+    prefs.putString("client_name", nm);
+    prefs.end();
+
+    return;
+}
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+// send the TCP introductio handshake to HOST
+void sendHandshakePackage(WiFiClient &client) {
+    prefs.begin("client", false); // open the preferences namespace
+
+    // Read float_count from Preferences, default to 9 if not set
+    uint8_t float_count = prefs.getUChar("float_count", 9);
+
+    // Read client_name from Preferences, default to "ESP32" if not set
+    String nameStr = prefs.getString("client_name", "ESP32");
+    const char* cname = nameStr.c_str();
+    uint32_t name_len = strlen(cname) + 1;  // include null terminator
+
+    prefs.end();
+
+    // Build package payload
+    uint32_t payload_size = sizeof(uint8_t) + name_len;
+    uint8_t* payload = (uint8_t*)malloc(payload_size);
+    payload[0] = float_count;
+    memcpy(payload + 1, cname, name_len);
+
+    // Build TCP header
+    uint8_t header[5];
+    header[0] = HANDSHAKE_PACKAGE;
+    header[1] = (payload_size >> 24) & 0xFF;
+    header[2] = (payload_size >> 16) & 0xFF;
+    header[3] = (payload_size >> 8) & 0xFF;
+    header[4] = (payload_size >> 0) & 0xFF;
+
+    // Send full frame
+    uint8_t* frame = (uint8_t*)malloc(5 + payload_size);
+    memcpy(frame, header, 5);
+    memcpy(frame + 5, payload, payload_size);
+
+    client.write(frame, 5 + payload_size);
+    client.flush();
+
+    free(frame);
+    free(payload);
+
+    Serial.printf("Sent HANDSHAKE_PACKAGE: float_count=%d, client_name=\"%s\"\n", float_count, cname);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
 // Helper function to read exactly n bytes from the client
 bool readBytes(WiFiClient &client, uint8_t *buffer, size_t n, uint32_t timeoutMs = 2000) {
     uint32_t start = millis();
@@ -402,6 +496,8 @@ void setWifiCredentials() {
     prefs.putString("pass", newPASS);
     prefs.end();
 
+    setClientHandshakePreferences();
+
     Serial.println("\nCredentials saved. Rebooting...");
     delay(1000);
     ESP.restart();
@@ -457,8 +553,14 @@ void sendTaskCode(void* params){
   // const char* hostIP   = "172.17.0.1";  // <- REMOVE hardcoded IP
   const int serverPort = 8080;
 
-  Serial.printf("\nTo change the WiFi credentials, press ENTER or CARRIAGE RETURN before a network connection is established.\n\n");
-  Serial.printf("Connecting to Wi-Fi under SSID: %s with password: %s ...", ssid, password);
+  prefs.begin("client", false);
+  // Read client name from Preferences, default to "ESP32"
+  String clientNameStr = prefs.getString("client_name", "ESP32");
+  prefs.end();
+  // Use .c_str() to get a C-style string for printf
+  const char* clientName = clientNameStr.c_str();
+  Serial.printf("\nTo change the WiFi credentials and the Clientname, press ENTER or CARRIAGE RETURN before a network connection is established.\n\n");
+  Serial.printf("Connecting to Wi-Fi under SSID: %s with password: %s as Client %s...", ssid, password, clientName);
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -524,14 +626,8 @@ void sendTaskCode(void* params){
   Serial.println("Connected to host!");
 
 
-  // Send a single initialization byte
-  byte initByte = 0x20;  // ClientID
-  client.flush();
-  while(client.available() < 1){
-    client.write(initByte);
-    vTaskDelay(40);
-  }
-  Serial.printf("Sent initialization byte %d to host.\n", initByte);
+  // Send a handshake package
+  sendHandshakePackage(client);
   client.flush();
   
 
