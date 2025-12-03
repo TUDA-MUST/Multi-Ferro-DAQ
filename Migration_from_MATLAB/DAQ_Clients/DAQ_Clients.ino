@@ -525,7 +525,7 @@ void sendTaskCode(void* params){
 
 
   // Send a single initialization byte
-  byte initByte = 0x40;  // ClientID
+  byte initByte = 0x20;  // ClientID
   client.flush();
   while(client.available() < 1){
     client.write(initByte);

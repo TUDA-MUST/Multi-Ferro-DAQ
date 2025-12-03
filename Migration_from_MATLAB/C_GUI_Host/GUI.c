@@ -220,14 +220,23 @@ void build_client_ui(ClientInfo *info)
   GtkWidget *left_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
   gtk_container_add(GTK_CONTAINER(left_scrolled), left_box);
 
-  // middle panel (empty)
+  
+  // MIDDLE PANEL (LIVE PLOT)
   GtkWidget *middle_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
   gtk_box_pack_start(GTK_BOX(hbox), middle_box, TRUE, TRUE, 0);
   
-  // Load a JPG into a GtkImage
-  GtkWidget *image = gtk_image_new_from_file("./hqdefault-2535131512.jpg");
-  gtk_box_pack_start(GTK_BOX(middle_box), image, FALSE, FALSE, 0);
-  gtk_widget_show(image);
+  // Create drawing area
+  GtkWidget *plot_area = gtk_drawing_area_new();
+  gtk_widget_set_size_request(plot_area, 800, 400);
+  gtk_box_pack_start(GTK_BOX(middle_box), plot_area, TRUE, TRUE, 0);
+  gtk_widget_show(plot_area);
+  
+  // Store in tab_content for later access
+  g_object_set_data(G_OBJECT(info->tab_content), "plot_area", plot_area);
+  
+  // Connect draw handler
+  g_signal_connect(plot_area, "draw", G_CALLBACK(on_plot_draw), info);
+  
 
   /* --- RIGHT SCROLLABLE PANEL --- */
   GtkWidget *right_scrolled = gtk_scrolled_window_new(NULL, NULL);
@@ -610,13 +619,13 @@ static void on_send_btn_clicked(GtkButton *button, gpointer user_data) {
     
     /* ---- Allocate Measurement Buffer ---- */
     uint64_t n = info->settings->sample_number;
-    uint64_t alloc_n = n + 2000;
+    uint64_t alloc_n = n + 4000;
 
     if (info->measurement_data)
         g_free(info->measurement_data);
 
     info->measurement_data = g_malloc0(sizeof(float) * 9 * alloc_n);
-    info->allocated_samples = alloc_n - 2000;
+    info->allocated_samples = alloc_n - 1000;
     info->write_index = 0;
     info->measurement_active = TRUE;
     // Start reading measurement data on new thread
@@ -956,7 +965,9 @@ static gpointer measurement_thread_func(gpointer user_data) {
             info->write_index += n_rows;
 
             // Schedule GUI update
-            //g_idle_add(update_gui_callback, info);
+            GtkWidget *plot_area = g_object_get_data(G_OBJECT(info->tab_content), "plot_area");
+            if (plot_area) g_idle_add((GSourceFunc)gtk_widget_queue_draw, plot_area);
+
         }
 
         free_tcp_package(&pkg);
@@ -966,52 +977,6 @@ static gpointer measurement_thread_func(gpointer user_data) {
 }
 
 
-
-
-/*
-//-------------------read all available measurement data in bulk-------------------------
-static gboolean read_measurement_data(gpointer user_data) {
-    ClientInfo *info = (ClientInfo *)user_data;
-    if (!info || !info->conn || !info->measurement_active) return G_SOURCE_REMOVE;
-
-    GSocket *sock = g_socket_connection_get_socket(info->conn);
-    if (!sock) return G_SOURCE_REMOVE;
-
-    GtkWidget *stop_btn = g_object_get_data(G_OBJECT(info->tab_content), "stop_btn");
-
-    while (TRUE) {
-        TcpPackage pkg;
-        gboolean ok = get_next_tcp_package(sock, &pkg, 2); 
-        if (!ok) {
-            // No more packages available right now
-            break;
-        }
-
-        if (pkg.package_type == DATA_PACKAGE && pkg.package_size > 0) {
-            size_t row_size = 9 * sizeof(float);
-            size_t n_rows = pkg.package_size / row_size;
-
-            // If the buffer cannot hold the entire package, stop measurement
-            if (info->write_index + n_rows > info->allocated_samples) {
-                g_warning("Measurement buffer full. Stopping measurement.");
-                if (stop_btn) on_stop_btn_clicked(GTK_BUTTON(stop_btn), info);
-                free_tcp_package(&pkg);
-                return G_SOURCE_REMOVE;
-            }
-
-            // Copy all rows in one shot
-            memcpy(&info->measurement_data[info->write_index * 9],
-                   pkg.package,
-                   n_rows * row_size);
-
-            info->write_index += n_rows;
-        }
-
-        free_tcp_package(&pkg);
-    }
-
-    return G_SOURCE_CONTINUE;
-} */
 
 
 
@@ -1065,4 +1030,146 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
     }
 
     gtk_widget_destroy(dialog);
+}
+
+
+
+
+
+
+
+
+
+
+
+//function to draw a live plot of measurements
+static gboolean on_plot_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+    ClientInfo *info = (ClientInfo *)user_data;
+    if (!info || !info->measurement_data) return FALSE;
+
+    uint64_t total = info->write_index;
+    if (total == 0) return FALSE;
+
+    uint64_t start = (total > PLOT_HISTORY * info->settings->sample_rate) ? (total - PLOT_HISTORY * info->settings->sample_rate) : 0;
+    uint64_t count = total - start;
+
+    GtkAllocation alloc;
+    gtk_widget_get_allocation(widget, &alloc);
+    double W = alloc.width;
+    double H = alloc.height;
+
+    float *buf = info->measurement_data;
+
+    /* === BACKGROUND === */
+    cairo_set_source_rgb(cr, 0, 0, 0);
+    cairo_paint(cr);
+
+    /* === DRAW AXES === */
+    cairo_set_source_rgb(cr, 1, 1, 1);
+    cairo_set_line_width(cr, 1.0);
+
+    // X-axis (bottom)
+    double x_axis_y = H - 30;   // leave space for labels
+    cairo_move_to(cr, 40, x_axis_y);
+    cairo_line_to(cr, W - 10, x_axis_y);
+    cairo_stroke(cr);
+
+    // Y-axis (left)
+    double y_axis_x = 40;
+    cairo_move_to(cr, y_axis_x, 10);
+    cairo_line_to(cr, y_axis_x, H - 30);
+    cairo_stroke(cr);
+
+    cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, 12);
+
+    /* === TIME RANGE === */
+    double t_start = buf[start * 9 + 8] / 1e6;
+    double t_end   = buf[(total - 1) * 9 + 8] / 1e6;
+    double t_range = t_end - t_start;
+
+    if (t_range <= 0) t_range = 1e-9;
+
+    /* === DRAW X TICKS === */
+    int num_xticks = 10;
+    for (int i = 0; i <= num_xticks; i++) {
+        double t = t_start + (i * t_range / num_xticks);
+        double x = y_axis_x + (i * (W - y_axis_x - 10) / num_xticks);
+
+        cairo_move_to(cr, x, x_axis_y);
+        cairo_line_to(cr, x, x_axis_y + 5);
+        cairo_stroke(cr);
+
+        char label[32];
+        snprintf(label, sizeof(label), "%.2f", t);
+        draw_text(cr, x, x_axis_y + 10, label);
+    }
+
+    /* === DRAW Y TICKS === */
+    int num_yticks = 10;
+    double y_range = Y_MAX - Y_MIN;
+    for (int i = 0; i <= num_yticks; i++) {
+        double mv = Y_MIN + (i * y_range / num_yticks);
+        double y = x_axis_y - ( (mv - Y_MIN) * (x_axis_y - 10) / y_range );
+
+        cairo_move_to(cr, y_axis_x - 5, y);
+        cairo_line_to(cr, y_axis_x, y);
+        cairo_stroke(cr);
+
+        char label[32];
+        snprintf(label, sizeof(label), "%.0f", mv);
+        cairo_move_to(cr, 5, y + 4);
+        cairo_show_text(cr, label);
+    }
+
+    /* === COLORS FOR CHANNELS === */
+    const double colors[8][3] = {
+        {1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {1, 1, 0},
+        {1, 0, 1}, {0, 1, 1}, {1, 0.5, 0}, {0.5, 1, 0.5}
+    };
+
+    /* === DRAW CHANNELS === */
+
+    for (int ch = 0; ch < 8; ch++) {
+        cairo_set_source_rgb(cr, colors[ch][0], colors[ch][1], colors[ch][2]);
+        cairo_set_line_width(cr, 1.2);
+
+        gboolean first = TRUE;
+
+        for (uint64_t i = 0; i < count; i++) {
+            uint64_t idx = (start + i) * 9;
+
+            float v_mV = buf[idx + ch];
+            double t_sec = buf[idx + 8] / 1e6;
+
+            // convert to plot coords
+            double x = y_axis_x + ( (t_sec - t_start) / t_range ) * (W - y_axis_x - 10 );
+            double y = x_axis_y - ( (v_mV - Y_MIN) / y_range ) * (x_axis_y - 10);
+
+            if (first) {
+                cairo_move_to(cr, x, y);
+                first = FALSE;
+            } else {
+                cairo_line_to(cr, x, y);
+            }
+        }
+
+        cairo_stroke(cr);
+    }
+
+    return FALSE;
+}
+
+
+
+
+
+
+// utility: draw text centered at position
+static void draw_text(cairo_t *cr, double x, double y, const char *txt){
+    cairo_text_extents_t ext;
+    cairo_text_extents(cr, txt, &ext);
+    cairo_move_to(cr, x - ext.width/2, y + ext.height);
+    cairo_show_text(cr, txt);
 }
