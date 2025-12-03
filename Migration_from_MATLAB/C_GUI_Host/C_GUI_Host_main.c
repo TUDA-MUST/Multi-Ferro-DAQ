@@ -1,9 +1,10 @@
-//gcc C_GUI_Host_main.c GUI.c -o app `pkg-config --cflags --libs gtk+-3.0 json-glib-1.0`
+//gcc C_GUI_Host_main.c GUI.c -o app -DLINUX `pkg-config --cflags --libs gtk+-3.0 json-glib-1.0`
+// gcc C_GUI_Host_main.c GUI.c -o app.exe -D_WIN32 -lws2_32 -liphlpapi $(pkg-config --cflags --libs gtk+-3.0 json-glib-1.0)
 
 #include "GUI.h"
 #include <gtk/gtk.h>
 #include <gio/gio.h>
-//#include <arpa/inet.h>   <- not usable on windows
+#include <arpa/inet.h>   
 #include <sys/socket.h>
 #include <unistd.h>
 #include <ifaddrs.h>
@@ -40,7 +41,7 @@ static int is_private_ip(uint32_t ip)
 
 
 
-// Detect a valid hotspot IP without using inet_ntop
+// Detect a valid hotspot IP 
 static uint32_t detect_hotspot_ip()
 {
     struct ifaddrs *ifaddr, *ifa;
@@ -54,28 +55,27 @@ static uint32_t detect_hotspot_ip()
     uint32_t hotspot_ip = 0;
 
     for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr == NULL) continue;
+        if (!ifa->ifa_addr) continue;
         if (ifa->ifa_addr->sa_family != AF_INET) continue;
 
         struct sockaddr_in *sa = (struct sockaddr_in *)ifa->ifa_addr;
 
-        // Convert network -> host byte order
+        // Convert network → host order
         uint32_t ip = ntohl(sa->sin_addr.s_addr);
 
-        // Skip loopback (127.x.x.x)
-        if ((ip & 0xFF000000) == 0x7F000000) continue;
+        // Skip loopback 127.x.x.x
+        if ((ip & 0xFF000000) == 0x7F000000)
+            continue;
 
         // First private IP wins
         if (is_private_ip(ip)) {
             hotspot_ip = ip;
 
-            // Manually convert 32-bit IP to dotted-decimal
-            unsigned char b1 = (ip >> 24) & 0xFF;
-            unsigned char b2 = (ip >> 16) & 0xFF;
-            unsigned char b3 = (ip >> 8)  & 0xFF;
-            unsigned char b4 =  ip        & 0xFF;
-
-            snprintf(buf, sizeof(buf), "%u.%u.%u.%u", b1, b2, b3, b4);
+            // Convert to dotted-decimal using inet_ntop
+            if (!inet_ntop(AF_INET, &sa->sin_addr, buf, sizeof(buf))) {
+                perror("inet_ntop");
+                strncpy(buf, "UNKNOWN", sizeof(buf));
+            }
 
             printf("Detected hotspot IP: %s on interface %s\n",
                    buf, ifa->ifa_name);
@@ -87,12 +87,14 @@ static uint32_t detect_hotspot_ip()
     freeifaddrs(ifaddr);
 
     if (hotspot_ip == 0) {
-        fprintf(stderr, "No private hotspot IP detected, using 255.255.255.255\n");
+        fprintf(stderr,
+                "No private hotspot IP detected, using 255.255.255.255\n");
         hotspot_ip = 0xFFFFFFFF;
     }
 
     return hotspot_ip;
 }
+
 
 
 

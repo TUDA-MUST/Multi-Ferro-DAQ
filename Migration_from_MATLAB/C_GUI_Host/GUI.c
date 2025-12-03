@@ -64,12 +64,13 @@ void free_client_info(ClientInfo *info)
     if (info->measurement_data)
         g_free(info->measurement_data);
 
-    //remove connection statur monitor
+    //remove connection statur monitor and syncronize measurement thread
     info->destroying = 1;
     if (info->monitor_id > 0) {
       g_source_remove(info->monitor_id);
       info->monitor_id = 0;
     }
+    if (info->measurement_thread) g_thread_join(info->measurement_thread);
 
     // Remove notebook page (destroys all children, including widgets holding PreampData)
     if (info->notebook && info->tab_content) {
@@ -151,8 +152,8 @@ void assign_client_to_waiting_tab(GSocketConnection *conn, unsigned char id, Gtk
 
     info->conn = g_object_ref(conn);
 
-    // Start periodic connection check (once per 2 seconds)
-    info->monitor_id = g_timeout_add(2000, monitor_client_connection, info);
+    // Start periodic connection check (once per 5 seconds)
+    info->monitor_id = g_timeout_add(5000, monitor_client_connection, info);
     
     GtkWidget *remove_btn = gtk_button_new_with_label("Remove Client");
     gtk_box_pack_start(GTK_BOX(info->tab_content), remove_btn, FALSE, FALSE, 4);
@@ -615,7 +616,7 @@ static void on_send_btn_clicked(GtkButton *button, gpointer user_data) {
         g_free(info->measurement_data);
 
     info->measurement_data = g_malloc0(sizeof(float) * 9 * alloc_n);
-    info->allocated_samples = alloc_n;
+    info->allocated_samples = alloc_n - 2000;
     info->write_index = 0;
     info->measurement_active = TRUE;
     // Start reading measurement data on new thread
@@ -921,11 +922,11 @@ static gpointer measurement_thread_func(gpointer user_data) {
     GSocket *sock = g_socket_connection_get_socket(info->conn);
     if (!sock) return NULL;
 
-    while (info->measurement_active) {
+    while (info->measurement_active && !info->destroying) {
         TcpPackage pkg;
-        gboolean ok = get_next_tcp_package(sock, &pkg, 20); // 100 ms timeout
+        gboolean ok = get_next_tcp_package(sock, &pkg, 150); // 150 ms timeout
         if (!ok) {
-            //g_usleep(5000); // sleep 10ms to avoid busy loop
+            g_usleep(2000); // sleep 2ms to avoid busy loop
             continue;
         }
 
@@ -935,6 +936,7 @@ static gpointer measurement_thread_func(gpointer user_data) {
 
             if (info->write_index + n_rows > info->settings->sample_number) {
                 g_warning("Measurement buffer full. Stopping measurement.");
+                printf("allocated %ld bytes and written until %ld \n", info->allocated_samples, info->write_index);
                 info->measurement_active = FALSE;
 
                 // Schedule GUI stop button click
@@ -942,7 +944,7 @@ static gpointer measurement_thread_func(gpointer user_data) {
                 if (stop_btn) {
                     g_idle_add((GSourceFunc)on_stop_btn_clicked, stop_btn);
                 }
-
+                g_usleep(2000); 
                 free_tcp_package(&pkg);
                 break;
             }
