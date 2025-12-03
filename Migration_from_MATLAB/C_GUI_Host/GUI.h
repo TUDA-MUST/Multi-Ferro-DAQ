@@ -24,6 +24,7 @@ typedef struct {
     GSocketConnection *conn;
     GtkWidget *tab_label;
     GtkWidget *tab_content;
+    uint8_t float_count;   // store handshake float count
     GtkWidget *notebook;
     GtkWidget *close_button;
     GtkWidget *status_label;
@@ -45,7 +46,8 @@ typedef enum {
     STOP_PACKAGE      = 1,
     SETTINGS_PACKAGE  = 2,
     DATA_PACKAGE      = 3,
-    TIMESTAMP_PACKAGE = 4
+    TIMESTAMP_PACKAGE = 4,
+    HANDSHAKE_PACKAGE = 5
 } PackageType_e;
 
 typedef uint8_t PackageType8_t; // storage type
@@ -66,12 +68,9 @@ extern GMutex queue_lock;
 
 // Functions
 void build_client_ui(ClientInfo *info);
-void assign_client_to_waiting_tab(GSocketConnection *conn, unsigned char id, GtkWidget *notebook);
+void assign_client_to_waiting_tab(GSocketConnection *conn, const char* client_name, uint8_t float_count ,GtkWidget *notebook);
 void on_add_client_clicked(GtkButton *btn, gpointer user_data);
-gboolean on_client_incoming(GSocketService *service,
-                            GSocketConnection *conn,
-                            GObject *src,
-                            gpointer user_data);
+gboolean on_client_incoming(GSocketService *service, GSocketConnection *conn, GObject *src, gpointer user_data);
 void on_remove_client_clicked(GtkButton *btn, gpointer user_data);
 void on_close_waiting_tab_clicked(GtkButton *btn, gpointer user_data);
 static void set_preamp_combo(GtkWidget *combo, int value);
@@ -94,4 +93,6 @@ static gpointer measurement_thread_func(gpointer user_data);
 static void on_export_csv_clicked(GtkButton *button, gpointer user_data);
 static gboolean on_plot_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 static void draw_text(cairo_t *cr, double x, double y, const char *txt);
+void on_start_all_clicked(GtkButton *btn, gpointer user_data);
+void on_stop_all_clicked(GtkButton *btn, gpointer user_data);
 #endif // GUI_H

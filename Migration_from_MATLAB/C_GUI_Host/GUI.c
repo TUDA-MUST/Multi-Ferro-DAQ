@@ -114,7 +114,7 @@ void on_close_waiting_tab_clicked(GtkButton *btn, gpointer user_data) {
 }
 
 // ----------------- ASSIGN CLIENT -------------------
-void assign_client_to_waiting_tab(GSocketConnection *conn, unsigned char id, GtkWidget *notebook) {
+void assign_client_to_waiting_tab(GSocketConnection *conn, const char* client_name, uint8_t float_count ,GtkWidget *notebook) {
     g_mutex_lock(&queue_lock);
     if (g_queue_is_empty(waiting_tabs)) {
         g_mutex_unlock(&queue_lock);
@@ -146,11 +146,12 @@ void assign_client_to_waiting_tab(GSocketConnection *conn, unsigned char id, Gtk
     }
 
     char text[64];
-    snprintf(text, sizeof(text), "Client %u", id);
+    snprintf(text, sizeof(text), "%s", client_name);
     gtk_label_set_text(GTK_LABEL(info->tab_label), text);
     set_tab_label_color_text(info->tab_label, text, TRUE);
 
     info->conn = g_object_ref(conn);
+    info->float_count = float_count;
 
     // Start periodic connection check (once per 5 seconds)
     info->monitor_id = g_timeout_add(5000, monitor_client_connection, info);
@@ -164,9 +165,58 @@ void assign_client_to_waiting_tab(GSocketConnection *conn, unsigned char id, Gtk
 
     build_client_ui(info);
     gtk_widget_show_all(info->tab_content);
+    g_object_set_data(G_OBJECT(info->tab_content), "client_info", info);
 }
 
 // ----------------- SOCKET CALLBACK -------------------
+gboolean on_client_incoming(GSocketService *service,
+                            GSocketConnection *conn,
+                            GObject *src,
+                            gpointer user_data)
+{
+    GtkWidget *notebook = GTK_WIDGET(user_data);
+
+    GSocket *sock = g_socket_connection_get_socket(conn);
+    if (!sock) return FALSE;
+
+    //Read the first package ---
+    TcpPackage pkg;
+    gboolean ok = get_next_tcp_package(sock, &pkg, 150); // 150 ms timeout
+    if (!ok) return FALSE;
+
+    char tab_label_text[64] = "Unknown Client";
+    uint8_t float_count = 0;
+
+    //Handle handshake package ---
+    if (pkg.package_type == HANDSHAKE_PACKAGE && pkg.package_size > 0) {
+        float_count = pkg.package[0];
+        char *client_name = (char *)(pkg.package + 1);
+
+        g_snprintf(tab_label_text, sizeof(tab_label_text), "%s", client_name);
+
+        // g_print("Received HANDSHAKE_PACKAGE: float_count=%d, client_name=\"%s\"\n", float_count, client_name);
+    }
+
+    //Send zero byte as ACK ---
+    GOutputStream *out = g_io_stream_get_output_stream(G_IO_STREAM(conn));
+    uint8_t ack = 0;
+    g_output_stream_write(out, &ack, 1, NULL, NULL);
+
+    //Assign client to waiting tab ---
+    assign_client_to_waiting_tab(conn, tab_label_text, float_count,notebook);  
+
+    //Update ClientInfo ---
+    //ClientInfo *info = g_object_get_data(G_OBJECT(tab_content), "client_info");
+    //if (info) info->float_count = float_count;
+    //else printf("info is null\n");
+    //printf("float_count is: %d", info->float_count);
+
+    free_tcp_package(&pkg);
+    return TRUE;
+}
+
+
+/*
 gboolean on_client_incoming(GSocketService *service,
                             GSocketConnection *conn,
                             GObject *src,
@@ -189,6 +239,7 @@ gboolean on_client_incoming(GSocketService *service,
     assign_client_to_waiting_tab(conn, id, notebook);
     return TRUE;
 }
+*/
 
 // ----------------- BUILD CLIENT UI -------------------
 void build_client_ui(ClientInfo *info)
@@ -610,6 +661,8 @@ static void send_settings_to_client(ClientInfo *info) {
 static void on_send_btn_clicked(GtkButton *button, gpointer user_data) {
     ClientInfo *info = (ClientInfo *)user_data;
     send_settings_to_client(info);
+    //Don't start again if measurement is in RAM
+    if(info->write_index > 0) return;
     // Activate Stop button
     GtkWidget *stop_btn = g_object_get_data(G_OBJECT(info->tab_content), "stop_btn");
     if (stop_btn) gtk_widget_set_sensitive(stop_btn, TRUE);
@@ -671,8 +724,19 @@ static void on_stop_btn_clicked(GtkButton *button, gpointer user_data) {
         g_error_free(err);
     }
 
-    // Disable Stop button
-    gtk_widget_set_sensitive(GTK_WIDGET(button), FALSE);
+     // If button is NULL (Stop All), fetch the stored one and then disable it
+    GtkWidget *stop_btn = GTK_WIDGET(button);
+    if (!stop_btn) {
+        stop_btn = g_object_get_data(G_OBJECT(info->tab_content), "stop_btn");
+    }
+
+    if (GTK_IS_WIDGET(stop_btn)) {
+        gtk_widget_set_sensitive(stop_btn, FALSE);
+    } else {
+        g_warning("Stop button widget not found for this tab");
+    }
+    
+
     g_message("Measurement stopped by user.");
 }
 
@@ -683,7 +747,7 @@ static void on_stop_btn_clicked(GtkButton *button, gpointer user_data) {
 
 
 //---------------CREATE A WAITING TAB TO BE ASSIGNED-----------------------
-
+// button depreacated, but funcion used to assign clients
 ClientInfo* create_waiting_tab(GtkWidget *notebook) {
     GtkWidget *label = gtk_label_new("Waiting...");
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL,10);
@@ -940,7 +1004,7 @@ static gpointer measurement_thread_func(gpointer user_data) {
         }
 
         if (pkg.package_type == DATA_PACKAGE && pkg.package_size > 0) {
-            size_t row_size = 9 * sizeof(float);
+            size_t row_size = info->float_count * sizeof(float);
             size_t n_rows = pkg.package_size / row_size;
 
             if (info->write_index + n_rows > info->settings->sample_number) {
@@ -958,7 +1022,7 @@ static gpointer measurement_thread_func(gpointer user_data) {
                 break;
             }
 
-            memcpy(&info->measurement_data[info->write_index * 9],
+            memcpy(&info->measurement_data[info->write_index * info->float_count],
                    pkg.package,
                    n_rows * row_size);
 
@@ -1017,12 +1081,13 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
         }
 
         for (uint64_t i = 0; i < client->write_index; i++) {
-            for (int j = 0; j < 9; j++) {
-                fprintf(fp, "%.6f", client->measurement_data[i * 9 + j]);
-                if (j < 8) fprintf(fp, ";");
+            for (int j = 0; j < client->float_count; j++) {
+                fprintf(fp, "%.4f", client->measurement_data[i * client->float_count + j]);
+                if (j < client->float_count - 1) fprintf(fp, ";");
             }
             fprintf(fp, "\n");
         }
+
 
         fclose(fp);
         g_print("Data exported to %s\n", filename);
@@ -1085,8 +1150,8 @@ static gboolean on_plot_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     cairo_set_font_size(cr, 12);
 
     /* === TIME RANGE === */
-    double t_start = buf[start * 9 + 8] / 1e6;
-    double t_end   = buf[(total - 1) * 9 + 8] / 1e6;
+    double t_start = buf[start * info->float_count + info->float_count-1] / 1e6;
+    double t_end   = buf[(total - 1) * info->float_count + info->float_count-1] / 1e6;
     double t_range = t_end - t_start;
 
     if (t_range <= 0) t_range = 1e-9;
@@ -1130,18 +1195,18 @@ static gboolean on_plot_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     };
 
     /* === DRAW CHANNELS === */
-
-    for (int ch = 0; ch < 8; ch++) {
-        cairo_set_source_rgb(cr, colors[ch][0], colors[ch][1], colors[ch][2]);
+    for (int ch = 0; ch < info->float_count-1; ch++) {
+        uint8_t ch_clr = ch%8;
+        cairo_set_source_rgb(cr, colors[ch_clr][0], colors[ch_clr][1], colors[ch_clr][2]);
         cairo_set_line_width(cr, 1.2);
 
         gboolean first = TRUE;
 
         for (uint64_t i = 0; i < count; i++) {
-            uint64_t idx = (start + i) * 9;
+            uint64_t idx = (start + i) * info->float_count;
 
             float v_mV = buf[idx + ch];
-            double t_sec = buf[idx + 8] / 1e6;
+            double t_sec = buf[idx + info->float_count-1] / 1e6;
 
             // convert to plot coords
             double x = y_axis_x + ( (t_sec - t_start) / t_range ) * (W - y_axis_x - 10 );
@@ -1173,3 +1238,57 @@ static void draw_text(cairo_t *cr, double x, double y, const char *txt){
     cairo_move_to(cr, x - ext.width/2, y + ext.height);
     cairo_show_text(cr, txt);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//handler for button to start measurement on all clients
+void on_start_all_clicked(GtkButton *btn, gpointer user_data){
+    GtkNotebook *notebook = GTK_NOTEBOOK(user_data);
+    int n_pages = gtk_notebook_get_n_pages(notebook);
+
+    for (int i = 1; i < n_pages; i++) {  // skip Main tab
+        GtkWidget *tab = gtk_notebook_get_nth_page(notebook, i);
+        ClientInfo *info = g_object_get_data(G_OBJECT(tab), "client_info");
+        if (!info) continue;
+
+        //g_print("Starting client on tab %d...\n", i);
+
+        // Virtual press of the per-client Start button
+        on_send_btn_clicked(NULL, info);
+    }
+}
+
+
+
+
+
+
+
+//handler for button to stop measurement on all clients
+void on_stop_all_clicked(GtkButton *btn, gpointer user_data){
+    GtkNotebook *notebook = GTK_NOTEBOOK(user_data);
+    int n_pages = gtk_notebook_get_n_pages(notebook);
+
+    for (int i = 1; i < n_pages; i++) {  // skip Main tab
+        GtkWidget *tab = gtk_notebook_get_nth_page(notebook, i);
+        ClientInfo *info = g_object_get_data(G_OBJECT(tab), "client_info");
+        if (!info) continue;
+
+        g_print("Stopping client on tab %d...\n", i);
+
+        on_stop_btn_clicked(NULL, info);
+    }
+}
+
+
