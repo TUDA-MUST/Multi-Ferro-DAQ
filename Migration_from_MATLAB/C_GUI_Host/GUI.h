@@ -5,6 +5,12 @@
 #include <gio/gio.h>
 #include <json-glib/json-glib.h>
 
+
+#define PLOT_HISTORY 5   // last N seconds displayed in live plot
+#define Y_MIN   (-2500.0)   //plotting range
+#define Y_MAX   ( 2500.0)
+
+
 // Forward structs
 typedef struct {
     uint32_t sample_rate;
@@ -86,4 +92,6 @@ gboolean get_next_tcp_package(GSocket *sock, TcpPackage *pkg, guint32 timeout_ms
 //static gboolean read_measurement_data(gpointer user_data);
 static gpointer measurement_thread_func(gpointer user_data);
 static void on_export_csv_clicked(GtkButton *button, gpointer user_data);
+static gboolean on_plot_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
+static void draw_text(cairo_t *cr, double x, double y, const char *txt);
 #endif // GUI_H
