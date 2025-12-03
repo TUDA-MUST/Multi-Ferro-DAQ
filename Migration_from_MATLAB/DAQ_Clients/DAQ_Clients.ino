@@ -53,6 +53,10 @@ typedef struct {
 #define VSPI_SCLK 36
 #define VSPI_SS   39
 
+#define BUFFERSIZE 39              //utilizes TCP packges only 98.2%
+#define DATASET_SIZE_BYTES 36      // 9 floats * 4 bytes
+#define DATAQUEUE_SIZE 512
+
 
 CRGB leds[NUM_LEDS];
 
@@ -586,7 +590,7 @@ void sendTaskCode(void* params){
   client.flush();
 
   //create data package
-  byte buffer[2304]; // 9 floats * 4 bytes each => 36 bytes * 64 datasets = 2304 bytes buffer 
+  byte buffer[DATASET_SIZE_BYTES * BUFFERSIZE];
   TcpPackage dataPkg;
   dataPkg.package_type = DATA_PACKAGE;      // mark as DATA_PACKAGE
   dataPkg.package_size = sizeof(buffer);    // size of the binary blob
@@ -598,6 +602,8 @@ void sendTaskCode(void* params){
   header[2] = (dataPkg.package_size >> 16) & 0xFF;
   header[3] = (dataPkg.package_size >> 8) & 0xFF;
   header[4] = (dataPkg.package_size >> 0) & 0xFF;
+  uint32_t total = 5 + dataPkg.package_size;
+  uint8_t* out = (uint8_t*)malloc(total);
 
   //Serial.printf("There are %ld samples to be collected\n", measurecnt.cntnmbr);
 
@@ -611,29 +617,34 @@ void sendTaskCode(void* params){
           vTaskDelete(aquireTask);
           client.stop();
           WiFi.disconnect();
+          free(out);
           delay(100);
           ESP.restart();                                                                               //   <- stop gap measure because I can't figure out how to connect to MATLAB again
         }
       }
                                                                  
       
-      if(uxQueueSpacesAvailable(datatransferQueue) > 448)vTaskDelay(1);
+      if(uxQueueSpacesAvailable(datatransferQueue) > DATAQUEUE_SIZE - DATASET_SIZE_BYTES * BUFFERSIZE)vTaskDelay(1);
       else{
-      for(int j = 0; j < 64; j++){                                                                //this loop wil wait for a package of 64 samples to be available and package them into the buffer
+      for(int j = 0; j < BUFFERSIZE; j++){                                                                //this loop wil wait for a package of 64 samples to be available and package them into the buffer
         struct chanData_float *chanData_recv_ptr;
         if(xQueueReceive(datatransferQueue, &(chanData_recv_ptr), portMAX_DELAY)){
           convert_data(chanData_recv_ptr, amparr);
           for(int i = 0; i < 9; i++){
-            memcpy(buffer + (4 * i) + (36*j), &chanData_recv_ptr->chan[i], 4);   
+            memcpy(buffer + (4 * i) + (DATASET_SIZE_BYTES*j), &chanData_recv_ptr->chan[i], 4);   
           }
           free(chanData_recv_ptr);
         }
       }
-      client.write(header, 5);                              // send header
-      client.write(dataPkg.package, dataPkg.package_size);  // send binary blob
-      i += 64;
+      
+      memcpy(out, header, 5);
+      memcpy(out + 5, dataPkg.package, dataPkg.package_size);
+
+      client.write(out, total);   // single TCP write()
+      i += BUFFERSIZE;
       }
     }
+    free(out);
     vTaskDelete(aquireTask);
     client.stop();
     WiFi.disconnect();
@@ -723,7 +734,7 @@ void setup() {
 
 
 
-  datatransferQueue = xQueueCreate(512, sizeof(struct chanData_float *));                //setting up queue to send data from aquisirion ISR to the task converting it and sending it out via WiFi 
+  datatransferQueue = xQueueCreate(DATAQUEUE_SIZE, sizeof(struct chanData_float *));                //setting up queue to send data from aquisirion ISR to the task converting it and sending it out via WiFi 
   if(datatransferQueue == NULL) Serial.println("Queue not initialized");
   xTaskCreatePinnedToCore(sendTaskCode, "sendTask", 8192, NULL, 1, &sendTask, 0);        //start the task that sends out data on core 0, this task will start the other task/ ISR
 }
