@@ -1,17 +1,31 @@
 //gcc C_GUI_Host_main.c GUI.c -o app -DLINUX `pkg-config --cflags --libs gtk+-3.0 json-glib-1.0`
-// gcc C_GUI_Host_main.c GUI.c -o app.exe -D_WIN32 -lws2_32 -liphlpapi $(pkg-config --cflags --libs gtk+-3.0 json-glib-1.0)
+// gcc C_GUI_Host_main.c GUI.c -o ./WinApp/bin/app.exe -D_WIN32 -lws2_32 -liphlpapi $(pkg-config --cflags --libs gtk+-3.0 json-glib-1.0)
+
+#ifdef _WIN32
+    #define _WINSOCK_DEPRECATED_NO_WARNINGS
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+    #include <iphlpapi.h>
+    #pragma comment(lib, "ws2_32.lib")
+    #pragma comment(lib, "iphlpapi.lib")
+    // mingw does not provide unistd.h nor close()
+    #define close closesocket
+#else   // ----------- LINUX -----------
+    #include <arpa/inet.h>
+    #include <sys/socket.h>
+    #include <unistd.h>
+    #include <ifaddrs.h>
+    #include <netinet/in.h>
+#endif
 
 #include "GUI.h"
 #include <gtk/gtk.h>
 #include <gio/gio.h>
-#include <arpa/inet.h>   
-#include <sys/socket.h>
-#include <unistd.h>
-#include <ifaddrs.h>
-#include <netinet/in.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+
 
 
 GSocketService *global_service = NULL;
@@ -46,6 +60,124 @@ static int is_private_ip(uint32_t ip)
 
 
 // Detect a valid hotspot IP 
+static uint32_t detect_hotspot_ip(){
+    #ifdef _WIN32
+    // ---------- WINDOWS ----------
+    IP_ADAPTER_ADDRESSES *addr_buf = NULL, *adapter;
+    DWORD buf_len = 15000; // buffer size
+    addr_buf = (IP_ADAPTER_ADDRESSES *)malloc(buf_len);
+
+    if (!addr_buf) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return 0xFFFFFFFF;
+    }
+
+    if (GetAdaptersAddresses(AF_INET, 0, NULL, addr_buf, &buf_len) != NO_ERROR) {
+        fprintf(stderr, "GetAdaptersAddresses failed\n");
+        free(addr_buf);
+        return 0xFFFFFFFF;
+    }
+
+    uint32_t hotspot_ip = 0;
+
+    // First pass: look for Mobile Hotspot adapter by description
+    for (adapter = addr_buf; adapter; adapter = adapter->Next) {
+        if (adapter->OperStatus != IfOperStatusUp) continue;
+
+        if (adapter->Description) {
+            char desc[256];
+            if (wcstombs(desc, adapter->Description, sizeof(desc)) != (size_t)-1) {
+                desc[sizeof(desc)-1] = '\0';
+
+                if (strstr(desc, "Hosted Network") || strstr(desc, "Mobile Hotspot")) {
+                    IP_ADAPTER_UNICAST_ADDRESS *u;
+                    for (u = adapter->FirstUnicastAddress; u; u = u->Next) {
+                        struct sockaddr_in *sa = (struct sockaddr_in *)u->Address.lpSockaddr;
+                        uint32_t ip = ntohl(sa->sin_addr.s_addr);
+
+                        // Skip loopback
+                        if ((ip & 0xFF000000) == 0x7F000000) continue;
+
+                        // Ensure IP is in typical Mobile Hotspot subnet 192.168.137.x
+                        if ((ip & 0xFFFFFF00) == 0xC0A88900) { // 192.168.137.0/24
+                            char buf[32];
+                            inet_ntop(AF_INET, &sa->sin_addr, buf, sizeof(buf));
+                            printf("Detected Mobile Hotspot IP: %s\n", buf);
+                            hotspot_ip = ip;
+                            free(addr_buf);
+                            return hotspot_ip;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Second pass: any private IP
+    for (adapter = addr_buf; adapter; adapter = adapter->Next) {
+        IP_ADAPTER_UNICAST_ADDRESS *u;
+        for (u = adapter->FirstUnicastAddress; u; u = u->Next) {
+            struct sockaddr_in *sa = (struct sockaddr_in *)u->Address.lpSockaddr;
+            uint32_t ip = ntohl(sa->sin_addr.s_addr);
+
+            if ((ip & 0xFF000000) == 0x7F000000) continue; // skip loopback
+            if (!is_private_ip(ip)) continue;
+
+            char buf[32];
+            inet_ntop(AF_INET, &sa->sin_addr, buf, sizeof(buf));
+            printf("Detected fallback private IP: %s\n", buf);
+            hotspot_ip = ip;
+            free(addr_buf);
+            return hotspot_ip;
+        }
+    }
+
+    free(addr_buf);
+    fprintf(stderr, "No private hotspot IP detected, using 255.255.255.255\n");
+    return 0xFFFFFFFF;
+    
+    #else
+        // ---------- LINUX ----------
+        struct ifaddrs *ifaddr, *ifa;
+        char buf[INET_ADDRSTRLEN];
+
+        if (getifaddrs(&ifaddr) == -1) {
+            perror("getifaddrs");
+            exit(1);
+        }
+
+        uint32_t hotspot_ip = 0;
+
+        for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+            if (!ifa->ifa_addr) continue;
+            if (ifa->ifa_addr->sa_family != AF_INET) continue;
+
+            struct sockaddr_in *sa = (struct sockaddr_in *)ifa->ifa_addr;
+            uint32_t ip = ntohl(sa->sin_addr.s_addr);
+
+            if ((ip & 0xFF000000) == 0x7F000000) continue; // skip loopback
+
+            if (is_private_ip(ip)) {
+                hotspot_ip = ip;
+                inet_ntop(AF_INET, &sa->sin_addr, buf, sizeof(buf));
+                printf("Detected hotspot IP: %s on interface %s\n", buf, ifa->ifa_name);
+                break;
+            }
+        }
+
+        freeifaddrs(ifaddr);
+
+        if (hotspot_ip == 0) {
+            fprintf(stderr, "No private hotspot IP detected, using 255.255.255.255\n");
+            hotspot_ip = 0xFFFFFFFF;
+        }
+
+        return hotspot_ip;
+    #endif
+}
+
+
+/*
 static uint32_t detect_hotspot_ip()
 {
     struct ifaddrs *ifaddr, *ifa;
@@ -99,7 +231,7 @@ static uint32_t detect_hotspot_ip()
     return hotspot_ip;
 }
 
-
+*/
 
 
 
@@ -178,6 +310,14 @@ int main(int argc, char **argv)
     // Init queue + mutex
     waiting_tabs = g_queue_new();
     g_mutex_init(&queue_lock);
+
+    #ifdef _WIN32
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2,2), &wsa) != 0) {
+        fprintf(stderr, "WSAStartup failed\n");
+        return 1;
+    }
+    #endif
 
     // Main window
     GtkWidget *win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -289,10 +429,15 @@ int main(int argc, char **argv)
         g_error("Broadcast socket() failed: %m");
 
     int broadcastEnable = 1;
-    if (setsockopt(broadcast_info->sock, SOL_SOCKET, SO_BROADCAST,
-                &broadcastEnable, sizeof(broadcastEnable)) < 0)
-        g_error("setsockopt(SO_BROADCAST) failed: %m");
-
+    #ifdef _WIN32
+        if (setsockopt(broadcast_info->sock, SOL_SOCKET, SO_BROADCAST,
+                    (const char *)&broadcastEnable,
+                    sizeof(broadcastEnable)) < 0)
+    #else
+        if (setsockopt(broadcast_info->sock, SOL_SOCKET, SO_BROADCAST,
+                    &broadcastEnable,
+                    sizeof(broadcastEnable)) < 0)
+    #endif
     memset(&broadcast_info->addr, 0, sizeof(broadcast_info->addr));
     broadcast_info->addr.sin_family = AF_INET;
     broadcast_info->addr.sin_port = htons(5000);
@@ -305,6 +450,10 @@ int main(int argc, char **argv)
     // Run GUI
     gtk_widget_show_all(win);
     gtk_main();
+
+    #ifdef _WIN32
+    WSACleanup();
+    #endif
 
     return 0;
 }

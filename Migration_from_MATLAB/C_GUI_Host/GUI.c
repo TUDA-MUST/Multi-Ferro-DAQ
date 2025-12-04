@@ -549,7 +549,7 @@ static void on_load_json_clicked(GtkButton *btn, ClientInfo *info)
         set_preamp_combo(pre_combo, info->settings->preamp[i]);
 
         char hexbuf[4];
-        snprintf(hexbuf, sizeof(hexbuf), "%02X", (__uint8_t)info->settings->settings_reg[i]);
+        snprintf(hexbuf, sizeof(hexbuf), "%02X", (uint8_t)info->settings->settings_reg[i]);
         gtk_entry_set_text(GTK_ENTRY(reg_entry), hexbuf);
     }
 
@@ -1082,7 +1082,7 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
 
         for (uint64_t i = 0; i < client->write_index; i++) {
             for (int j = 0; j < client->float_count; j++) {
-                fprintf(fp, "%.4f", client->measurement_data[i * client->float_count + j]);
+                fprintf(fp, "%.6f", client->measurement_data[i * client->float_count + j]);
                 if (j < client->float_count - 1) fprintf(fp, ";");
             }
             fprintf(fp, "\n");
