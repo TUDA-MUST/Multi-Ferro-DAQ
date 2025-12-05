@@ -56,7 +56,7 @@ typedef struct {
 
 #define BUFFERSIZE 39              //utilizes TCP packges only 98.2%
 #define DATASET_SIZE_BYTES 36      // 9 floats * 4 bytes
-#define DATAQUEUE_SIZE 512
+#define DATAQUEUE_SIZE 1024
 
 
 
@@ -446,6 +446,9 @@ bool getNextTcpPackage(WiFiClient &client, TcpPackage &pkg) {
 
 
 
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -502,6 +505,66 @@ void setWifiCredentials() {
     delay(1000);
     ESP.restart();
 }
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+void respondWithTimestampPackage(WiFiClient &client, TcpPackage &recvPkg) {
+    // Original payload size
+    uint32_t recvSize = recvPkg.package_size;
+
+    // New payload size = old payload + 8 bytes for ESP32 timestamp
+    uint32_t newPayloadSize = recvSize + 8;
+
+    // Total frame size = header (5 bytes) + payload
+    uint32_t totalSize = 5 + newPayloadSize;
+    uint8_t* frame = (uint8_t*)malloc(totalSize);
+    if (!frame) {
+        Serial.println("Failed to allocate memory for TIMESTAMP_PACKAGE response.");
+        return;
+    }
+
+    // Build header
+    frame[0] = TIMESTAMP_PACKAGE;
+    frame[1] = (newPayloadSize >> 24) & 0xFF;
+    frame[2] = (newPayloadSize >> 16) & 0xFF;
+    frame[3] = (newPayloadSize >> 8) & 0xFF;
+    frame[4] = (newPayloadSize >> 0) & 0xFF;
+
+    // Copy original payload
+    if (recvPkg.package && recvSize > 0) {
+        memcpy(frame + 5, recvPkg.package, recvSize);
+    }
+
+    // Get timestamp in microseconds
+    float timestamp = (float) esp_timer_get_time(); 
+    // Copy float bytes into buffer
+    union {
+        float f;
+        uint8_t bytes[4];
+    } u;
+    u.f = timestamp;
+    memcpy(frame + 5 + recvSize, u.bytes, 4);  // append 4 bytes for float
+
+
+    // Send everything in a single write
+    client.write(frame, totalSize);
+
+    //Serial.printf("Responded with TIMESTAMP_PACKAGE: original size=%d, new timestamp=%lld us\n", recvSize, timestamp);
+    free(frame);
+}
+
+
+
+
 
 
 
@@ -707,17 +770,44 @@ void sendTaskCode(void* params){
 
     for(int i = 0; i < measurecnt.cntnmbr;){                                                     //this loop ends the measurement after the set amount of samples
       while (client.available() > 0) {
-        getNextTcpPackage(client, settingsPkg);
-        if (settingsPkg.package_type == STOP_PACKAGE) {
-          Serial.println("STOP requested by host.");
-          vTaskDelete(aquireTask);
-          client.stop();
-          WiFi.disconnect();
-          free(out);
-          delay(100);
-          ESP.restart();                                                                               //   <- stop gap measure because I can't figure out how to connect to MATLAB again
-        }
+          getNextTcpPackage(client, settingsPkg);
+
+          switch(settingsPkg.package_type) {
+              case STOP_PACKAGE:
+                  Serial.println("STOP requested by host.");
+                  vTaskDelete(aquireTask);
+                  client.stop();
+                  WiFi.disconnect();
+                  free(out);
+                  delay(100);
+                  ESP.restart();
+                  break;
+
+              case TIMESTAMP_PACKAGE:
+                  //Serial.println("Received TIMESTAMP_PACKAGE request.");
+                  respondWithTimestampPackage(client, settingsPkg);
+                  break;
+
+              case PING_PACKAGE:
+                  //Serial.println("Received PING_PACKAGE.");
+                  // Optionally respond to ping here
+                  break;
+
+              case SETTINGS_PACKAGE:
+                  Serial.println("Received SETTINGS_PACKAGE.");
+                  // Handle settings update if needed
+                  break;
+
+              case DATA_PACKAGE:
+                  Serial.println("Received unexpected DATA_PACKAGE.");
+                  break;
+
+              default:
+                  Serial.printf("Received unknown package type: %d\n", settingsPkg.package_type);
+                  break;
+          }
       }
+
                                                                  
       
       if(uxQueueSpacesAvailable(datatransferQueue) > DATAQUEUE_SIZE - DATASET_SIZE_BYTES * BUFFERSIZE)vTaskDelay(1);

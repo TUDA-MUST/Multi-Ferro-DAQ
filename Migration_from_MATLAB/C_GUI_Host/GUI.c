@@ -64,6 +64,10 @@ void free_client_info(ClientInfo *info)
     if (info->measurement_data)
         g_free(info->measurement_data);
 
+    // Free TimeSync buffer
+    if (info->client_time_sync)
+        g_free(info->client_time_sync);
+
     //remove connection statur monitor and syncronize measurement thread
     info->destroying = 1;
     if (info->monitor_id > 0) {
@@ -163,7 +167,9 @@ void assign_client_to_waiting_tab(GSocketConnection *conn, const char* client_na
     if (!info->preamp_data)
         info->preamp_data = g_ptr_array_new_with_free_func(g_free);
 
-    build_client_ui(info);
+    GtkWidget *win = gtk_widget_get_toplevel(notebook);
+
+    build_client_ui(info, win);
     gtk_widget_show_all(info->tab_content);
     g_object_set_data(G_OBJECT(info->tab_content), "client_info", info);
 }
@@ -216,35 +222,15 @@ gboolean on_client_incoming(GSocketService *service,
 }
 
 
-/*
-gboolean on_client_incoming(GSocketService *service,
-                            GSocketConnection *conn,
-                            GObject *src,
-                            gpointer user_data)
-{
-    GtkWidget *notebook = GTK_WIDGET(user_data);
-    unsigned char id = 0;
-    GInputStream *in = g_io_stream_get_input_stream(G_IO_STREAM(conn));
-    GOutputStream *out = g_io_stream_get_output_stream(G_IO_STREAM(conn));
-    gssize n = g_input_stream_read(in, &id, 1, NULL, NULL);
-    if (n <= 0) return FALSE;
-    //send zero byte as connection ack
-    unsigned char ack = 0;
-    g_output_stream_write(out, &ack, 1, NULL, NULL); 
-    // If client sent more than 1 byte, discard it now
-    //unsigned char dump[64];
-    //while (g_input_stream_read(in, dump, sizeof(dump), NULL, NULL) > 0) {
-    //    // keep reading until NO more data
-    //}
-    assign_client_to_waiting_tab(conn, id, notebook);
-    return TRUE;
-}
-*/
+
+
+
+
 
 // ----------------- BUILD CLIENT UI -------------------
-void build_client_ui(ClientInfo *info)
+void build_client_ui(ClientInfo *info, GtkWidget *win)
 {
-    if (!info) return;
+    if (!info || !win) return;
 
     GtkWidget *tab_box = info->tab_content;
 
@@ -320,15 +306,30 @@ void build_client_ui(ClientInfo *info)
   gtk_box_pack_start(GTK_BOX(left_box), sr_combo, FALSE, FALSE, 3);
   
   // Duration
-  GtkWidget *dur_label = gtk_label_new("Duration (seconds)");
+  // Retrieve global duration entry from the main window
+  GtkWidget *global_dur_entry =
+      g_object_get_data(G_OBJECT(win), "global_dur_entry");  
+  // Fallback value
+  const char *global_val = "300";  
+  if (global_dur_entry != NULL) {
+      global_val = gtk_entry_get_text(GTK_ENTRY(global_dur_entry));
+  }
+  
+  // Duration (read-only)
+  GtkWidget *dur_label = gtk_label_new("Global Duration (seconds)");
   GtkWidget *dur_entry = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(dur_entry), "300");
-  g_signal_connect(dur_entry, "changed",
-                   G_CALLBACK(dur_entry_changed), info->settings);
+  gtk_entry_set_text(GTK_ENTRY(dur_entry), global_val);
+  
+  // Make read-only
+  gtk_editable_set_editable(GTK_EDITABLE(dur_entry), FALSE);
+  gtk_widget_set_sensitive(dur_entry, FALSE);
+  
+  // Store for global update handler
   g_object_set_data(G_OBJECT(info->tab_content), "dur_entry", dur_entry);
+  
   gtk_box_pack_start(GTK_BOX(left_box), dur_label, FALSE, FALSE, 3);
   gtk_box_pack_start(GTK_BOX(left_box), dur_entry, FALSE, FALSE, 3);
-  
+
   
 
   // 8x Preamp + Settings Register
@@ -412,6 +413,13 @@ void build_client_ui(ClientInfo *info)
 
 }
 
+
+
+
+
+
+
+
 // ----------------- ADD CLIENT BUTTON -------------------
 void on_add_client_clicked(GtkButton *btn, gpointer user_data) {
     GtkWidget *notebook = GTK_WIDGET(user_data);
@@ -424,6 +432,9 @@ void on_add_client_clicked(GtkButton *btn, gpointer user_data) {
 
     gtk_widget_show_all(notebook);
 }
+
+
+
 
 
 
@@ -676,10 +687,14 @@ static void on_send_btn_clicked(GtkButton *button, gpointer user_data) {
 
     if (info->measurement_data)
         g_free(info->measurement_data);
+    if (info->client_time_sync)
+        g_free(info->client_time_sync);
 
-    info->measurement_data = g_malloc0(sizeof(float) * 9 * alloc_n);
+    info->measurement_data = g_malloc0(sizeof(float) * info->float_count * alloc_n);
     info->allocated_samples = alloc_n - 1000;
     info->write_index = 0;
+    info->allocated_client_times = info->settings->duration_seconds / 10 + 10;
+    info->client_time_sync = g_malloc0((info-> allocated_client_times) * sizeof(ClientTime));
     info->measurement_active = TRUE;
     // Start reading measurement data on new thread
     info->measurement_thread = g_thread_new("measurement-reader", measurement_thread_func, info);
@@ -978,6 +993,9 @@ void free_tcp_package(TcpPackage *pkg) {
 
 
 
+
+
+
 // ---------------- Getter: next TCP package ----------------
 gboolean get_next_tcp_package(GSocket *sock, TcpPackage *pkg, guint32 timeout_ms) {
     if (!sock || !pkg) return FALSE;
@@ -987,7 +1005,10 @@ gboolean get_next_tcp_package(GSocket *sock, TcpPackage *pkg, guint32 timeout_ms
 
 
 
-//----------------handle measurement on different thread
+
+
+
+// ------------------ Measurement Thread ------------------
 static gpointer measurement_thread_func(gpointer user_data) {
     ClientInfo *info = (ClientInfo *)user_data;
     if (!info || !info->conn) return NULL;
@@ -995,29 +1016,85 @@ static gpointer measurement_thread_func(gpointer user_data) {
     GSocket *sock = g_socket_connection_get_socket(info->conn);
     if (!sock) return NULL;
 
+    time_t last_timestamp_sent = 0;
+
     while (info->measurement_active && !info->destroying) {
+        time_t now = time(NULL);
+
+        // --- 1. Send TIMESTAMP_PACKAGE every ~10s ---
+        if (difftime(now, last_timestamp_sent) >= 10) {
+            last_timestamp_sent = now;
+        
+            // Prepare the timestamp and float data
+            struct timespec ts;
+            clock_gettime(CLOCK_REALTIME, &ts);     // or CLOCK_MONOTONIC, depending on meaning
+        
+            // --- 2. Create the TcpPackage structure ---
+            TcpPackage ts_pkg;
+            ts_pkg.package_type = TIMESTAMP_PACKAGE;
+            ts_pkg.package_size = sizeof(struct timespec);
+            ts_pkg.package = malloc(ts_pkg.package_size);
+            if (ts_pkg.package) {
+                // --- Copy the timestamp into the package ---
+                memcpy(ts_pkg.package, &ts, sizeof(struct timespec));
+            
+                // --- 3. Create a buffer large enough to hold both header and data ---
+                uint8_t *buffer = malloc(5 + ts_pkg.package_size); // 5 bytes for header + package size
+                if (!buffer) {
+                    g_warning("Memory allocation for buffer failed.");
+                    free(ts_pkg.package);
+                    return G_SOURCE_REMOVE;
+                }
+            
+                // --- 4. Fill the buffer with header and data ---
+                // Fill in the header
+                buffer[0] = ts_pkg.package_type;
+                uint32_t size_net = htonl(ts_pkg.package_size);  // Convert size to network byte order
+                memcpy(buffer + 1, &size_net, 4);  // Copy size into the buffer
+            
+                // Fill in the data (timestamp and float)
+                memcpy(buffer + 5, ts_pkg.package, ts_pkg.package_size);
+            
+                // --- 5. Send the entire buffer in one call ---
+                GError *err = NULL;
+                gssize bytes_sent = g_socket_send(sock, buffer, 5 + ts_pkg.package_size, NULL, &err);
+                if (bytes_sent != (5 + ts_pkg.package_size)) {
+                    g_warning("Timestamp package send failed: %s", err ? err->message : "unknown");
+                    if (err) g_error_free(err);
+                    free(buffer);
+                    free(ts_pkg.package);
+                    disconnect_client(info); // Disconnect client safely
+                    return G_SOURCE_REMOVE;
+                }
+            
+                // Clean up
+                free(buffer);
+                free(ts_pkg.package);
+            }
+        }
+
+
+        // --- 2. Receive incoming packages ---
         TcpPackage pkg;
-        gboolean ok = get_next_tcp_package(sock, &pkg, 150); // 150 ms timeout
+        gboolean ok = get_next_tcp_package(sock, &pkg, 150); // 150ms timeout
         if (!ok) {
-            g_usleep(2000); // sleep 2ms to avoid busy loop
+            g_usleep(2000); // avoid busy loop
             continue;
         }
 
         if (pkg.package_type == DATA_PACKAGE && pkg.package_size > 0) {
+            // Handle measurement data
             size_t row_size = info->float_count * sizeof(float);
             size_t n_rows = pkg.package_size / row_size;
 
             if (info->write_index + n_rows > info->settings->sample_number) {
                 g_warning("Measurement buffer full. Stopping measurement.");
-                printf("allocated %ld bytes and written until %ld \n", info->allocated_samples, info->write_index);
                 info->measurement_active = FALSE;
 
-                // Schedule GUI stop button click
                 GtkWidget *stop_btn = g_object_get_data(G_OBJECT(info->tab_content), "stop_btn");
-                if (stop_btn) {
+                if (stop_btn)
                     g_idle_add((GSourceFunc)on_stop_btn_clicked, stop_btn);
-                }
-                g_usleep(2000); 
+
                 free_tcp_package(&pkg);
                 break;
             }
@@ -1028,10 +1105,30 @@ static gpointer measurement_thread_func(gpointer user_data) {
 
             info->write_index += n_rows;
 
-            // Schedule GUI update
             GtkWidget *plot_area = g_object_get_data(G_OBJECT(info->tab_content), "plot_area");
             if (plot_area) g_idle_add((GSourceFunc)gtk_widget_queue_draw, plot_area);
+        }
+        else if (pkg.package_type == TIMESTAMP_PACKAGE &&
+                 pkg.package_size >= sizeof(struct timespec) + sizeof(float)) {
+            // Handle incoming echoed timestamp
+            if (info->time_write_index < info->allocated_client_times) {
+                ClientTime *ct = &info->client_time_sync[info->time_write_index];
 
+                // Copy echoed sent timestamp
+                memcpy(&ct->sent, pkg.package, sizeof(struct timespec));
+
+                // Record server receive time
+                clock_gettime(CLOCK_REALTIME, &ct->recieved);
+
+                // Copy appended client float
+                float client_time;
+                memcpy(&client_time, pkg.package + sizeof(struct timespec), sizeof(float));
+                ct->local_time = client_time;
+
+                info->time_write_index++;
+            } else {
+                g_warning("ClientTime buffer full, cannot store more timestamps.");
+            }
         }
 
         free_tcp_package(&pkg);
@@ -1048,11 +1145,14 @@ static gpointer measurement_thread_func(gpointer user_data) {
 
 
 
+
 //---------------EXPORT MEASUREMENT TO CSV--------------------
 static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
     ClientInfo *client = (ClientInfo *)user_data;
 
-    printf("allocated_samples: %ld, write_index: %ld\n", client -> allocated_samples, client -> write_index);
+    printf("allocated_samples: %ld, write_index: %ld\n", 
+           client->allocated_samples, client->write_index);
+
     if (!client->measurement_data || client->write_index == 0) {
         g_print("No measurement data available.\n");
         return;
@@ -1071,6 +1171,7 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
     gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), "measurement.csv");
 
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+
         char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
         FILE *fp = fopen(filename, "w");
         if (!fp) {
@@ -1080,14 +1181,73 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
             return;
         }
 
+        /* ------------------ CREATE HEADER ------------------ */
+
+        // First line: the tab label + UTC timestamp
+        const char *label_text = gtk_label_get_text(GTK_LABEL(client->tab_label));
+
+        time_t now = time(NULL);
+        struct tm *utc = gmtime(&now);
+        char timestamp[64];
+        strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S UTC", utc);
+
+        fprintf(fp, "%s - %s\n", label_text, timestamp);
+
+        /* ------------------ WRITE TIME SYNC ENTRIES ------------------ */
+        if (client->client_time_sync && client->time_write_index > 0) {
+            for (uint64_t i = 0; i < client->time_write_index; i++) {
+                ClientTime *ct = &client->client_time_sync[i];
+
+                char sent_str[80], recv_str[80];
+                struct tm sent_tm, recv_tm;
+
+                // Convert to UTC broken-down time
+                #if defined(_WIN32)
+                    gmtime_s(&sent_tm, &ct->sent.tv_sec);
+                    gmtime_s(&recv_tm, &ct->recieved.tv_sec);
+                #else
+                    gmtime_r(&ct->sent.tv_sec, &sent_tm);
+                    gmtime_r(&ct->recieved.tv_sec, &recv_tm);
+                #endif
+
+                // Format (without milliseconds)
+                strftime(sent_str, sizeof(sent_str), "%Y-%m-%d %H:%M:%S", &sent_tm);
+                strftime(recv_str, sizeof(recv_str), "%Y-%m-%d %H:%M:%S", &recv_tm);
+
+                // Milliseconds
+                long sent_ms = ct->sent.tv_nsec / 1000000;
+                long recv_ms = ct->recieved.tv_nsec / 1000000;
+
+                // Single-line output
+                fprintf(fp,
+                    "Sent Timesync request at %s.%03ld UTC, received echo at %s.%03ld UTC, local time %.1f\n",
+                    sent_str, sent_ms,
+                    recv_str, recv_ms,
+                    ct->local_time);
+            }
+        }
+
+
+
+        // Second line: CHAN1;CHAN2;...;CHANN;TIME
+        for (int i = 0; i < client->float_count - 1; i++) {
+            fprintf(fp, "CHAN%d;", i + 1);
+        }
+        fprintf(fp, "TIME\n");
+
+        
+
+        /* ------------------ WRITE DATA ------------------ */
+
         for (uint64_t i = 0; i < client->write_index; i++) {
             for (int j = 0; j < client->float_count; j++) {
-                fprintf(fp, "%.6f", client->measurement_data[i * client->float_count + j]);
+                fprintf(fp, "%.6f", client->measurement_data[
+                    i * client->float_count + j
+                ]);
                 if (j < client->float_count - 1) fprintf(fp, ";");
             }
             fprintf(fp, "\n");
         }
-
 
         fclose(fp);
         g_print("Data exported to %s\n", filename);
@@ -1290,5 +1450,51 @@ void on_stop_all_clicked(GtkButton *btn, gpointer user_data){
         on_stop_btn_clicked(NULL, info);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//hanlder for global duration change
+void on_global_duration_changed(GtkEditable *editable, gpointer user_data){
+    GtkNotebook *notebook = GTK_NOTEBOOK(user_data);
+    const char *val = gtk_entry_get_text(GTK_ENTRY(editable));
+    int duration = atoi(val);
+
+    int pages = gtk_notebook_get_n_pages(notebook);
+
+    for (int i = 0; i < pages; i++) {
+
+        GtkWidget *page = gtk_notebook_get_nth_page(notebook, i);
+        if (!page) continue;
+
+        // Retrieve ClientInfo attached to this page
+        ClientInfo *info =
+            g_object_get_data(G_OBJECT(page), "client_info");
+
+        // Skip MAIN tab (no client_info stored)
+        if (!info) continue;
+
+        // Update internal settings
+        info->settings->duration_seconds = duration;
+
+        // Update GUI element
+        GtkWidget *dur_entry =
+            g_object_get_data(G_OBJECT(page), "dur_entry");
+
+        if (dur_entry)
+            gtk_entry_set_text(GTK_ENTRY(dur_entry), val);
+    }
+}
+
 
 
