@@ -223,62 +223,6 @@ static uint32_t detect_hotspot_ip(){
 }
 
 
-/*
-static uint32_t detect_hotspot_ip()
-{
-    struct ifaddrs *ifaddr, *ifa;
-    char buf[INET_ADDRSTRLEN];
-
-    if (getifaddrs(&ifaddr) == -1) {
-        perror("getifaddrs");
-        exit(1);
-    }
-
-    uint32_t hotspot_ip = 0;
-
-    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-        if (!ifa->ifa_addr) continue;
-        if (ifa->ifa_addr->sa_family != AF_INET) continue;
-
-        struct sockaddr_in *sa = (struct sockaddr_in *)ifa->ifa_addr;
-
-        // Convert network → host order
-        uint32_t ip = ntohl(sa->sin_addr.s_addr);
-
-        // Skip loopback 127.x.x.x
-        if ((ip & 0xFF000000) == 0x7F000000)
-            continue;
-
-        // First private IP wins
-        if (is_private_ip(ip)) {
-            hotspot_ip = ip;
-
-            // Convert to dotted-decimal using inet_ntop
-            if (!inet_ntop(AF_INET, &sa->sin_addr, buf, sizeof(buf))) {
-                perror("inet_ntop");
-                strncpy(buf, "UNKNOWN", sizeof(buf));
-            }
-
-            printf("Detected hotspot IP: %s on interface %s\n",
-                   buf, ifa->ifa_name);
-
-            break;
-        }
-    }
-
-    freeifaddrs(ifaddr);
-
-    if (hotspot_ip == 0) {
-        fprintf(stderr,
-                "No private hotspot IP detected, using 255.255.255.255\n");
-        hotspot_ip = 0xFFFFFFFF;
-    }
-
-    return hotspot_ip;
-}
-
-*/
-
 
 
 
@@ -349,6 +293,24 @@ static void on_close_clicked(GtkButton *button, gpointer user_data)
     gtk_main_quit();
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 int main(int argc, char **argv)
 {
     gtk_init(&argc, &argv);
@@ -417,6 +379,21 @@ int main(int argc, char **argv)
     gtk_box_pack_start(GTK_BOX(main_box), btn_stop_all, FALSE, FALSE, 5);
     g_signal_connect(btn_stop_all, "clicked",
                      G_CALLBACK(on_stop_all_clicked), notebook);
+
+
+    // --- GLOBAL DURATION ---
+    GtkWidget *global_dur_label = gtk_label_new("Global Duration (seconds)");
+    GtkWidget *global_dur_entry = gtk_entry_new();
+    gtk_entry_set_text(GTK_ENTRY(global_dur_entry), "300");
+
+    // store it on the main window for retrieval if needed
+    g_object_set_data(G_OBJECT(win), "global_dur_entry", global_dur_entry);
+
+    // add to GUI
+    gtk_box_pack_start(GTK_BOX(main_box), global_dur_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(main_box), global_dur_entry, FALSE, FALSE, 5);
+    g_signal_connect(global_dur_entry, "changed",
+                 G_CALLBACK(on_global_duration_changed), notebook);
 
 
     // Close Client Monitor button

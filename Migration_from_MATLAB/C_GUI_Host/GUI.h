@@ -4,7 +4,12 @@
 #include <gtk/gtk.h>
 #include <gio/gio.h>
 #include <json-glib/json-glib.h>
-
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+#else
+    #include <arpa/inet.h>
+#endif
 
 #define PLOT_HISTORY 5   // last N seconds displayed in live plot
 #define Y_MIN   (-2500.0)   //plotting range
@@ -20,6 +25,14 @@ typedef struct {
     uint64_t sample_number;
 } ClientSettings;
 
+
+// Timesync struct
+typedef struct {
+    struct timespec sent;
+    struct timespec recieved;
+    float local_time;
+}ClientTime;
+
 typedef struct {
     GSocketConnection *conn;
     GtkWidget *tab_label;
@@ -33,6 +46,9 @@ typedef struct {
     guint monitor_id;
     char destroying;
     /* ---- Measurement Buffer Fields ---- */
+    ClientTime *client_time_sync;   // Buffer of collected client time synchronisation data
+    uint64_t allocated_client_times;// numer of allocated ClientTime structs
+    uint64_t time_write_index;      // For client_time_sync entries
     float *measurement_data;        // Contiguous buffer: rows of 9 floats
     uint64_t allocated_samples;     // Allocated number of rows
     uint64_t write_index;           // Current row index
@@ -67,7 +83,7 @@ extern GQueue *waiting_tabs;
 extern GMutex queue_lock;
 
 // Functions
-void build_client_ui(ClientInfo *info);
+void build_client_ui(ClientInfo *info, GtkWidget *win);
 void assign_client_to_waiting_tab(GSocketConnection *conn, const char* client_name, uint8_t float_count ,GtkWidget *notebook);
 void on_add_client_clicked(GtkButton *btn, gpointer user_data);
 gboolean on_client_incoming(GSocketService *service, GSocketConnection *conn, GObject *src, gpointer user_data);
@@ -95,4 +111,5 @@ static gboolean on_plot_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 static void draw_text(cairo_t *cr, double x, double y, const char *txt);
 void on_start_all_clicked(GtkButton *btn, gpointer user_data);
 void on_stop_all_clicked(GtkButton *btn, gpointer user_data);
+void on_global_duration_changed(GtkEditable *editable, gpointer user_data);
 #endif // GUI_H
