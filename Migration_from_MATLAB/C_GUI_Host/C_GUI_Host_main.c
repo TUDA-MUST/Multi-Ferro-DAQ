@@ -62,79 +62,125 @@ static int is_private_ip(uint32_t ip)
 // Detect a valid hotspot IP 
 static uint32_t detect_hotspot_ip(){
     #ifdef _WIN32
-    // ---------- WINDOWS ----------
-    IP_ADAPTER_ADDRESSES *addr_buf = NULL, *adapter;
-    DWORD buf_len = 15000; // buffer size
-    addr_buf = (IP_ADAPTER_ADDRESSES *)malloc(buf_len);
+        IP_ADAPTER_ADDRESSES *addr_buf = NULL, *adapter;
+        DWORD buf_len = 15000;
+        DWORD ret;
 
-    if (!addr_buf) {
-        fprintf(stderr, "Memory allocation failed\n");
-        return 0xFFFFFFFF;
-    }
+        addr_buf = (IP_ADAPTER_ADDRESSES *)malloc(buf_len);
+        if (!addr_buf) {
+            fprintf(stderr, "Memory allocation failed\n");
+            return 0xFFFFFFFF;
+        }
 
-    if (GetAdaptersAddresses(AF_INET, 0, NULL, addr_buf, &buf_len) != NO_ERROR) {
-        fprintf(stderr, "GetAdaptersAddresses failed\n");
-        free(addr_buf);
-        return 0xFFFFFFFF;
-    }
+        ret = GetAdaptersAddresses(AF_INET, 0, NULL, addr_buf, &buf_len);
+        if (ret != NO_ERROR) {
+            fprintf(stderr, "GetAdaptersAddresses() failed: %lu\n", ret);
+            free(addr_buf);
+            return 0xFFFFFFFF;
+        }
 
-    uint32_t hotspot_ip = 0;
+        uint32_t hotspot_ip = 0;
 
-    // First pass: look for Mobile Hotspot adapter by description
-    for (adapter = addr_buf; adapter; adapter = adapter->Next) {
-        if (adapter->OperStatus != IfOperStatusUp) continue;
+        char descA[512];
 
-        if (adapter->Description) {
-            char desc[256];
-            if (wcstombs(desc, adapter->Description, sizeof(desc)) != (size_t)-1) {
-                desc[sizeof(desc)-1] = '\0';
+        /* ============================================================
+        PASS 1 — Explicitly search for Windows Hotspot subnet:
+                    192.168.137.0/24 (0xC0A88900)
+        ============================================================ */
+        for (adapter = addr_buf; adapter; adapter = adapter->Next) {
+            if (adapter->OperStatus != IfOperStatusUp) continue;
 
-                if (strstr(desc, "Hosted Network") || strstr(desc, "Mobile Hotspot")) {
-                    IP_ADAPTER_UNICAST_ADDRESS *u;
-                    for (u = adapter->FirstUnicastAddress; u; u = u->Next) {
-                        struct sockaddr_in *sa = (struct sockaddr_in *)u->Address.lpSockaddr;
-                        uint32_t ip = ntohl(sa->sin_addr.s_addr);
+            for (IP_ADAPTER_UNICAST_ADDRESS *ua = adapter->FirstUnicastAddress;
+                ua; ua = ua->Next)
+            {
+                struct sockaddr_in *sa = (struct sockaddr_in *)ua->Address.lpSockaddr;
+                uint32_t ip = ntohl(sa->sin_addr.s_addr);
 
-                        // Skip loopback
-                        if ((ip & 0xFF000000) == 0x7F000000) continue;
+                if ((ip & 0xFF000000) == 0x7F000000) continue; // skip loopback
 
-                        // Ensure IP is in typical Mobile Hotspot subnet 192.168.137.x
-                        if ((ip & 0xFFFFFF00) == 0xC0A88900) { // 192.168.137.0/24
-                            char buf[32];
-                            inet_ntop(AF_INET, &sa->sin_addr, buf, sizeof(buf));
-                            printf("Detected Mobile Hotspot IP: %s\n", buf);
-                            hotspot_ip = ip;
-                            free(addr_buf);
-                            return hotspot_ip;
-                        }
-                    }
+                if ((ip & 0xFFFFFF00) == 0xC0A88900)  // 192.168.137.x
+                {
+                    char buf[32];
+                    inet_ntop(AF_INET, &sa->sin_addr, buf, sizeof(buf));
+                    printf("Found standard Windows Mobile Hotspot IP: %s\n", buf);
+
+                    hotspot_ip = ip;
+                    free(addr_buf);
+                    return hotspot_ip;
                 }
             }
         }
-    }
 
-    // Second pass: any private IP
-    for (adapter = addr_buf; adapter; adapter = adapter->Next) {
-        IP_ADAPTER_UNICAST_ADDRESS *u;
-        for (u = adapter->FirstUnicastAddress; u; u = u->Next) {
-            struct sockaddr_in *sa = (struct sockaddr_in *)u->Address.lpSockaddr;
-            uint32_t ip = ntohl(sa->sin_addr.s_addr);
 
-            if ((ip & 0xFF000000) == 0x7F000000) continue; // skip loopback
-            if (!is_private_ip(ip)) continue;
+        /* ============================================================
+        PASS 2 — Adapter description contains:
+                    "Wi-Fi Direct", "Virtual Adapter", "WLAN"
+        ============================================================ */
+        for (adapter = addr_buf; adapter; adapter = adapter->Next) {
+            if (adapter->OperStatus != IfOperStatusUp) continue;
 
-            char buf[32];
-            inet_ntop(AF_INET, &sa->sin_addr, buf, sizeof(buf));
-            printf("Detected fallback private IP: %s\n", buf);
-            hotspot_ip = ip;
-            free(addr_buf);
-            return hotspot_ip;
+            // Convert wide string description to UTF-8/ASCII
+            if (wcstombs(descA, adapter->Description, sizeof(descA)) == (size_t)-1)
+                continue;
+
+            if (strstr(descA, "Wi-Fi Direct") ||
+                strstr(descA, "WiFi Direct") ||
+                strstr(descA, "Virtual Adapter") ||
+                strstr(descA, "WLAN"))
+            {
+                for (IP_ADAPTER_UNICAST_ADDRESS *ua = adapter->FirstUnicastAddress;
+                    ua; ua = ua->Next)
+                {
+                    struct sockaddr_in *sa = (struct sockaddr_in *)ua->Address.lpSockaddr;
+                    uint32_t ip = ntohl(sa->sin_addr.s_addr);
+
+                    if (!is_private_ip(ip)) continue;
+
+                    char buf[32];
+                    inet_ntop(AF_INET, &sa->sin_addr, buf, sizeof(buf));
+                    printf("Found Hotspot-like interface (desc='%s') → %s\n", descA, buf);
+
+                    hotspot_ip = ip;
+                    free(addr_buf);
+                    return hotspot_ip;
+                }
+            }
         }
-    }
 
-    free(addr_buf);
-    fprintf(stderr, "No private hotspot IP detected, using 255.255.255.255\n");
-    return 0xFFFFFFFF;
+
+        /* ============================================================
+        PASS 3 — Fallback: first private IPv4 (but skip VirtualBox)
+        ============================================================ */
+        for (adapter = addr_buf; adapter; adapter = adapter->Next) {
+
+            if (adapter->OperStatus != IfOperStatusUp) continue;
+
+            for (IP_ADAPTER_UNICAST_ADDRESS *ua = adapter->FirstUnicastAddress;
+                ua; ua = ua->Next)
+            {
+                struct sockaddr_in *sa = (struct sockaddr_in *)ua->Address.lpSockaddr;
+                uint32_t ip = ntohl(sa->sin_addr.s_addr);
+
+                if ((ip & 0xFF000000) == 0x7F000000) continue; // skip loopback
+
+                if (!is_private_ip(ip)) continue;
+
+                // Skip VirtualBox 192.168.56.x
+                if ((ip & 0xFFFF0000) == 0xC0A83800) continue; // 192.168.56.0/24
+
+                char buf[32];
+                inet_ntop(AF_INET, &sa->sin_addr, buf, sizeof(buf));
+                printf("Fallback to private IP: %s\n", buf);
+
+                hotspot_ip = ip;
+                free(addr_buf);
+                return hotspot_ip;
+            }
+        }
+
+        free(addr_buf);
+        fprintf(stderr, "No hotspot/private IP found — using 255.255.255.255\n");
+        return 0xFFFFFFFF;
     
     #else
         // ---------- LINUX ----------
