@@ -4,37 +4,17 @@
 #include <FastLED.h>
 #include <SPI.h>
 #include "../lib/ADS131E08esp32.cpp"
-#include <WiFi.h>
-#include <WiFiClient.h>
-#include <WiFiUdp.h>
-#include <Preferences.h>
+#include "../lib/tcp_client_network.cpp"
 
 
 Preferences prefs;
+
 
 struct chanData_float{
   byte chan[9][4];                  //stores data measured in channels, ninth entry stores time
   byte faultp;                      //saves if inputs exceed threshold on positive input
   byte faultn;                      //saves if inputs exceed threshold on negative input
 };
-
-typedef enum {
-    PING_PACKAGE      = 0,
-    STOP_PACKAGE      = 1,
-    SETTINGS_PACKAGE  = 2,
-    DATA_PACKAGE      = 3,
-    TIMESTAMP_PACKAGE = 4, 
-    HANDSHAKE_PACKAGE = 5
-} PackageType_e;
-
-typedef uint8_t PackageType8_t; // storage type
-
-typedef struct {
-    PackageType8_t package_type; // 1 byte storage
-    uint32_t package_size;
-    unsigned char *package;
-} TcpPackage;
-
 
 
 #define NUM_LEDS 2                  //setup the SK6812 LEDS
@@ -244,334 +224,6 @@ int set_preamp(byte amparr[16]){
 
 
 
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-// set the client name in preferences
-void setClientHandshakePreferences() {
-    Serial.println("\n=== Configure Handshake ===");
-
-    //Serial.print("Enter float count: ");
-    //uint8_t f = waitForLine().toInt();
-
-    Serial.print("Enter client name: ");
-    String nm = waitForLine();
-
-    prefs.begin("client", false);
-    //prefs.putUChar("float_count", f);
-    prefs.putString("client_name", nm);
-    prefs.end();
-
-    return;
-}
-
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-// send the TCP introductio handshake to HOST
-void sendHandshakePackage(WiFiClient &client) {
-    prefs.begin("client", false); // open the preferences namespace
-
-    // Read float_count from Preferences, default to 9 if not set
-    uint8_t float_count = prefs.getUChar("float_count", 9);
-
-    // Read client_name from Preferences, default to "ESP32" if not set
-    String nameStr = prefs.getString("client_name", "ESP32");
-    const char* cname = nameStr.c_str();
-    uint32_t name_len = strlen(cname) + 1;  // include null terminator
-
-    prefs.end();
-
-    // Build package payload
-    uint32_t payload_size = sizeof(uint8_t) + name_len;
-    uint8_t* payload = (uint8_t*)malloc(payload_size);
-    payload[0] = float_count;
-    memcpy(payload + 1, cname, name_len);
-
-    // Build TCP header
-    uint8_t header[5];
-    header[0] = HANDSHAKE_PACKAGE;
-    header[1] = (payload_size >> 24) & 0xFF;
-    header[2] = (payload_size >> 16) & 0xFF;
-    header[3] = (payload_size >> 8) & 0xFF;
-    header[4] = (payload_size >> 0) & 0xFF;
-
-    // Send full frame
-    uint8_t* frame = (uint8_t*)malloc(5 + payload_size);
-    memcpy(frame, header, 5);
-    memcpy(frame + 5, payload, payload_size);
-
-    client.write(frame, 5 + payload_size);
-    client.flush();
-
-    free(frame);
-    free(payload);
-
-    Serial.printf("Sent HANDSHAKE_PACKAGE: float_count=%d, client_name=\"%s\"\n", float_count, cname);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-// Helper function to read exactly n bytes from the client
-bool readBytes(WiFiClient &client, uint8_t *buffer, size_t n, uint32_t timeoutMs = 2000) {
-    uint32_t start = millis();
-    size_t readSoFar = 0;
-    while (readSoFar < n) {
-        if (client.available()) {
-            int c = client.read();
-            if (c < 0) continue;
-            buffer[readSoFar++] = (uint8_t)c;
-        }
-        if (millis() - start > timeoutMs) return false; // timeout
-        vTaskDelay(1);
-    }
-    return true;
-}
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-// Helper to read a TcpPackage from the client
-bool readTcpPackage(WiFiClient &client, TcpPackage &pkg) {
-    uint8_t header[5]; // 1 byte type + 4 bytes size
-    if (!readBytes(client, header, 5)) return false;
-
-    pkg.package_type = header[0];
-    pkg.package_size = (uint32_t)header[1] << 24 |
-                       (uint32_t)header[2] << 16 |
-                       (uint32_t)header[3] << 8 |
-                       (uint32_t)header[4];
-
-    if (pkg.package_size > 0) {
-        //Serial.printf("package size: %d\n", pkg.package_size);
-        pkg.package = (unsigned char *)malloc(pkg.package_size);
-        if (!pkg.package) return false;
-        if (!readBytes(client, pkg.package, pkg.package_size)) {
-            free(pkg.package);
-            return false;
-        }
-    } else {
-        pkg.package = nullptr;
-    }
-    return true;
-}
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-// Helper to free package memory
-void freeTcpPackage(TcpPackage &pkg) {
-    if (pkg.package) free(pkg.package);
-    pkg.package = nullptr;
-}
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-// --- Getter function: returns the next TCP package from the client ---
-// Returns true if a package was successfully read, false on timeout/error
-// Caller is responsible for freeing pkg.package using freeTcpPackage()
-bool getNextTcpPackage(WiFiClient &client, TcpPackage &pkg) {
-    if (!readTcpPackage(client, pkg)) return false; // failed read, retry
-    return false;
-}
-
-
-
-
-
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-String waitForLine() {
-    String line = "";
-    while (true) {
-        if (Serial.available()) {
-            char c = Serial.read();
-            if (c == '\r' || c == '\n') {
-                if (line.length() > 0) return line;  // only return once we actually have input
-            } else {
-                line += c;
-            }
-        }
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-    }
-}
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-// --- Function to enter WiFi credentials and save them ---
-void setWifiCredentials() {
-    Serial.println("\n=== WiFi Setup Mode ===");
-
-    Serial.println("Enter new SSID: ");
-    String newSSID = waitForLine();   
-
-    Serial.println("Enter new password: ");
-    String newPASS = waitForLine();   
-
-    prefs.begin("wifi", false);
-    prefs.putString("ssid", newSSID);
-    prefs.putString("pass", newPASS);
-    prefs.end();
-
-    setClientHandshakePreferences();
-
-    Serial.println("\nCredentials saved. Rebooting...");
-    delay(1000);
-    ESP.restart();
-}
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-void respondWithTimestampPackage(WiFiClient &client, TcpPackage &recvPkg) {
-    // Original payload size
-    uint32_t recvSize = recvPkg.package_size;
-
-    // New payload size = old payload + 8 bytes for ESP32 timestamp
-    uint32_t newPayloadSize = recvSize + 8;
-
-    // Total frame size = header (5 bytes) + payload
-    uint32_t totalSize = 5 + newPayloadSize;
-    uint8_t* frame = (uint8_t*)malloc(totalSize);
-    if (!frame) {
-        Serial.println("Failed to allocate memory for TIMESTAMP_PACKAGE response.");
-        return;
-    }
-
-    // Build header
-    frame[0] = TIMESTAMP_PACKAGE;
-    frame[1] = (newPayloadSize >> 24) & 0xFF;
-    frame[2] = (newPayloadSize >> 16) & 0xFF;
-    frame[3] = (newPayloadSize >> 8) & 0xFF;
-    frame[4] = (newPayloadSize >> 0) & 0xFF;
-
-    // Copy original payload
-    if (recvPkg.package && recvSize > 0) {
-        memcpy(frame + 5, recvPkg.package, recvSize);
-    }
-
-    // Get timestamp in microseconds
-    float timestamp = (float) esp_timer_get_time(); 
-    // Copy float bytes into buffer
-    union {
-        float f;
-        uint8_t bytes[4];
-    } u;
-    u.f = timestamp;
-    memcpy(frame + 5 + recvSize, u.bytes, 4);  // append 4 bytes for float
-
-
-    // Send everything in a single write
-    client.write(frame, totalSize);
-
-    //Serial.printf("Responded with TIMESTAMP_PACKAGE: original size=%d, new timestamp=%lld us\n", recvSize, timestamp);
-    free(frame);
-}
-
-
-
-
-
-
-
-
-
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -603,145 +255,73 @@ void aquireTaskCode(void* params){
 void sendTaskCode(void* params){
 
 
-  prefs.begin("wifi", false);
+  // -------------------------
+  // NETWORK SETUP
+  // -------------------------
+  String clientName;
 
-    // Load stored WiFi credentials (if any)
-  String savedSSID = prefs.getString("ssid", "");
-  String savedPASS = prefs.getString("pass", "");
-  prefs.end();
+  leds[0] = CRGB::Yellow;   // WiFi connecting
+  FastLED.show();
 
-  // Use stored credentials if exist, otherwise defaults
-  const char* ssid     = savedSSID.length() ? savedSSID.c_str() : "MultiFerroSpot";
-  const char* password = savedPASS.length() ? savedPASS.c_str() : "12345qwe";
-  // const char* hostIP   = "172.17.0.1";  // <- REMOVE hardcoded IP
-  const int serverPort = 8080;
-
-  prefs.begin("client", false);
-  // Read client name from Preferences, default to "ESP32"
-  String clientNameStr = prefs.getString("client_name", "ESP32");
-  prefs.end();
-  // Use .c_str() to get a C-style string for printf
-  const char* clientName = clientNameStr.c_str();
-  Serial.printf("\nTo change the WiFi credentials and the Clientname, press ENTER or CARRIAGE RETURN before a network connection is established.\n\n");
-  Serial.printf("Connecting to Wi-Fi under SSID: %s with password: %s as Client %s...", ssid, password, clientName);
-  WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    vTaskDelay(300);
-    Serial.print(".");
-
-    // If user presses ENTER → call config function
-    if (Serial.available()) {
-        char c = Serial.read();
-        if (c == '\n' || c == '\r') {
-            setWifiCredentials();   
-        }
-    }
-}
-
-  Serial.println();
-  Serial.print("Connected! IP Address: ");
-  Serial.println(WiFi.localIP());
-
-  //
-  // ------------------------
-  // DISCOVER HOST VIA UDP
-  // ------------------------
-  WiFiUDP udp;
-  udp.begin(5000);   // same port laptop broadcasts to
-
-  Serial.println("Waiting for host broadcast...");
-  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b00001111, 1);   //turns off white LED to save power
-
-  // buffer for reading packets
-  char buf[64];
-  IPAddress hostIP;
-
-  while (true) {
-      int len = udp.parsePacket();
-      if (len > 0) {
-          int n = udp.read(buf, sizeof(buf)-1);
-          buf[n] = 0;
-
-          if (strcmp(buf, "SERVER_ALIVE") == 0) {
-              // sender address = host IP
-              hostIP = udp.remoteIP();
-              Serial.print("Discovered host IP: ");
-              Serial.println(hostIP);
-              break;
-          }
-      }
-      vTaskDelay(100);
-  }
+  wifiConnectAndAllowOverride(clientName);
 
 
-  // CONNECT TO HOST
+  ADS131E08_send_command(adcConfE0, ADS131E08_CMD_WREG, E08_GPIO_ADDRESS, 0b00001111, 1); //turns off white LED to save power when connected to WiFi
+  IPAddress hostIP = discoverHostUDP();
 
-  WiFiClient client;
-  Serial.print("Connecting to host ");
-  Serial.println(hostIP);
+  WiFiClient client = connectToHost(hostIP, 8080);
 
-  while (!client.connect(hostIP, serverPort)) {
-      Serial.println("Connection failed, retrying...");
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
-  }
-
-  Serial.println("Connected to host!");
-
-
-  // Send a handshake package
-  sendHandshakePackage(client);
+  sendHandshakePackage(client, 9);
   client.flush();
-  
 
-  // Start the TCP communication
+  // -------------------------
+  // READY TO RECEIVE SETTINGS
+  // -------------------------
+  leds[0] = CRGB::Magenta;
+  FastLED.show();
 
-  byte amparr[8];
-
-  union {
-    byte cntarray[8];
-    int64_t cntnmbr;
-  } measurecnt;
-
-  union {
-    byte readarray[16];
-    uint16_t uint_hword[8];
-    uint32_t uint_word[4];
-  } inputbuff;
-
-  
-  Serial.println("TCP waiting on port 8080 - connected to client monitor");
+  Serial.println("TCP connected — waiting for SETTINGS package…");
 
   TcpPackage settingsPkg;
-
-//wait_for_settings:    //tag for return point if no restart desired
-
-  leds[0] = CRGB::Magenta; FastLED.show();                                                  // signals that the ESP & ADS131E08 are set up and ready to communicate
-
   settingsPkg.package_type = PING_PACKAGE;
-  Serial.print("Waiting for settings package to start measurement...");
-  while(settingsPkg.package_type != SETTINGS_PACKAGE){
+
+  while (settingsPkg.package_type != SETTINGS_PACKAGE) {
     getNextTcpPackage(client, settingsPkg);
     Serial.print(".");
   }
-  Serial.print("\n");
+  Serial.println("\nSettings received!");
 
-  //first 8 bytes = sample count
+  // -------------------------
+  // APPLY SETTINGS
+  // (your ADC config code unchanged)
+  // -------------------------
+
+  union {
+      byte cntarray[8];
+      int64_t cntnmbr;
+  } measurecnt;
+
+  union {
+      byte readarray[16];
+      uint16_t uint_hword[8];
+      uint32_t uint_word[4];
+  } inputbuff;
+
   memcpy(measurecnt.cntarray, settingsPkg.package, 8);
-  // next 4 bytes = sample rate
   memcpy(inputbuff.readarray, settingsPkg.package + 8, 4);
   set_sample_rate(inputbuff.uint_word);
-  // next 16 bytes = channel settings
   memcpy(inputbuff.readarray, settingsPkg.package + 12, 16);
   set_channels(inputbuff.uint_hword);
-  // next 8 bytes = preamp
   memcpy(inputbuff.readarray, settingsPkg.package + 28, 8);
+  byte amparr[8];
   for (int i = 0; i < set_preamp(inputbuff.readarray); i++) {
       amparr[i] = inputbuff.readarray[i];
   }
-  //freeTcpPackage(settingsPkg); // done with package
-  
 
+
+  // -------------------------
+  // READY TO ACQUIRE
+  // -------------------------
     
   Serial.println("ESP32 successfully connected to Client Monitor for Measurement");
   leds[0] = CRGB::Green; FastLED.show();                                   //signals that the connection has been established and a measurement is ongoing

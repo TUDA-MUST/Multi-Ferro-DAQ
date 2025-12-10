@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 
 GQueue *waiting_tabs = NULL;
@@ -693,7 +694,7 @@ static void on_send_btn_clicked(GtkButton *button, gpointer user_data) {
     info->measurement_data = g_malloc0(sizeof(float) * info->float_count * alloc_n);
     info->allocated_samples = alloc_n - 1000;
     info->write_index = 0;
-    info->allocated_client_times = info->settings->duration_seconds / 10 + 10;
+    info->allocated_client_times = info->settings->duration_seconds / 5 + 10;
     info->client_time_sync = g_malloc0((info-> allocated_client_times) * sizeof(ClientTime));
     info->measurement_active = TRUE;
     // Start reading measurement data on new thread
@@ -1021,8 +1022,8 @@ static gpointer measurement_thread_func(gpointer user_data) {
     while (info->measurement_active && !info->destroying) {
         time_t now = time(NULL);
 
-        // --- 1. Send TIMESTAMP_PACKAGE every ~10s ---
-        if (difftime(now, last_timestamp_sent) >= 10) {
+        // --- 1. Send TIMESTAMP_PACKAGE every ~5s ---
+        if (difftime(now, last_timestamp_sent) >= 5) {
             last_timestamp_sent = now;
         
             // Prepare the timestamp and float data
@@ -1146,7 +1147,247 @@ static gpointer measurement_thread_func(gpointer user_data) {
 
 
 
-//---------------EXPORT MEASUREMENT TO CSV--------------------
+//---------------EXPORT MEASUREMENT TO CSV WITH GLOBAL UTC TIME--------------------
+static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
+    ClientInfo *client = (ClientInfo *)user_data;
+
+    if (!client->measurement_data || client->write_index == 0) {
+        g_print("No measurement data available.\n");
+        return;
+    }
+
+    GtkWidget *dialog = gtk_file_chooser_dialog_new(
+        "Save CSV",
+        GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button))),
+        GTK_FILE_CHOOSER_ACTION_SAVE,
+        "_Cancel", GTK_RESPONSE_CANCEL,
+        "_Save", GTK_RESPONSE_ACCEPT,
+        NULL
+    );
+
+    gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), "measurement.csv");
+
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) != GTK_RESPONSE_ACCEPT) {
+        gtk_widget_destroy(dialog);
+        return;
+    }
+
+    char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+    FILE *fp = fopen(filename, "w");
+    if (!fp) {
+        g_printerr("Failed to open file %s\n", filename);
+        g_free(filename);
+        gtk_widget_destroy(dialog);
+        return;
+    }
+
+    /* ------------------------------------------------------------
+     *   HEADER LINE WITH TAB NAME AND UTC EXPORT TIME
+     * ------------------------------------------------------------ */
+    const char *label_text = gtk_label_get_text(GTK_LABEL(client->tab_label));
+    time_t now = time(NULL);
+    struct tm utc_tm;
+    gmtime_r(&now, &utc_tm);
+
+    char timestamp[64];
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S UTC", &utc_tm);
+    fprintf(fp, "%s - %s\n", label_text, timestamp);
+
+    /* ============================================================
+     *     BUILD LINEAR FIT BETWEEN (midTime) AND (localTime)
+     *     Similar to MATLAB script:
+     *       t_mid = midpoint UTC times
+     *       lt     = local times (shifted)
+     *       Fit: lt = a * t_mid + b
+     * ============================================================ */
+
+    int N = client->time_write_index;
+    double *t_mid = malloc(N * sizeof(double));
+    double *lt    = malloc(N * sizeof(double));
+
+    if (N >= 2) {
+        struct timespec t0 = client->client_time_sync[0].sent;
+
+        double t0_sec = t0.tv_sec + t0.tv_nsec / 1e9;
+
+        for (int i = 0; i < N; i++) {
+            ClientTime *ct = &client->client_time_sync[i];
+
+            double t_sent = ct->sent.tv_sec + ct->sent.tv_nsec / 1e9;
+            double t_recv = ct->recieved.tv_sec + ct->recieved.tv_nsec / 1e9;
+
+            double mid = (t_sent + t_recv) / 2.0;    // midpoint time in UTC
+            t_mid[i] = mid - t0_sec;                // shift
+
+            // lt[i] = (ct->local_time / 1e6);
+            lt[i] = ct->local_time;
+
+            lt[i] -= client->client_time_sync[0].local_time;  // shift
+        }
+
+        /* ---------- FIRST PASS: Regression using all points ---------- */
+        printf("Starting linear regression for GLOBAL_TIME:\n");
+
+        double Sx=0, Sy=0, Sxx=0, Sxy=0;
+        for (int i = 0; i < N; i++) {
+            Sx  += t_mid[i];
+            Sy  += lt[i];
+            Sxx += t_mid[i] * t_mid[i];
+            Sxy += t_mid[i] * lt[i];
+        }
+
+        double denom = (N * Sxx - Sx * Sx);
+        double a1 = 0, b1 = 0;
+
+        if (fabs(denom) > 1e-12) {
+            a1 = (N * Sxy - Sx * Sy) / denom;
+            b1 = (Sy * Sxx - Sx * Sxy) / denom;
+        }
+
+        printf("Pass 1: a=%.6f, b=%.6f\n", a1, b1);
+
+
+        /* ---------- IDENTIFY INLIERS (|residual| <= 5ms) ---------- */
+
+        double threshold = 5000;    // 5 ms (in microseconds)
+        int *inlier = calloc(N, sizeof(int));
+        int M = 0;
+
+        for (int i = 0; i < N; i++) {
+            double predicted = a1 * t_mid[i] + b1;
+            double residual  = fabs(lt[i] - predicted);
+        
+            if (residual <= threshold) {
+                inlier[i] = 1;
+                M++;
+            }
+        }
+
+        printf("Inliers after 5ms filtering: %d / %d\n", M, N);
+
+
+        /* ---------- SECOND PASS: Regression using only inliers ---------- */
+
+        double Sx2=0, Sy2=0, Sxx2=0, Sxy2=0;
+
+        for (int i = 0; i < N; i++) {
+            if (!inlier[i]) continue;
+            Sx2  += t_mid[i];
+            Sy2  += lt[i];
+            Sxx2 += t_mid[i] * t_mid[i];
+            Sxy2 += t_mid[i] * lt[i];
+        }
+
+        double a2 = a1, b2 = b1;
+
+        double denom2 = (M * Sxx2 - Sx2 * Sx2);
+        if (M >= 2 && fabs(denom2) > 1e-12) {
+            a2 = (M * Sxy2 - Sx2 * Sy2) / denom2;
+            b2 = (Sy2 * Sxx2 - Sx2 * Sxy2) / denom2;
+        }
+
+        printf("Pass 2 (final): a=%.6f, b=%.6f\n", a2, b2);
+
+        free(inlier);
+
+        // Use a2 and b2 from here on 
+
+
+
+        //------------------ WRITE TIME SYNC ENTRIES ------------------ 
+        if (client->client_time_sync && client->time_write_index > 0) {
+            for (uint64_t i = 0; i < client->time_write_index; i++) {
+                ClientTime *ct = &client->client_time_sync[i];
+
+                char sent_str[80], recv_str[80];
+                struct tm sent_tm, recv_tm;
+
+                // Convert to UTC broken-down time
+                #if defined(_WIN32)
+                    gmtime_s(&sent_tm, &ct->sent.tv_sec);
+                    gmtime_s(&recv_tm, &ct->recieved.tv_sec);
+                #else
+                    gmtime_r(&ct->sent.tv_sec, &sent_tm);
+                    gmtime_r(&ct->recieved.tv_sec, &recv_tm);
+                #endif
+
+                // Format (without milliseconds)
+                strftime(sent_str, sizeof(sent_str), "%Y-%m-%d %H:%M:%S", &sent_tm);
+                strftime(recv_str, sizeof(recv_str), "%Y-%m-%d %H:%M:%S", &recv_tm);
+
+                // Milliseconds
+                long sent_ms = ct->sent.tv_nsec / 1000000;
+                long recv_ms = ct->recieved.tv_nsec / 1000000;
+
+                // Single-line output
+                fprintf(fp,
+                    "Sent Timesync request at %s.%03ld UTC, received echo at %s.%03ld UTC, local time %.1f\n",
+                    sent_str, sent_ms,
+                    recv_str, recv_ms,
+                    ct->local_time);
+            }
+        }
+
+        /* ============================================================
+         * SECOND HEADER LINE:
+         * CHAN1;CHAN2;...;LOCAL_TIME;GLOBAL_TIME
+         * ============================================================ */
+        for (int i = 0; i < client->float_count - 1; i++)
+            fprintf(fp, "CHAN%d;", i + 1);
+
+        fprintf(fp, "LOCAL_TIME;GLOBAL_TIME\n");
+
+
+        /* ============================================================
+         *            WRITE MAIN MEASUREMENT DATA
+         *   GLOBAL_TIME = ( (local_time - b) / a ) + t0_sec
+         *   Format: YYYY-MM-DD HH:MM:SS.mmm UTC
+         * ============================================================ */
+        for (uint64_t i = 0; i < client->write_index; i++) {
+
+            double local_time = client->measurement_data[i * client->float_count +
+                                                         (client->float_count - 1)];
+
+            // convert microseconds → seconds if needed:
+            // local_time /= 1e6;
+
+            for (int j = 0; j < client->float_count; j++) {
+                fprintf(fp, "%.6f", client->measurement_data[
+                        i * client->float_count + j]);
+                if (j < client->float_count - 1) fprintf(fp, ";");
+            }
+
+            /* ---- compute global timestamp ---- */
+            double lt_shift   = local_time - client->client_time_sync[0].local_time;
+            double t_mid_est  = (lt_shift - b2) / a2;
+            double utc_sec    = t_mid_est + t0_sec;
+                    
+            time_t sec = (time_t)utc_sec;
+            double fractional = utc_sec - sec;            // fractional part in seconds
+            int usec = (int)(fractional * 1000000.0);     // convert to microseconds 0–999999
+                    
+            struct tm tm_utc;
+            gmtime_r(&sec, &tm_utc);
+                    
+            char buf[64];
+            strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &tm_utc);
+                    
+            /* Print with .ffffff precision (microseconds) */
+            fprintf(fp, ";%s.%06d UTC\n", buf, usec);
+        }
+    }
+
+    free(t_mid);
+    free(lt);
+
+    fclose(fp);
+    g_print("Data exported to %s\n", filename);
+    g_free(filename);
+    gtk_widget_destroy(dialog);
+}
+
+/*
 static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
     ClientInfo *client = (ClientInfo *)user_data;
 
@@ -1181,7 +1422,7 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
             return;
         }
 
-        /* ------------------ CREATE HEADER ------------------ */
+        // ------------------ CREATE HEADER ------------------ 
 
         // First line: the tab label + UTC timestamp
         const char *label_text = gtk_label_get_text(GTK_LABEL(client->tab_label));
@@ -1193,7 +1434,8 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
 
         fprintf(fp, "%s - %s\n", label_text, timestamp);
 
-        /* ------------------ WRITE TIME SYNC ENTRIES ------------------ */
+        //------------------ WRITE TIME SYNC ENTRIES ------------------ 
+        /*
         if (client->client_time_sync && client->time_write_index > 0) {
             for (uint64_t i = 0; i < client->time_write_index; i++) {
                 ClientTime *ct = &client->client_time_sync[i];
@@ -1226,18 +1468,18 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
                     ct->local_time);
             }
         }
-
+        
 
 
         // Second line: CHAN1;CHAN2;...;CHANN;TIME
         for (int i = 0; i < client->float_count - 1; i++) {
             fprintf(fp, "CHAN%d;", i + 1);
         }
-        fprintf(fp, "TIME\n");
+        fprintf(fp, "LOCAL_TIME\n");
 
         
 
-        /* ------------------ WRITE DATA ------------------ */
+        /* ------------------ WRITE DATA ------------------ 
 
         for (uint64_t i = 0; i < client->write_index; i++) {
             for (int j = 0; j < client->float_count; j++) {
@@ -1257,7 +1499,7 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
     gtk_widget_destroy(dialog);
 }
 
-
+*/
 
 
 
