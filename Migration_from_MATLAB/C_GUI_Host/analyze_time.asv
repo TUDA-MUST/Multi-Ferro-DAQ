@@ -1,0 +1,107 @@
+close all;
+clear;
+
+%% --- Select CSV file via GUI ---
+[file, path] = uigetfile('*.csv', 'Select CSV file');
+if isequal(file, 0)
+    disp('User canceled');
+    return;
+end
+
+fullfilePath = fullfile(path, file);
+
+%% --- Read file as plain text ---
+fid = fopen(fullfilePath, 'r');
+rawLines = textscan(fid, '%s', 'Delimiter', '\n', 'Whitespace', '');
+fclose(fid);
+
+rawLines = rawLines{1};
+nLines = length(rawLines);
+
+%% --- Preallocate ---
+MAXN = 10000;
+reqTime   = NaT(MAXN,1); reqTime.TimeZone = 'UTC';
+echoTime  = NaT(MAXN,1); echoTime.TimeZone = 'UTC';
+localTime = zeros(MAXN,1);
+
+%% --- Regex pattern ---
+pattern = ['Sent Timesync request at ([0-9:\-\. ]+ UTC), ' ...
+           'received echo at ([0-9:\-\. ]+ UTC), ' ...
+           'local time ([0-9]+),0'];
+
+count = 0;
+haveStarted = false;
+
+%% --- Parse lines ---
+for i = 1:nLines
+    tokens = regexp(rawLines{i}, pattern, 'tokens', 'once');
+
+    if ~isempty(tokens)
+        count = count + 1;
+        haveStarted = true;
+
+        reqTime(count) = datetime(tokens{1}, ...
+            'InputFormat','yyyy-MM-dd HH:mm:ss.SSS ''UTC''','TimeZone','UTC');
+
+        echoTime(count) = datetime(tokens{2}, ...
+            'InputFormat','yyyy-MM-dd HH:mm:ss.SSS ''UTC''','TimeZone','UTC');
+
+        localTime(count) = str2double(tokens{3}); % raw microseconds
+
+    elseif haveStarted
+        break; % stop early when Timesync block ends
+    end
+end
+
+%% --- Trim ---
+reqTime   = reqTime(1:count);
+echoTime  = echoTime(1:count);
+localTime = localTime(1:count);
+
+%% --- Compute midpoint ---
+midTime = reqTime + (echoTime - reqTime)/2;
+
+%% --- Convert time to numeric seconds ---
+t_mid = seconds(midTime - midTime(1));     % x-values
+lt     = localTime / 1e6;                  % convert µs → sec
+lt     = lt - lt(1);                       % y-values, remove offset
+
+%% --- Fit linear model: lt = a*t_mid + b ---
+p = polyfit(t_mid, lt, 1);
+lt_fit = polyval(p, t_mid);
+
+%% --- Statistics ---
+SS_res = sum((lt - lt_fit).^2);
+SS_tot = sum((lt - mean(lt)).^2);
+R2 = 1 - SS_res / SS_tot;
+
+residuals = lt - lt_fit;
+std_res = std(residuals);
+var_res = var(residuals);
+
+%% --- Print results ---
+fprintf("Linear fit: localTime = midTime*t + b\n");
+fprintf("  a (scale factor) = %.12f sec/sec\n", p(1));
+fprintf("  b (offset)       = %.12f sec\n", p(2));
+fprintf("  R²               = %.12f\n", R2);
+fprintf("  Residual std     = %.12e sec\n", std_res);
+fprintf("  Residual var     = %.12e sec^2\n", var_res);
+
+%% --- Plot results ---
+figure;
+
+subplot(2,1,1);
+plot(t_mid, lt, 'o'); hold on;
+plot(t_mid, lt_fit, '-','LineWidth',2);
+grid on;
+title('LocalTime vs Midpoint Time');
+xlabel('Midpoint Time (sec)');
+ylabel('LocalTime (sec)');
+legend('Data','Fit','Location','best');
+
+subplot(2,1,2);
+plot(t_mid, residuals, '-o');
+grid on;
+title('Residuals');
+xlabel('Midpoint Time (sec)');
+ylabel('Error (sec)');

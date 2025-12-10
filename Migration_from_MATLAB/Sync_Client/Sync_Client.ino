@@ -1,0 +1,200 @@
+#include <FastLED.h>
+#include <SPI.h>
+#include "../lib/tcp_client_network.cpp"
+
+Preferences prefs;
+
+// ──────────────────────────────────────────────────────────────
+// CONFIG
+// ──────────────────────────────────────────────────────────────
+#define NUM_LEDS 2
+#define DATA_PIN 21
+
+#define ADC_PIN 3        // <<<<<< acquire from this analog pin
+
+#define BUFFERSIZE 40
+#define SAMPLE_SIZE_BYTES 8      // float value + float timestamp
+#define DATAQUEUE_SIZE 1024
+
+CRGB leds[NUM_LEDS];
+
+// ──────────────────────────────────────────────────────────────
+// STRUCTS
+// ──────────────────────────────────────────────────────────────
+struct Sample {
+    float value;
+    float timestamp;
+};
+
+TaskHandle_t aquireTask;
+TaskHandle_t sendTask;
+QueueHandle_t datatransferQueue;
+
+// ──────────────────────────────────────────────────────────────
+// ACQUISITION TASK
+// continuously capture analog value + timestamp
+// ──────────────────────────────────────────────────────────────
+void aquireTaskCode(void* params) {
+    while (1) {
+        Sample* s = (Sample*) malloc(sizeof(Sample));
+        if (s) {
+            int raw = analogRead(ADC_PIN);
+            s->value = (float)raw * (3300.0f / 4095.0f); 
+            s->timestamp = (float) esp_timer_get_time();   // microseconds
+            xQueueSend(datatransferQueue, &s, 0);
+        }
+        vTaskDelay(1);   // adjust sampling speed
+    }
+}
+
+
+// ──────────────────────────────────────────────────────────────
+// SEND TASK
+// sends blocks of [value, timestamp] over TCP
+// ──────────────────────────────────────────────────────────────
+void sendTaskCode(void* params) {
+
+    // LED: WiFi connecting
+    leds[0] = CRGB::Yellow; FastLED.show();
+
+    // connect to network
+    String clientName;
+    wifiConnectAndAllowOverride(clientName);
+
+    IPAddress hostIP = discoverHostUDP();
+    WiFiClient client = connectToHost(hostIP, 8080);
+
+    // handshake
+    sendHandshakePackage(client, 2);   // only 2 floats now
+    client.flush();
+
+    leds[0] = CRGB::Magenta; FastLED.show();
+    Serial.println("TCP connected — waiting for SETTINGS package.");
+
+    // SETTINGS LOOP
+    TcpPackage settingsPkg;
+    settingsPkg.package_type = PING_PACKAGE;
+
+    while (settingsPkg.package_type != SETTINGS_PACKAGE) {
+        getNextTcpPackage(client, settingsPkg);
+    }
+
+    Serial.println("Settings received!");
+
+    // number of samples to send
+    union {
+        byte asBytes[8];
+        int64_t count;
+    } measureCnt;
+
+    memcpy(measureCnt.asBytes, settingsPkg.package, 8);
+    Serial.printf("Expecting to send %lld samples\n", measureCnt.count);
+
+    // LED: ready
+    leds[0] = CRGB::Green; FastLED.show();
+
+    // start acquiring
+    xTaskCreatePinnedToCore(aquireTaskCode, "acq", 4096, NULL, 1, &aquireTask, 1);
+
+    // allocate output buffer
+    const int dataSize = SAMPLE_SIZE_BYTES * BUFFERSIZE;
+    uint8_t* buffer = (uint8_t*) malloc(dataSize);
+    uint8_t header[5];
+
+    header[0] = DATA_PACKAGE;
+    header[1] = (dataSize >> 24) & 0xFF;
+    header[2] = (dataSize >> 16) & 0xFF;
+    header[3] = (dataSize >> 8)  & 0xFF;
+    header[4] = (dataSize >> 0)  & 0xFF;
+
+    uint32_t totalOut = 5 + dataSize;
+    uint8_t* out = (uint8_t*) malloc(totalOut);
+
+    int64_t sent = 0;
+
+    while (sent < measureCnt.count) {
+
+        // handle incoming commands (STOP, TIMESTAMP, etc.)
+        while (client.available()) {
+            getNextTcpPackage(client, settingsPkg);
+
+            switch(settingsPkg.package_type) {
+                case STOP_PACKAGE:
+                    Serial.println("STOP requested.");
+                    vTaskDelete(aquireTask);
+                    client.stop();
+                    WiFi.disconnect();
+                    free(out);
+                    ESP.restart();
+                    break;
+
+                case TIMESTAMP_PACKAGE:
+                    respondWithTimestampPackage(client, settingsPkg);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        // if queue contains at least BUFFERSIZE samples
+        if (uxQueueMessagesWaiting(datatransferQueue) < BUFFERSIZE) {
+            vTaskDelay(1);
+            continue;
+        }
+
+        // fill the buffer
+        for (int j = 0; j < BUFFERSIZE; j++) {
+            Sample* s;
+            xQueueReceive(datatransferQueue, &s, portMAX_DELAY);
+
+            memcpy(buffer + j*SAMPLE_SIZE_BYTES, &(s->value), 4);
+            memcpy(buffer + j*SAMPLE_SIZE_BYTES + 4, &(s->timestamp), 4);
+
+            free(s);
+        }
+
+        // build packet
+        memcpy(out, header, 5);
+        memcpy(out + 5, buffer, dataSize);
+
+        client.write(out, totalOut);
+        sent += BUFFERSIZE;
+    }
+
+    // cleanup
+    free(out);
+    free(buffer);
+
+    vTaskDelete(aquireTask);
+    client.stop();
+    WiFi.disconnect();
+    delay(200);
+    ESP.restart();
+}
+
+
+// ──────────────────────────────────────────────────────────────
+// SETUP
+// ──────────────────────────────────────────────────────────────
+void setup() {
+    Serial.begin(921600);
+
+    FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+    FastLED.setBrightness(5);
+
+    leds[0] = CRGB::Orange; FastLED.show();
+
+    pinMode(ADC_PIN, INPUT);
+
+    // queue for samples
+    datatransferQueue = xQueueCreate(DATAQUEUE_SIZE, sizeof(Sample*));
+
+    xTaskCreatePinnedToCore(sendTaskCode, "send", 8192, NULL, 1, &sendTask, 0);
+}
+
+
+// ──────────────────────────────────────────────────────────────
+void loop() {
+    vTaskDelay(portMAX_DELAY);
+}
