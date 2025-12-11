@@ -1188,7 +1188,12 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
     const char *label_text = gtk_label_get_text(GTK_LABEL(client->tab_label));
     time_t now = time(NULL);
     struct tm utc_tm;
-    gmtime_r(&now, &utc_tm);
+    
+    #ifdef _WIN32
+        gmtime_s(&utc_tm, &now);
+    #else
+        gmtime_r(&now, &utc_tm);
+    #endif
 
     char timestamp[64];
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S UTC", &utc_tm);
@@ -1368,8 +1373,12 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
             int usec = (int)(fractional * 1000000.0);     // convert to microseconds 0–999999
                     
             struct tm tm_utc;
-            gmtime_r(&sec, &tm_utc);
-                    
+            
+            #ifdef _WIN32
+                gmtime_s(&tm_utc, &sec);
+            #else
+                gmtime_r(&sec, &tm_utc);
+            #endif        
             char buf[64];
             strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &tm_utc);
                     

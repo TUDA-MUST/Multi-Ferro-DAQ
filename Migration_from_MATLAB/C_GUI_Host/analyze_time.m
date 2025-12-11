@@ -134,13 +134,13 @@ dataLines = strrep(dataLines, ',', '.');                         % decimal comma
 dataStr = strjoin(dataLines, '\n');                              % combine lines
 
 % Format: 8 channels (floats) + LOCAL_TIME (float) + GLOBAL_TIME (string)
-fmt = [repmat('%f',1,2) '%f %s'];
+fmt = [repmat('%f',1,9) '%f %s'];
 
 % Parse all at once
 dataCell = textscan(dataStr, fmt, 'Delimiter', ';', 'CollectOutput', 1);
 
-chanData      = dataCell{1}(:,1);   % 8 channel columns
-chanLocal     = dataCell{1}(:,2);     % LOCAL_TIME column
+chanData      = dataCell{1}(:,8);   % 8 channel columns
+chanLocal     = dataCell{1}(:,9);     % LOCAL_TIME column
 chanGlobalStr = dataCell{2};          % GLOBAL_TIME strings
 
 % Convert GLOBAL_TIME to datetime
