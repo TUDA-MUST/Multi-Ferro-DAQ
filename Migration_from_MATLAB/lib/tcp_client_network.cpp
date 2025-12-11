@@ -178,16 +178,14 @@ bool wifiConnectAndAllowOverride(String &clientNameOut) {
     // ---- Load Client Name ----
     prefs.begin("client", false);
     clientNameOut = prefs.getString("client_name", "ESP32");
-    uint8_t float_count = prefs.getUChar("float_count", 9);
+    uint8_t float_count = prefs.getUInt("float_count", 255);
     prefs.end();
 
-    Serial.printf(
-        "\nPress ENTER to change WiFi credentials or client settings before connection.\n"
-    );
-    Serial.printf(
-        "Connecting to SSID \"%s\" with password \"%s\" as client \"%s\" with %d reported channels...\n",
+    Serial.printf("\nPress ENTER to change WiFi credentials or client settings before connection.\n");
+    Serial.printf("Connecting to SSID \"%s\" with password \"%s\" as client \"%s\" with %d reported channels...\n",
         ssid.c_str(), pass.c_str(), clientNameOut.c_str(), float_count
     );
+    vTaskDelay(20);
 
     WiFi.begin(ssid.c_str(), pass.c_str());
 
@@ -205,6 +203,7 @@ bool wifiConnectAndAllowOverride(String &clientNameOut) {
     }
 
     Serial.printf("\nConnected! IP: %s\n", WiFi.localIP().toString().c_str());
+    vTaskDelay(5);
     return true;
 }
 

@@ -179,13 +179,14 @@ void sendTaskCode(void* params) {
 // ──────────────────────────────────────────────────────────────
 void setup() {
     Serial.begin(921600);
-
+    
     FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
     FastLED.setBrightness(5);
 
     leds[0] = CRGB::Orange; FastLED.show();
+    vTaskDelay(900);
 
-    pinMode(ADC_PIN, INPUT);
+    analogReadResolution(12);          // 12-bit default
 
     // queue for samples
     datatransferQueue = xQueueCreate(DATAQUEUE_SIZE, sizeof(Sample*));
