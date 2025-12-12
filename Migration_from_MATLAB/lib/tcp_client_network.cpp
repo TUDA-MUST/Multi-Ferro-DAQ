@@ -185,7 +185,6 @@ bool wifiConnectAndAllowOverride(String &clientNameOut) {
     Serial.printf("Connecting to SSID \"%s\" with password \"%s\" as client \"%s\" with %d reported channels...\n",
         ssid.c_str(), pass.c_str(), clientNameOut.c_str(), float_count
     );
-    vTaskDelay(20);
 
     WiFi.begin(ssid.c_str(), pass.c_str());
 
@@ -203,7 +202,6 @@ bool wifiConnectAndAllowOverride(String &clientNameOut) {
     }
 
     Serial.printf("\nConnected! IP: %s\n", WiFi.localIP().toString().c_str());
-    vTaskDelay(5);
     return true;
 }
 

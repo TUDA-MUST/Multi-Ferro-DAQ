@@ -1,5 +1,5 @@
-//gcc C_GUI_Host_main.c GUI.c -o app -DLINUX `pkg-config --cflags --libs gtk+-3.0 json-glib-1.0`
-// gcc C_GUI_Host_main.c GUI.c -o ./WinApp/bin/app.exe -D_WIN32 -lws2_32 -liphlpapi $(pkg-config --cflags --libs gtk+-3.0 json-glib-1.0)
+//gcc C_GUI_Host_main.c gui.c client.c network.c -o app -DLINUX `pkg-config --cflags --libs gtk+-3.0 json-glib-1.0`
+// gcc C_GUI_Host_main.c gui.c client.c network.c -o ./WinApp/bin/app.exe -D_WIN32 -lws2_32 -liphlpapi $(pkg-config --cflags --libs gtk+-3.0 json-glib-1.0)
 
 #ifdef _WIN32
     #define _WINSOCK_DEPRECATED_NO_WARNINGS
@@ -18,7 +18,7 @@
     #include <netinet/in.h>
 #endif
 
-#include "GUI.h"
+#include "gui.h"
 #include <gtk/gtk.h>
 #include <gio/gio.h>
 #include <string.h>
