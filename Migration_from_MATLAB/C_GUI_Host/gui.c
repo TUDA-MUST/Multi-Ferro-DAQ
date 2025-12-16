@@ -630,10 +630,10 @@ gboolean on_client_incoming(GSocketService *service,
         // g_print("Received HANDSHAKE_PACKAGE: float_count=%d, client_name=\"%s\"\n", float_count, client_name);
     }
 
-    //Send zero byte as ACK ---
-    //GOutputStream *out = g_io_stream_get_output_stream(G_IO_STREAM(conn));
-    //uint8_t ack = 0;
-    //g_output_stream_write(out, &ack, 1, NULL, NULL);
+    //Send zero byte as ACK --- neccesary for WINDOWS to relyably register clients
+    GOutputStream *out = g_io_stream_get_output_stream(G_IO_STREAM(conn));
+    uint8_t ack = 0;
+    g_output_stream_write(out, &ack, 1, NULL, NULL);
 
     //Assign client to waiting tab ---
     assign_client_to_waiting_tab(conn, tab_label_text, float_count,notebook);  
