@@ -1,4 +1,5 @@
 #include "network.h"
+#include <json-glib/json-glib.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -138,100 +139,51 @@ static gboolean socket_is_disconnected(GSocket *sock){
 
 
 //-----------------SEND SETTINGS TO CONNECTED CLIENT AND START MEASUREMENT --------------------
-
 void send_settings_to_client(ClientInfo *info) {
     if (!info || !info->conn || !info->settings) return;
 
-    ClientSettings *s = info->settings;
-    GtkWidget *tab = info->tab_content;
 
-    // --- Read UI values and update settings struct ---
-    GtkWidget *sr_combo = g_object_get_data(G_OBJECT(tab), "sr_combo");
-    if (sr_combo) {
-        const gchar *sr_text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(sr_combo));
-        if (sr_text) s->sample_rate = (uint32_t)atoi(sr_text);
+    // --- Convert current GUI settings to JSON for microcontroller ---
+    JsonNode *root_node = parse_json_for_microcontroller(info);
+    if (!root_node) {
+        g_warning("Failed to generate JSON from GUI settings.");
+        return;
     }
 
-    GtkWidget *dur_entry = g_object_get_data(G_OBJECT(tab), "dur_entry");
-    if (dur_entry) {
-        const gchar *dur_text = gtk_entry_get_text(GTK_ENTRY(dur_entry));
-        if (dur_text) s->duration_seconds = atoi(dur_text);
-    }
+    gchar *json_str = json_to_string(root_node, FALSE);
+    json_node_free(root_node);
 
-    // Read Preamp and Settings Registers from widgets
-    for (int i = 0; i < 8; i++) {
-        char preamp_key[32], reg_key[32];
-        snprintf(preamp_key, sizeof(preamp_key), "preamp_combo_%d", i);
-        snprintf(reg_key, sizeof(reg_key), "reg_entry_%d", i);
+    // --- Allocate a single buffer: 5-byte header + JSON payload ---
+    guint32 payload_size = strlen(json_str);
+    guint total_size = 5 + payload_size;
+    guint8 *buffer = g_malloc(total_size);
 
-        GtkWidget *pre_combo = g_object_get_data(G_OBJECT(tab), preamp_key);
-        GtkWidget *reg_entry = g_object_get_data(G_OBJECT(tab), reg_key);
+    // Header: type + size (network byte order)
+    buffer[0] = SETTINGS_PACKAGE;
+    guint32 size_net = g_htonl(payload_size);
+    memcpy(buffer + 1, &size_net, 4);
 
-        if (pre_combo) {
-            const gchar *txt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(pre_combo));
-            if (txt) s->preamp[i] = (uint8_t)atoi(txt);
-        }
-        if (reg_entry) {
-            const gchar *txt = gtk_entry_get_text(GTK_ENTRY(reg_entry));
-            if (txt) s->settings_reg[i] = (uint16_t)strtol(txt, NULL, 16);
-        }
-    }
+    // Copy JSON payload
+    memcpy(buffer + 5, json_str, payload_size);
+    g_free(json_str);
 
-    // Compute sample_number for measurement
-    s->sample_number = (uint64_t)s->sample_rate * (s->duration_seconds);   
-
-    // --- Pack data into TcpPackage ---
-    TcpPackage pkg;
-    pkg.package_type = SETTINGS_PACKAGE; 
-    pkg.package_size = sizeof(uint64_t) + sizeof(uint32_t) + 8*sizeof(uint16_t) + 8*sizeof(uint8_t);
-    pkg.package = g_malloc(pkg.package_size); // Allocate memory for data
-
-    unsigned char *p = pkg.package;
-    memcpy(p, &s->sample_number, sizeof(s->sample_number)); p += sizeof(s->sample_number);
-    memcpy(p, &s->sample_rate, sizeof(s->sample_rate));     p += sizeof(s->sample_rate);
-    memcpy(p, s->settings_reg, 8*sizeof(uint16_t));         p += 8*sizeof(uint16_t);
-    memcpy(p, s->preamp, 8*sizeof(uint8_t));                p += 8;
-
-    // --- Send package over TCP ---
+    // --- Send entire buffer in one TCP call ---
     GSocket *sock = g_socket_connection_get_socket(info->conn);
     if (!sock || !G_IS_SOCKET(sock)) {
         g_warning("Client socket invalid. Aborting send.");
-        g_free(pkg.package);
+        g_free(buffer);
         return;
     }
-
-    // --- Send 5-byte header (type + size) ---
-    uint8_t header[5];
-    header[0] = pkg.package_type;
-    uint32_t size_net = g_htonl(pkg.package_size);  // Convert to network byte order
-    memcpy(header+1, &size_net, 4);
 
     GError *err = NULL;
-    gssize bytes_sent = g_socket_send(sock, header, sizeof(header), NULL, &err);
-    if (bytes_sent != sizeof(header)) {
-        g_warning("Failed to send package header: %s", err ? err->message : "unknown");
+    gssize bytes_sent = g_socket_send(sock, buffer, total_size, NULL, &err);
+    if (bytes_sent != total_size) {
+        g_warning("Failed to send settings package: %s", err ? err->message : "partial send");
         if (err) g_error_free(err);
-        g_free(pkg.package);
-        free_client_info(info);  // Disconnect client safely
-        return;
     }
 
-    // --- Send actual package data ---
-    bytes_sent = g_socket_send(sock, pkg.package, pkg.package_size, NULL, &err);
-    if (bytes_sent != pkg.package_size) {
-        g_warning("Failed to send full settings package: %s",
-                  err ? err->message : "partial send");
-        if (err) g_error_free(err);
-        g_free(pkg.package);
-        free_client_info(info);  // Disconnect client
-        return;
-    }
-
-    // --- Clean up memory ---
-    g_free(pkg.package);
+    g_free(buffer);
 }
-
-
 
 
 

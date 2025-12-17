@@ -5,6 +5,7 @@
 #include <WiFiClient.h>
 #include <WiFiUdp.h>
 #include <Preferences.h>
+#include <ArduinoJson.h>
 #include <Arduino.h>
 
 // ---- Package Types ----
@@ -33,7 +34,7 @@ String waitForLine();
 void setWifiCredentials();
 void setClientHandshakePreferences();
 
-void sendHandshakePackage(WiFiClient &client, uint32_t float_count);
+void sendHandshakePackage(WiFiClient &client, const char* json_config);
 void respondWithTimestampPackage(WiFiClient &client, TcpPackage &recvPkg);
 
 bool readBytes(WiFiClient &client, uint8_t *buffer, size_t n, uint32_t timeoutMs = 2000);

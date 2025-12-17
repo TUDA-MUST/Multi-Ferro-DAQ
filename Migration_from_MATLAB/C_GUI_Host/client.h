@@ -4,18 +4,9 @@
 #include <gtk/gtk.h>
 #include <gio/gio.h>
 #include <stdint.h>
+#include "settings.h"
 
 
-// --------------------
-// Client settings
-// --------------------
-typedef struct {
-    uint32_t sample_rate;
-    int duration_seconds;
-    uint8_t preamp[8];
-    uint16_t settings_reg[8];
-    uint64_t sample_number;
-} ClientSettings;
 
 // --------------------
 // Time synchronization
@@ -29,22 +20,22 @@ typedef struct {
 // --------------------
 // Main client info
 // --------------------
-typedef struct {
+typedef struct _ClientInfo{
     GSocketConnection *conn;
     GtkWidget *tab_label;
     GtkWidget *tab_content;
-    uint8_t float_count;   // store handshake float count
+    GtkWidget *left_settings_box;
     GtkWidget *notebook;
     GtkWidget *close_button;
     GtkWidget *status_label;
-    ClientSettings *settings;
-    GPtrArray *preamp_data;
+    GuiConfig *settings;
     guint monitor_id;
     char destroying;
 
     /* ---- Measurement Buffer Fields ---- */
+    uint64_t duration_seconds;
     ClientTime *client_time_sync;   // Buffer of collected client time synchronisation data
-    uint64_t allocated_client_times;// numer of allocated ClientTime structs
+    uint64_t allocated_client_times;// number of allocated ClientTime structs
     uint64_t time_write_index;      // For client_time_sync entries
     float *measurement_data;        // Contiguous buffer: rows of 9 floats
     uint64_t allocated_samples;     // Allocated number of rows
