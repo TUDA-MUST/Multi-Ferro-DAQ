@@ -45,8 +45,10 @@ void free_client_info(ClientInfo *info){
     }
 
     // Free ClientSettings
-    if (info->settings)
-        g_free(info->settings);
+    if (info->settings) {
+        free_gui_config(info->settings);
+        info->settings = NULL;
+    }
 
     // Free measurement buffer
     if (info->measurement_data)
@@ -77,10 +79,6 @@ void free_client_info(ClientInfo *info){
         gtk_widget_destroy(info->close_button);
         info->close_button = NULL;
     }
-
-    // Free preamp_data array (only the array, not the widgets)
-    if (info->preamp_data)
-        g_ptr_array_free(info->preamp_data, FALSE);
 
     // Free ClientInfo itself
     g_free(info);

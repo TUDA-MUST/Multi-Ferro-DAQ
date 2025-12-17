@@ -6,7 +6,38 @@
 #include "client.h"
 
 // --------------------
-// TCP Package types
+// TCP Package types:
+// PING PACKAGE:
+//  A package sent by the Client monitor to Clients to see if the 
+//  TCP connection is still alive. Can be discarded by Client. Data
+//  carried by the PING Package should be zero-bytes.
+//  -> sent by ClientMonitor
+// STOP PACKAGE:
+//  Will only be sent after a SETTINGS PACKAGE. Client Monitor stops 
+//  measurement thread and expects client to stop measuring and reset 
+//  the connection. Package size is zero.
+//  -> sent by ClientMonitor
+// SETTINGS PACKAGE:
+//  Will send the settings as a json as requested by the client during
+//  the handshake. Look at an example for further details. Sending of 
+//  the settings will initiate a measurement.
+//  -> sent by ClientMonitor
+// DATA PACKAGE:
+//  Are expected to contain a data stream on n floats per sample (specified in
+//  handshake). Will only be handled after SETTINGS PACKAGE was sent and before 
+//  a STOP PACKAGE was sent
+//  -> sent by Client
+// TIMESTAMP PACKAGE:
+//  Will be sent by the ClientMonitor every few seconds during measurement to
+//  synchronize timestamps over multiple clients. The Client expects the Client
+//  to echo the received timestamp data, but append its local time in µs to the
+//  data as a float
+//  -> sent by ClientMonitor, echoed by Client
+// HANDSHAKE PACKAGE:
+//  Sent by the Client directly after TCP connection was established. Should contain
+//  a json, that defines the properties of the client and its requested GUI.
+//  -> sent by Client, answered by a single zero-byte in TCP stream by ClientMonitor
+//     (zeron-byte neccesary forn Windows to reliably handle Clients)
 // --------------------
 typedef enum {
     PING_PACKAGE      = 0,

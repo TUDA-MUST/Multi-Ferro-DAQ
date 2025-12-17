@@ -8,58 +8,6 @@
 
 GQueue *waiting_tabs = NULL;
 GMutex queue_lock;
-struct PreampData{ ClientSettings *s; int i; };
-
-
-
-
-
-
-
-
-
-
-
-// ******************************************************
-// ----------------- HELPER CALLBACKS -------------------
-// ******************************************************
-
-static gboolean hex_input_filter(GtkWidget *widget, GdkEventKey *event, gpointer data) {
-    if (event->keyval == GDK_KEY_BackSpace ||
-        event->keyval == GDK_KEY_Delete ||
-        event->keyval == GDK_KEY_Left ||
-        event->keyval == GDK_KEY_Right ||
-        event->keyval == GDK_KEY_Tab)
-        return FALSE;
-    char c = (char)event->string[0];
-    return !isxdigit(c);
-}
-
-static void sr_combo_changed(GtkComboBox *c, gpointer user_data) {
-    ClientSettings *s = user_data;
-    s->sample_rate = atoi(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(c)));
-}
-
-static void dur_entry_changed(GtkEditable *e, gpointer user_data) {
-    ClientSettings *s = user_data;
-    s->duration_seconds = atoi(gtk_entry_get_text(GTK_ENTRY(e)));
-}
-
-static void preamp_changed(GtkComboBox *c, gpointer user_data) {
-    struct PreampData *d = user_data;
-    d->s->preamp[d->i] = atoi(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(c)));
-}
-
-static void settings_reg_changed(GtkEditable *e, gpointer user_data) {
-    struct PreampData *d = user_data;
-    const char *txt = gtk_entry_get_text(GTK_ENTRY(e));
-    if (strlen(txt) == 2)
-        d->s->settings_reg[d->i] = (unsigned char)strtol(txt, NULL, 16);
-}
-
-
-
-
 
 
 
@@ -73,16 +21,9 @@ static void settings_reg_changed(GtkEditable *e, gpointer user_data) {
 // ----------------- BUILD CLIENT UI -------------------
 void build_client_ui(ClientInfo *info, GtkWidget *win)
 {
-    if (!info || !win) return;
+  if (!info || !win) return;
 
-    GtkWidget *tab_box = info->tab_content;
-
-    // Allocate settings once
-    info->settings = g_new0(ClientSettings, 1);
-
-    // Initialize preamp_data array
-    if (!info->preamp_data)
-        info->preamp_data = g_ptr_array_new(); // no free_func now
+  GtkWidget *tab_box = info->tab_content;
 
   // Main horizontal box inside the tab
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
@@ -99,6 +40,13 @@ void build_client_ui(ClientInfo *info, GtkWidget *win)
 
   GtkWidget *left_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
   gtk_container_add(GTK_CONTAINER(left_scrolled), left_box);
+  info->left_settings_box = left_box;
+  //GtkWidget *left_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+  //gtk_scrolled_window_add_with_viewport(
+  //    GTK_SCROLLED_WINDOW(left_scrolled),
+  //    left_box
+  //);
+
 
   
   // MIDDLE PANEL (LIVE PLOT)
@@ -130,24 +78,13 @@ void build_client_ui(ClientInfo *info, GtkWidget *win)
 
   GtkWidget *right_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
   gtk_container_add(GTK_CONTAINER(right_scrolled), right_box);
+  //GtkWidget *right_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+  //gtk_scrolled_window_add_with_viewport(
+  //    GTK_SCROLLED_WINDOW(right_scrolled),
+  //    right_box
+  //);
 
-    
-    
 
-  // Sample Rate
-  GtkWidget *sr_label = gtk_label_new("Sample Rate");
-  GtkWidget *sr_combo = gtk_combo_box_text_new();
-  //const char *sr_vals[] = {"1000","2000","4000","8000","16000","32000","64000"};
-  const char *sr_vals[] = {"1000","2000"};  // only enable fully supported speeds
-  for (int i = 0; i < 2; i++)
-      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sr_combo), sr_vals[i]);
-  gtk_combo_box_set_active(GTK_COMBO_BOX(sr_combo), 0);
-  g_signal_connect(sr_combo, "changed",
-                   G_CALLBACK(sr_combo_changed), info->settings);
-  g_object_set_data(G_OBJECT(info->tab_content), "sr_combo", sr_combo);
-  gtk_box_pack_start(GTK_BOX(left_box), sr_label, FALSE, FALSE, 3);
-  gtk_box_pack_start(GTK_BOX(left_box), sr_combo, FALSE, FALSE, 3);
-  
   // Duration
   // Retrieve global duration entry from the main window
   GtkWidget *global_dur_entry =
@@ -157,6 +94,7 @@ void build_client_ui(ClientInfo *info, GtkWidget *win)
   if (global_dur_entry != NULL) {
       global_val = gtk_entry_get_text(GTK_ENTRY(global_dur_entry));
   }
+  info->duration_seconds = atoi(global_val);
   
   // Duration (read-only)
   GtkWidget *dur_label = gtk_label_new("Global Duration (seconds)");
@@ -172,62 +110,17 @@ void build_client_ui(ClientInfo *info, GtkWidget *win)
   
   gtk_box_pack_start(GTK_BOX(left_box), dur_label, FALSE, FALSE, 3);
   gtk_box_pack_start(GTK_BOX(left_box), dur_entry, FALSE, FALSE, 3);
-
   
-
-  // 8x Preamp + Settings Register
-  for (int i = 0; i < 8; i++) {
-      char lbltxt[64];
-      snprintf(lbltxt, sizeof(lbltxt), "CHAN %d - Preamp", i+1);
-      GtkWidget *pre_label = gtk_label_new(lbltxt);
-      GtkWidget *pre_combo = gtk_combo_box_text_new();
-      // --- Preamp combo ---
-      for (int v = 0; v <= 12; v++) {
-          if (!(v == 1 || v == 2 || v == 4 || v == 8 || v == 12)) continue;
-          char buf[16]; snprintf(buf, sizeof(buf), "%d", v);
-          gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(pre_combo), buf);
-      }
-      gtk_combo_box_set_active(GTK_COMBO_BOX(pre_combo), 0);
-      struct PreampData *pdata = g_new(struct PreampData, 1);
-      pdata->s = info->settings;
-      pdata->i = i;
-      // Let GTK own pdata, it will free automatically when pre_combo is destroyed
-      g_object_set_data_full(G_OBJECT(pre_combo), "preamp_data", pdata, g_free);
-      g_signal_connect(pre_combo, "changed", G_CALLBACK(preamp_changed), pdata);
-      gtk_box_pack_start(GTK_BOX(left_box), pre_label, FALSE, FALSE, 3);
-      gtk_box_pack_start(GTK_BOX(left_box), pre_combo, FALSE, FALSE, 3);
-      // --- Settings register ---
-      snprintf(lbltxt, sizeof(lbltxt), "CHAN %d - Settings Register (hex byte)", i+1);
-      GtkWidget *reg_label = gtk_label_new(lbltxt);
-      GtkWidget *reg_entry = gtk_entry_new();
-      gtk_entry_set_max_length(GTK_ENTRY(reg_entry), 2);
-      gtk_entry_set_text(GTK_ENTRY(reg_entry), "10");
-      g_signal_connect(reg_entry, "key-press-event", G_CALLBACK(hex_input_filter), NULL);
-      struct PreampData *pdata2 = g_new(struct PreampData, 1);
-      pdata2->s = info->settings;
-      pdata2->i = i;
-      g_object_set_data_full(G_OBJECT(reg_entry), "preamp_data", pdata2, g_free);
-      g_signal_connect(reg_entry, "changed", G_CALLBACK(settings_reg_changed), pdata2);
-      gtk_box_pack_start(GTK_BOX(left_box), reg_label, FALSE, FALSE, 3);
-      gtk_box_pack_start(GTK_BOX(left_box), reg_entry, FALSE, FALSE, 3);
-      
-      //Store widgets in tab_content so we can access later
-      char preamp_key[32], reg_key[32];
-      snprintf(preamp_key, sizeof(preamp_key), "preamp_combo_%d", i);
-      snprintf(reg_key, sizeof(reg_key), "reg_entry_%d", i);
-      g_object_set_data(G_OBJECT(tab_box), preamp_key, pre_combo);
-      g_object_set_data(G_OBJECT(tab_box), reg_key, reg_entry);
-
-      // Optional: track widgets in preamp_data array if needed
-      g_ptr_array_add(info->preamp_data, pre_combo);
-      g_ptr_array_add(info->preamp_data, reg_entry);
-  }
   GtkWidget *load_btn = gtk_button_new_with_label("Load JSON Settings...");
   gtk_box_pack_start(GTK_BOX(right_box), load_btn, FALSE, FALSE, 5);
   g_signal_connect(load_btn, "clicked", G_CALLBACK(on_load_json_clicked), info);
   
-  //Sample number to zero
-  info->settings->sample_number = 0;
+  // Dynamically build settings widgets based on GuiConfig
+  for (guint i = 0; i < info->settings->settings->len; i++) {
+    GuiSetting *setting = g_ptr_array_index(info->settings->settings, i);
+    create_dynamic_widget(left_box, setting);
+  }
+
 
   //send settings & start measurement button
   GtkWidget *start_btn = gtk_button_new_with_label("Start Measurement");
@@ -287,7 +180,7 @@ void build_client_ui(ClientInfo *info, GtkWidget *win)
 
 
 // ----------------- ASSIGN CLIENT -------------------
-void assign_client_to_waiting_tab(GSocketConnection *conn, const char* client_name, uint8_t float_count ,GtkWidget *notebook) {
+void assign_client_to_waiting_tab(GSocketConnection *conn, GuiConfig *client_config, GtkWidget *notebook) {
     g_mutex_lock(&queue_lock);
     if (g_queue_is_empty(waiting_tabs)) {
         g_mutex_unlock(&queue_lock);
@@ -318,13 +211,19 @@ void assign_client_to_waiting_tab(GSocketConnection *conn, const char* client_na
         info->close_button = NULL;
     }
 
+
+    // Set tab label from client_config
     char text[64];
-    snprintf(text, sizeof(text), "%s", client_name);
+    snprintf(text, sizeof(text), "%s", client_config->gui_handle ? client_config->gui_handle : "Unknown Client");
     gtk_label_set_text(GTK_LABEL(info->tab_label), text);
     set_tab_label_color_text(info->tab_label, text, TRUE);
 
+    // Assign connection
     info->conn = g_object_ref(conn);
-    info->float_count = float_count;
+
+    // Assign GUI settings
+    info->settings = client_config;
+
 
     // Start periodic connection check (once per 5 seconds)
     info->monitor_id = g_timeout_add(5000, monitor_client_connection, info);
@@ -333,12 +232,11 @@ void assign_client_to_waiting_tab(GSocketConnection *conn, const char* client_na
     gtk_box_pack_start(GTK_BOX(info->tab_content), remove_btn, FALSE, FALSE, 4);
     g_signal_connect(remove_btn, "clicked", G_CALLBACK(on_remove_client_clicked), info);
 
-    if (!info->preamp_data)
-        info->preamp_data = g_ptr_array_new_with_free_func(g_free);
 
     GtkWidget *win = gtk_widget_get_toplevel(notebook);
 
     build_client_ui(info, win);
+
     gtk_widget_show_all(info->tab_content);
     g_object_set_data(G_OBJECT(info->tab_content), "client_info", info);
 }
@@ -388,9 +286,13 @@ void on_close_waiting_tab_clicked(GtkButton *btn, gpointer user_data) {
 
 
 
-//-----------------LOAD SETTINGS FROM JSON----------------------
 
-static void on_load_json_clicked(GtkButton *btn, ClientInfo *info){
+
+
+
+
+
+static void on_load_json_clicked(GtkButton *btn, ClientInfo *info) {
     GtkWidget *dlg = gtk_file_chooser_dialog_new(
         "Load Settings JSON",
         NULL,
@@ -407,82 +309,80 @@ static void on_load_json_clicked(GtkButton *btn, ClientInfo *info){
     char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dlg));
     gtk_widget_destroy(dlg);
 
-    JsonParser *parser = json_parser_new();
-    if (!json_parser_load_from_file(parser, filename, NULL)) {
-        g_warning("Failed to parse JSON.");
+    if (!parse_settings_from_json(info, filename)) {
+        g_warning("Failed to load JSON settings.");
         g_free(filename);
-        g_object_unref(parser);
         return;
     }
     g_free(filename);
 
-    JsonObject *obj = json_node_get_object(json_parser_get_root(parser));
+    // ---- Update GTK widgets dynamically ----
+    for (guint i = 0; i < info->settings->settings->len; i++) {
+        GuiSetting *setting = g_ptr_array_index(info->settings->settings, i);
+        GtkWidget *widget = g_object_get_data(G_OBJECT(info->tab_content), setting->gui_handle);
+        if (!widget) continue;
 
-    /* ---- Load into settings struct ---- */
-    info->settings->sample_rate = json_object_get_int_member(obj, "sample_rate");
-    info->settings->duration_seconds = json_object_get_int_member(obj, "duration_sec");
-
-    JsonArray *channels = json_object_get_array_member(obj, "channels");
-    for (int i = 0; i < 8; i++) {
-        JsonObject *ch = json_array_get_object_element(channels, i);
-        info->settings->preamp[i] = json_object_get_int_member(ch, "preamp");
-
-        const char *hex = json_object_get_string_member(ch, "settings_reg_hex");
-        info->settings->settings_reg[i] = (uint8_t) strtol(hex, NULL, 16);
-    }
-
-    /* ---- Now update UI widgets ---- */
-
-    /* Sample Rate combo */
-    GtkWidget *sr_combo = g_object_get_data(G_OBJECT(info->tab_content), "sr_combo");
-    if (sr_combo) {
-        char buf[16];
-        snprintf(buf, sizeof(buf), "%d", info->settings->sample_rate);
-
-        // GTK3-compatible iteration over GtkComboBoxText
-        GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(sr_combo));
-        GtkTreeIter iter;
-        gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
-        int index = 0;
-
-        while (valid) {
-            gchar *txt = NULL;
-            gtk_tree_model_get(model, &iter, 0, &txt, -1);  // column 0 = text
-            if (txt) {
-                if (strcmp(txt, buf) == 0) {
-                    gtk_combo_box_set_active(GTK_COMBO_BOX(sr_combo), index);
-                    g_free(txt);
-                    break;
-                }
-                g_free(txt);
+        if (GTK_IS_ENTRY(widget)) {
+            char buf[64];
+            if (g_strcmp0(setting->datatype, "char[256]") == 0) {
+                snprintf(buf, sizeof(buf), "%s", g_variant_get_string(setting->default_value, NULL));
+            } else if (g_strcmp0(setting->datatype, "float") == 0) {
+                snprintf(buf, sizeof(buf), "%.6g", g_variant_get_double(setting->default_value));
+            } else if (g_strcmp0(setting->datatype, "uint8") == 0) {
+                snprintf(buf, sizeof(buf), "%u", g_variant_get_byte(setting->default_value));
+            } else if (g_strcmp0(setting->datatype, "uint32") == 0) {
+                snprintf(buf, sizeof(buf), "%u", g_variant_get_uint32(setting->default_value));
+            } else if (g_strcmp0(setting->datatype, "uint64") == 0) {
+                snprintf(buf, sizeof(buf), "%" G_GUINT64_FORMAT, g_variant_get_uint64(setting->default_value));
+            } else if (g_strcmp0(setting->datatype, "int32") == 0) {
+                snprintf(buf, sizeof(buf), "%d", g_variant_get_int32(setting->default_value));
             }
-            valid = gtk_tree_model_iter_next(model, &iter);
-            index++;
+            gtk_entry_set_text(GTK_ENTRY(widget), buf);
+        } else if (GTK_IS_COMBO_BOX_TEXT(widget)) {
+            const char *val_str = NULL;
+            static char buf[64];
+            if (g_strcmp0(setting->datatype, "char[256]") == 0) {
+                val_str = g_variant_get_string(setting->default_value, NULL);
+            } else if (g_strcmp0(setting->datatype, "float") == 0) {
+                snprintf(buf, sizeof(buf), "%.6g", g_variant_get_double(setting->default_value));
+                val_str = buf;
+            } else if (g_strcmp0(setting->datatype, "uint8") == 0) {
+                snprintf(buf, sizeof(buf), "%u", g_variant_get_byte(setting->default_value));
+                val_str = buf;
+            } else if (g_strcmp0(setting->datatype, "uint32") == 0) {
+                snprintf(buf, sizeof(buf), "%u", g_variant_get_uint32(setting->default_value));
+                val_str = buf;
+            } else if (g_strcmp0(setting->datatype, "uint64") == 0) {
+                snprintf(buf, sizeof(buf), "%" G_GUINT64_FORMAT, g_variant_get_uint64(setting->default_value));
+                val_str = buf;
+            } else if (g_strcmp0(setting->datatype, "int32") == 0) {
+                snprintf(buf, sizeof(buf), "%d", g_variant_get_int32(setting->default_value));
+                val_str = buf;
+            }
+
+            // Select matching combo item
+            GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
+            GtkTreeIter iter;
+            gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
+            int index = 0;
+            while (valid) {
+                gchar *txt = NULL;
+                gtk_tree_model_get(model, &iter, 0, &txt, -1);
+                if (txt) {
+                    if (strcmp(txt, val_str) == 0) {
+                        gtk_combo_box_set_active(GTK_COMBO_BOX(widget), index);
+                        g_free(txt);
+                        break;
+                    }
+                    g_free(txt);
+                }
+                valid = gtk_tree_model_iter_next(model, &iter);
+                index++;
+            }
         }
     }
-
-    /* Duration entry */
-    GtkWidget *dur_entry = g_object_get_data(G_OBJECT(info->tab_content), "dur_entry");
-    if (dur_entry) {
-        char buf[16];
-        snprintf(buf, sizeof(buf), "%d", info->settings->duration_seconds);
-        gtk_entry_set_text(GTK_ENTRY(dur_entry), buf);
-    }
-
-    /* Update 8× preamp + register widgets */
-    for (int i = 0; i < 8; i++) {
-        GtkWidget *pre_combo = g_ptr_array_index(info->preamp_data, 2*i);
-        GtkWidget *reg_entry = g_ptr_array_index(info->preamp_data, 2*i + 1);
-
-        set_preamp_combo(pre_combo, info->settings->preamp[i]);
-
-        char hexbuf[4];
-        snprintf(hexbuf, sizeof(hexbuf), "%02X", (uint8_t)info->settings->settings_reg[i]);
-        gtk_entry_set_text(GTK_ENTRY(reg_entry), hexbuf);
-    }
-
-    g_object_unref(parser);
 }
+
 
 
 
@@ -506,7 +406,8 @@ static void on_send_btn_clicked(GtkButton *button, gpointer user_data) {
     if (export_btn) gtk_widget_set_sensitive(export_btn, TRUE);
     
     /* ---- Allocate Measurement Buffer ---- */
-    uint64_t n = info->settings->sample_number;
+    uint32_t sample_rate = get_sample_rate(info->settings);
+    uint64_t n = info->duration_seconds * sample_rate;
     uint64_t alloc_n = n + 4000;
 
     if (info->measurement_data)
@@ -514,10 +415,10 @@ static void on_send_btn_clicked(GtkButton *button, gpointer user_data) {
     if (info->client_time_sync)
         g_free(info->client_time_sync);
 
-    info->measurement_data = g_malloc0(sizeof(float) * info->float_count * alloc_n);
+    info->measurement_data = g_malloc0(sizeof(float) * (*info->settings->float_number) * alloc_n);
     info->allocated_samples = alloc_n - 1000;
     info->write_index = 0;
-    info->allocated_client_times = info->settings->duration_seconds / 5 + 10;
+    info->allocated_client_times = info->duration_seconds / 5 + 10;
     info->client_time_sync = g_malloc0((info-> allocated_client_times) * sizeof(ClientTime));
     info->measurement_active = TRUE;
     // Start reading measurement data on new thread
@@ -617,26 +518,36 @@ gboolean on_client_incoming(GSocketService *service,
     gboolean ok = get_next_tcp_package(sock, &pkg, 150); // 150 ms timeout
     if (!ok) return FALSE;
 
-    char tab_label_text[64] = "Unknown Client";
-    uint8_t float_count = 0;
+    GuiConfig* client_config;
 
     //Handle handshake package ---
-    if (pkg.package_type == HANDSHAKE_PACKAGE && pkg.package_size > 0) {
-        float_count = pkg.package[0];
-        char *client_name = (char *)(pkg.package + 1);
-
-        g_snprintf(tab_label_text, sizeof(tab_label_text), "%s", client_name);
-
-        // g_print("Received HANDSHAKE_PACKAGE: float_count=%d, client_name=\"%s\"\n", float_count, client_name);
-    }
+    if (pkg.package_type == HANDSHAKE_PACKAGE && pkg.package_size > 0) client_config = parse_gui_config_from_json(pkg.package, pkg.package_size);
+        
 
     //Send zero byte as ACK --- neccesary for WINDOWS to relyably register clients
-    GOutputStream *out = g_io_stream_get_output_stream(G_IO_STREAM(conn));
-    uint8_t ack = 0;
-    g_output_stream_write(out, &ack, 1, NULL, NULL);
+    //GOutputStream *out = g_io_stream_get_output_stream(G_IO_STREAM(conn));
+    //uint8_t ack = 0;
+    //g_output_stream_write(out, &ack, 1, NULL, NULL);
+    // --- Send empty STOP_PACKAGE ---
+    pkg.package_type = PING_PACKAGE;
+    pkg.package_size = 0;
+    pkg.package = NULL;
+
+    // Send 5-byte header (type + size)
+    uint8_t header[5];
+    header[0] = pkg.package_type;
+    uint32_t size_net = g_htonl(pkg.package_size);
+    memcpy(header + 1, &size_net, 4);
+
+    GError *err = NULL;
+    g_socket_send(sock, header, sizeof(header), NULL, &err);
+    if (err) {
+        g_warning("Failed to send first PING_PACKAGE: %s", err->message);
+        g_error_free(err);
+    }
 
     //Assign client to waiting tab ---
-    assign_client_to_waiting_tab(conn, tab_label_text, float_count,notebook);  
+    assign_client_to_waiting_tab(conn, client_config, notebook);  
 
     free_tcp_package(&pkg);
     return TRUE;
@@ -870,7 +781,7 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
          * SECOND HEADER LINE:
          * CHAN1;CHAN2;...;LOCAL_TIME;GLOBAL_TIME
          * ============================================================ */
-        for (int i = 0; i < client->float_count - 1; i++)
+        for (int i = 0; i < (*client->settings->float_number) - 1; i++)
             fprintf(fp, "CHAN%d;", i + 1);
 
         fprintf(fp, "LOCAL_TIME;GLOBAL_TIME\n");
@@ -883,16 +794,16 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
          * ============================================================ */
         for (uint64_t i = 0; i < client->write_index; i++) {
 
-            double local_time = client->measurement_data[i * client->float_count +
-                                                         (client->float_count - 1)];
+            double local_time = client->measurement_data[i * (*client->settings->float_number) +
+                                                         ((*client->settings->float_number) - 1)];
 
             // convert microseconds → seconds if needed:
             // local_time /= 1e6;
 
-            for (int j = 0; j < client->float_count; j++) {
+            for (int j = 0; j < (*client->settings->float_number); j++) {
                 fprintf(fp, "%.6f", client->measurement_data[
-                        i * client->float_count + j]);
-                if (j < client->float_count - 1) fprintf(fp, ";");
+                        i * (*client->settings->float_number) + j]);
+                if (j < (*client->settings->float_number) - 1) fprintf(fp, ";");
             }
 
             /* ---- compute global timestamp ---- */
@@ -986,7 +897,7 @@ static gboolean on_plot_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     }
 
 
-    uint64_t start = (total > PLOT_HISTORY * info->settings->sample_rate) ? (total - PLOT_HISTORY * info->settings->sample_rate) : 0;
+    uint64_t start = (total > PLOT_HISTORY * get_sample_rate(info->settings)) ? (total - PLOT_HISTORY * get_sample_rate(info->settings)) : 0;
     uint64_t count = total - start;
 
     GtkAllocation alloc;
@@ -1020,8 +931,8 @@ static gboolean on_plot_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     cairo_set_font_size(cr, 12);
 
     /* === TIME RANGE === */
-    double t_start = buf[start * info->float_count + info->float_count-1] / 1e6;
-    double t_end   = buf[(total - 1) * info->float_count + info->float_count-1] / 1e6;
+    double t_start = buf[start * (*info->settings->float_number) + (*info->settings->float_number)-1] / 1e6;
+    double t_end   = buf[(total - 1) * (*info->settings->float_number) + (*info->settings->float_number)-1] / 1e6;
     double t_range = t_end - t_start;
 
     if (t_range <= 0) t_range = 1e-9;
@@ -1065,7 +976,7 @@ static gboolean on_plot_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     };
 
     /* === DRAW CHANNELS === */
-    for (int ch = 0; ch < info->float_count-1; ch++) {
+    for (int ch = 0; ch < (*info->settings->float_number)-1; ch++) {
         uint8_t ch_clr = ch%8;
         cairo_set_source_rgb(cr, colors[ch_clr][0], colors[ch_clr][1], colors[ch_clr][2]);
         cairo_set_line_width(cr, 1.2);
@@ -1073,10 +984,10 @@ static gboolean on_plot_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
         gboolean first = TRUE;
 
         for (uint64_t i = 0; i < count; i++) {
-            uint64_t idx = (start + i) * info->float_count;
+            uint64_t idx = (start + i) * (*info->settings->float_number);
 
             float v_mV = buf[idx + ch];
-            double t_sec = buf[idx + info->float_count-1] / 1e6;
+            double t_sec = buf[idx + (*info->settings->float_number)-1] / 1e6;
 
             // convert to plot coords
             double x = y_axis_x + ( (t_sec - t_start) / t_range ) * (W - y_axis_x - 10 );
@@ -1227,10 +1138,10 @@ static gpointer measurement_thread_func(gpointer user_data) {
 
         if (pkg.package_type == DATA_PACKAGE && pkg.package_size > 0) {
             // Handle measurement data
-            size_t row_size = info->float_count * sizeof(float);
+            size_t row_size = (*info->settings->float_number) * sizeof(float);
             size_t n_rows = pkg.package_size / row_size;
 
-            if (info->write_index + n_rows > info->settings->sample_number) {
+            if (info->write_index + n_rows > info->allocated_samples) {
                 g_warning("Measurement buffer full. Stopping measurement.");
                 info->measurement_active = FALSE;
 
@@ -1242,7 +1153,7 @@ static gpointer measurement_thread_func(gpointer user_data) {
                 break;
             }
 
-            memcpy(&info->measurement_data[info->write_index * info->float_count],
+            memcpy(&info->measurement_data[info->write_index * (*info->settings->float_number)],
                    pkg.package,
                    n_rows * row_size);
 
@@ -1357,7 +1268,7 @@ void on_global_duration_changed(GtkEditable *editable, gpointer user_data){
         if (!info) continue;
 
         // Update internal settings
-        info->settings->duration_seconds = duration;
+        info->duration_seconds = duration;
 
         // Update GUI element
         GtkWidget *dur_entry =

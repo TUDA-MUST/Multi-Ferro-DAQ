@@ -18,6 +18,7 @@ String waitForLine() {
     }
 }
 
+/*
 // ------------------------------
 //   WIFI + CLIENT CONFIG
 // ------------------------------
@@ -31,7 +32,9 @@ void setClientHandshakePreferences() {
     prefs.begin("client", false);
     prefs.putString("client_name", nm);
     prefs.end();
-}
+}   <--- deprecated thorugh json
+
+*/
 
 void setWifiCredentials() {
     Serial.println("\n=== WiFi Setup Mode ===");
@@ -48,7 +51,7 @@ void setWifiCredentials() {
     prefs.putString("pass", newPASS);
     prefs.end();
 
-    setClientHandshakePreferences();
+    //setClientHandshakePreferences();
 
     Serial.println("\nCredentials saved. Rebooting...");
     delay(1000);
@@ -111,36 +114,26 @@ bool getNextTcpPackage(WiFiClient &client, TcpPackage &pkg) {
 // ------------------------------
 //   HANDSHAKE + TIMESTAMP
 // ------------------------------
-void sendHandshakePackage(WiFiClient &client, uint32_t float_count) {
-    Preferences prefs;
-    prefs.begin("client", false);
-
-    prefs.putUInt("float_count", float_count);
-    String nameStr = prefs.getString("client_name", "ESP32");
-    prefs.end();
-
-    uint32_t name_len = nameStr.length() + 1;
-
-    uint32_t payload_size = 1 + name_len;
-    uint8_t *payload = (uint8_t*) malloc(payload_size);
-
-    payload[0] = float_count;
-    memcpy(payload + 1, nameStr.c_str(), name_len);
+void sendHandshakePackage(WiFiClient &client, const char* json_config) {
+    // JSON lives in flash, but is memory-mapped on ESP32
+    const char* payload = json_config;
+    //Serial.print(payload);
+    // Payload size = JSON length WITHOUT the null terminator
+    uint32_t payload_size = strlen(payload);
 
     uint8_t header[5] = {
         HANDSHAKE_PACKAGE,
-        (payload_size >> 24) & 0xFF,
-        (payload_size >> 16) & 0xFF,
-        (payload_size >> 8)  & 0xFF,
-        (payload_size >> 0)  & 0xFF
+        (uint8_t)(payload_size >> 24),
+        (uint8_t)(payload_size >> 16),
+        (uint8_t)(payload_size >> 8),
+        (uint8_t)(payload_size >> 0)
     };
 
-    client.write(header, 5);
-    client.write(payload, payload_size);
+    client.write(header, sizeof(header));
+    client.write((const uint8_t*)payload, payload_size);
     client.flush();
-
-    free(payload);
 }
+
 
 void respondWithTimestampPackage(WiFiClient &client, TcpPackage &recvPkg) {
     uint32_t oldSize = recvPkg.package_size;
@@ -181,9 +174,9 @@ bool wifiConnectAndAllowOverride(String &clientNameOut) {
     uint8_t float_count = prefs.getUInt("float_count", 255);
     prefs.end();
 
-    Serial.printf("\nPress ENTER to change WiFi credentials or client settings before connection.\n");
-    Serial.printf("Connecting to SSID \"%s\" with password \"%s\" as client \"%s\" with %d reported channels...\n",
-        ssid.c_str(), pass.c_str(), clientNameOut.c_str(), float_count
+    Serial.printf("\nPress ENTER to change WiFi credentials before connection.\n");
+    Serial.printf("Connecting to SSID \"%s\" with password \"%s\" as client...\n",
+        ssid.c_str(), pass.c_str()
     );
 
     WiFi.begin(ssid.c_str(), pass.c_str());

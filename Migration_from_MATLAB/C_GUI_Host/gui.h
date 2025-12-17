@@ -4,8 +4,8 @@
 
 #include "client.h"
 #include "network.h"
-#include <json-glib/json-glib.h>
 #include <gtk/gtk.h>
+
 #ifdef _WIN32
     #include <winsock2.h>
 #else
@@ -22,7 +22,7 @@ extern GMutex queue_lock;
 // GUI Building
 // --------------------
 void build_client_ui(ClientInfo *info, GtkWidget *win);
-void assign_client_to_waiting_tab(GSocketConnection *conn, const char* client_name, uint8_t float_count ,GtkWidget *notebook);
+void assign_client_to_waiting_tab(GSocketConnection *conn, GuiConfig* client_config ,GtkWidget *notebook);
 
 // --------------------
 // Event Handlers

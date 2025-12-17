@@ -3,6 +3,8 @@
 
 #include <FastLED.h>
 #include <SPI.h>
+#include <pgmspace.h>
+#include <ArduinoJson.h>
 #include "../lib/ADS131E08esp32.cpp"
 #include "../lib/tcp_client_network.cpp"
 
@@ -44,6 +46,10 @@ CRGB leds[NUM_LEDS];
 
 SPIClass* vspi = NULL;
 SPIClass* hspi = NULL;
+
+const char jsonConfig[] PROGMEM =
+#include "def_settings_config.json"
+;
 
 
 TaskHandle_t aquireTask;
@@ -230,6 +236,112 @@ int set_preamp(byte amparr[16]){
 
 
 
+uint64_t waitAndApplySettings(WiFiClient &client, byte amparr[8]) {
+    TcpPackage settingsPkg;
+    settingsPkg.package_type = PING_PACKAGE;
+
+    // --------------------------------------------------
+    // Wait for SETTINGS package
+    // --------------------------------------------------
+    while (settingsPkg.package_type != SETTINGS_PACKAGE) {
+        getNextTcpPackage(client, settingsPkg);
+        Serial.print(".");
+    }
+    Serial.println("\nSettings received!");
+
+    // --------------------------------------------------
+    // Allocate DynamicJsonDocument based on payload size
+    // --------------------------------------------------
+    Serial.printf("%s", settingsPkg.package);
+    size_t estimatedSize = settingsPkg.package_size * 1.2; // ~20% overhead
+    DynamicJsonDocument doc(estimatedSize);
+
+    DeserializationError err = deserializeJson(
+        doc,
+        settingsPkg.package,
+        settingsPkg.package_size
+    );
+
+    if (err) {
+        Serial.print("JSON parse failed: ");
+        Serial.println(err.c_str());
+        return 0;
+    }
+
+    // --------------------------------------------------
+    // Extract and validate settings with defaults
+    // --------------------------------------------------
+    uint32_t duration_seconds;
+
+    if (doc.containsKey("duration_seconds")) {
+        duration_seconds = doc["duration_seconds"];
+    } else {
+        duration_seconds = 300;  // default value
+        Serial.println("JSON missing 'duration_seconds', using default 300 seconds");
+    }
+
+    uint32_t sample_rate_hz;
+
+    if (doc.containsKey("sample_rate_hz")) {
+        sample_rate_hz = doc["sample_rate_hz"];
+    } else {
+        sample_rate_hz = 1000;  // default value
+        Serial.println("JSON missing 'sample_rate_hz', using default 1000 Hz");
+    }
+        union {
+            byte cntarray[8];
+            int64_t cntnmbr;
+        } measurecnt;
+
+    uint64_t cntnmbr = (int64_t)duration_seconds * sample_rate_hz;
+
+    uint32_t sr[1] = { sample_rate_hz };
+    set_sample_rate(sr);
+
+    union {
+        uint16_t uint_hword[8];
+        byte     readarray[16];
+    } channelRegs;
+
+    for (int ch = 0; ch < 8; ch++) {
+        char key[32];
+
+        // Preamp gain
+        snprintf(key, sizeof(key), "chan%d_preamp_gain", ch + 1);
+        amparr[ch] = doc[key] | 1;  // default gain = 1
+
+        // Settings register (binary string → number)
+        snprintf(key, sizeof(key), "chan%d_settings_reg", ch + 1);
+        const char* regStr = doc[key] | "10"; // default = "10"
+        channelRegs.uint_hword[ch] = strtoul(regStr, nullptr, 2);
+    }
+
+    // --------------------------------------------------
+    // Apply channel & preamp configuration
+    // --------------------------------------------------
+    set_channels(channelRegs.uint_hword);
+    set_preamp(amparr);
+
+    Serial.println("Settings applied successfully.");
+    return cntnmbr;
+}
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
 
 
 void aquireTaskCode(void* params){              
@@ -271,7 +383,7 @@ void sendTaskCode(void* params){
 
   WiFiClient client = connectToHost(hostIP, 8080);
 
-  sendHandshakePackage(client, 9);
+  sendHandshakePackage(client, jsonConfig);
   client.flush();
 
   // -------------------------
@@ -282,9 +394,10 @@ void sendTaskCode(void* params){
 
   Serial.println("TCP connected — waiting for SETTINGS package…");
 
-  TcpPackage settingsPkg;
-  settingsPkg.package_type = PING_PACKAGE;
 
+  byte amparr[8];
+  uint64_t cntnmbr = waitAndApplySettings(client, amparr);
+  /*
   while (settingsPkg.package_type != SETTINGS_PACKAGE) {
     getNextTcpPackage(client, settingsPkg);
     Serial.print(".");
@@ -317,6 +430,7 @@ void sendTaskCode(void* params){
   for (int i = 0; i < set_preamp(inputbuff.readarray); i++) {
       amparr[i] = inputbuff.readarray[i];
   }
+  */
 
 
   // -------------------------
@@ -341,18 +455,18 @@ void sendTaskCode(void* params){
   header[2] = (dataPkg.package_size >> 16) & 0xFF;
   header[3] = (dataPkg.package_size >> 8) & 0xFF;
   header[4] = (dataPkg.package_size >> 0) & 0xFF;
-  uint32_t total = 5 + dataPkg.package_size;
-  uint8_t* out = (uint8_t*)malloc(total);
+  uint32_t total_buffer_size = 5 + dataPkg.package_size;
+  uint8_t* out = (uint8_t*)malloc(total_buffer_size);
 
   //Serial.printf("There are %ld samples to be collected\n", measurecnt.cntnmbr);
 
   while(1){
 
-    for(int i = 0; i < measurecnt.cntnmbr;){                                                     //this loop ends the measurement after the set amount of samples
+    for(int i = 0; i < cntnmbr;){                                                     //this loop ends the measurement after the set amount of samples
       while (client.available() > 0) {
-          getNextTcpPackage(client, settingsPkg);
+          getNextTcpPackage(client, dataPkg);
 
-          switch(settingsPkg.package_type) {
+          switch(dataPkg.package_type) {
               case STOP_PACKAGE:
                   Serial.println("STOP requested by host.");
                   vTaskDelete(aquireTask);
@@ -365,7 +479,7 @@ void sendTaskCode(void* params){
 
               case TIMESTAMP_PACKAGE:
                   //Serial.println("Received TIMESTAMP_PACKAGE request.");
-                  respondWithTimestampPackage(client, settingsPkg);
+                  respondWithTimestampPackage(client, dataPkg);
                   break;
 
               case PING_PACKAGE:
@@ -383,7 +497,7 @@ void sendTaskCode(void* params){
                   break;
 
               default:
-                  Serial.printf("Received unknown package type: %d\n", settingsPkg.package_type);
+                  Serial.printf("Received unknown package type: %d\n", dataPkg.package_type);
                   break;
           }
       }
@@ -392,21 +506,22 @@ void sendTaskCode(void* params){
       
       if(uxQueueSpacesAvailable(datatransferQueue) > DATAQUEUE_SIZE - DATASET_SIZE_BYTES * BUFFERSIZE)vTaskDelay(1);
       else{
+      dataPkg.package = buffer;                                                                           //reasign buffer to package after using it for other things
       for(int j = 0; j < BUFFERSIZE; j++){                                                                //this loop wil wait for a package of 64 samples to be available and package them into the buffer
         struct chanData_float *chanData_recv_ptr;
         if(xQueueReceive(datatransferQueue, &(chanData_recv_ptr), portMAX_DELAY)){
           convert_data(chanData_recv_ptr, amparr);
           for(int i = 0; i < 9; i++){
-            memcpy(buffer + (4 * i) + (DATASET_SIZE_BYTES*j), &chanData_recv_ptr->chan[i], 4);   
+            memcpy(dataPkg.package + (4 * i) + (DATASET_SIZE_BYTES*j), &chanData_recv_ptr->chan[i], 4);   
           }
           free(chanData_recv_ptr);
         }
       }
-      
+      dataPkg.package_size = total_buffer_size - 5;
       memcpy(out, header, 5);
       memcpy(out + 5, dataPkg.package, dataPkg.package_size);
 
-      client.write(out, total);   // single TCP write()
+      client.write(out, total_buffer_size);   // single TCP write()
       i += BUFFERSIZE;
       }
     }
