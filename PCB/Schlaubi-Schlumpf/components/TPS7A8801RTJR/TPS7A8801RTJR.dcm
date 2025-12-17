@@ -1,9 +1,0 @@
-EESchema-DOCLIB  Version 2.0
-#
-$CMP TPS7A8801RTJR
-D Dual 1A Low-Noise (3.8uVRMS) LDO Voltage Regulator
-K
-F http://www.ti.com/lit/gpn/TPS7A88
-$ENDCMP
-#
-#End Doc Library
