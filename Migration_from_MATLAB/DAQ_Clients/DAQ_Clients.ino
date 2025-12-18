@@ -252,7 +252,7 @@ uint64_t waitAndApplySettings(WiFiClient &client, byte amparr[8]) {
     // --------------------------------------------------
     // Allocate DynamicJsonDocument based on payload size
     // --------------------------------------------------
-    Serial.printf("%s", settingsPkg.package);
+    Serial.print((char*)settingsPkg.package);
     size_t estimatedSize = settingsPkg.package_size * 1.2; // ~20% overhead
     DynamicJsonDocument doc(estimatedSize);
 
