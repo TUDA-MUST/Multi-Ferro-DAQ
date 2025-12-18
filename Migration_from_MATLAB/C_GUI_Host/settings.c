@@ -28,8 +28,12 @@ static char *variant_to_string(GVariant *v, const char *datatype)
         return g_strdup(g_variant_get_string(v, NULL));
     }
     else if (g_strcmp0(datatype, "uint8") == 0) {
+        return g_strdup_printf("%u", g_variant_get_byte(v));
+    }
+    else if (g_strcmp0(datatype, "uint8_hex") == 0) {
         return g_strdup_printf("%02X", g_variant_get_byte(v));
     }
+
     else if (g_strcmp0(datatype, "uint32") == 0) {
         return g_strdup_printf("%u", g_variant_get_uint32(v));
     }
@@ -61,7 +65,10 @@ static GVariant *string_to_variant(const char *text,
         return g_variant_new_string(text);
     }
     else if (g_strcmp0(datatype, "uint8") == 0) {
-        guint v;
+        return g_variant_new_byte((guchar)g_ascii_strtoull(text, NULL, 10));
+    }
+    else if (g_strcmp0(datatype, "uint8_hex") == 0) {
+        guint v = 0;
         sscanf(text, "%x", &v);
         return g_variant_new_byte((guchar)v);
     }
@@ -167,6 +174,15 @@ static GVariant* parse_default_value(JsonNode *def_node, const char *datatype) {
 
     if (g_strcmp0(datatype, "uint8") == 0) {
         return g_variant_new_byte((guchar)json_node_get_int(def_node));
+    }
+    else if (g_strcmp0(datatype, "uint8_hex") == 0) {
+        if (json_node_get_value_type(def_node) == G_TYPE_STRING) {
+            guint v = 0;
+            sscanf(json_node_get_string(def_node), "%x", &v);
+            return g_variant_new_byte((guchar)v);
+        } else {
+            return g_variant_new_byte((guchar)json_node_get_int(def_node));
+        }
     } else if (g_strcmp0(datatype, "uint32") == 0) {
         return g_variant_new_uint32((guint32)json_node_get_int(def_node));
     } else if (g_strcmp0(datatype, "uint64") == 0) {
@@ -332,12 +348,12 @@ void create_dynamic_widget(GtkWidget *parent_box, GuiSetting *setting)
         gtk_entry_set_text(GTK_ENTRY(widget), text);
         g_free(text);
 
-        if (g_strcmp0(setting->datatype, "uint8") == 0) {
+        if (g_strcmp0(setting->datatype, "uint8_hex") == 0) {
             gtk_entry_set_max_length(GTK_ENTRY(widget), 2);
             g_signal_connect(widget,
-                             "key-press-event",
-                             G_CALLBACK(hex_input_filter),
-                             NULL);
+                            "key-press-event",
+                            G_CALLBACK(hex_input_filter),
+                            NULL);
         }
 
         g_signal_connect(widget,
@@ -381,7 +397,7 @@ void create_dynamic_widget(GtkWidget *parent_box, GuiSetting *setting)
     if (widget) {
         gtk_box_pack_start(GTK_BOX(parent_box), widget, FALSE, FALSE, 3);
         g_object_set_data(G_OBJECT(parent_box),
-                          setting->gui_handle,
+                          setting->microcontroller_handle,
                           widget);
     }
 }
@@ -463,29 +479,16 @@ gboolean parse_settings_from_json(ClientInfo *info, const char *json_path)
         GuiSetting *setting =
             g_ptr_array_index(info->settings->settings, i);
 
-        if (!json_object_has_member(obj, setting->gui_handle))
+        if (!json_object_has_member(obj, setting->microcontroller_handle))
             continue;
 
-        JsonNode *node = json_object_get_member(obj, setting->gui_handle);
+        JsonNode *node = json_object_get_member(obj, setting->microcontroller_handle);
 
-        /* JSON → string */
-        char buf[64];
-        const char *text = NULL;
+        setting->default_value = parse_default_value(node, setting->datatype);
 
-        if (json_node_get_value_type(node) == G_TYPE_STRING) {
-            text = json_node_get_string(node);
-        } else {
-            g_snprintf(buf, sizeof(buf), "%" G_GINT64_FORMAT, json_node_get_int(node));
-            text = buf;
-        }
-
-        /* Update model */
-        if (setting->default_value) g_variant_unref(setting->default_value);
-
-        setting->default_value = string_to_variant(text, setting->datatype);
 
         /* Update view */
-        GtkWidget *widget = g_object_get_data(G_OBJECT(info->left_settings_box), setting->gui_handle);
+        GtkWidget *widget = g_object_get_data(G_OBJECT(info->left_settings_box), setting->microcontroller_handle);
 
         if (!widget) continue;
 
@@ -495,6 +498,22 @@ gboolean parse_settings_from_json(ClientInfo *info, const char *json_path)
             gtk_entry_set_text(GTK_ENTRY(widget), display);
         }
         else if (GTK_IS_COMBO_BOX_TEXT(widget)) {
+            /* debug
+            g_print("Setting '%s'\n", setting->microcontroller_handle);
+            g_print("  display = '%s'\n", display);
+
+            for (guint j = 0; j < setting->options->len; j++) {
+                const char *opt = g_ptr_array_index(setting->options, j);
+
+                g_print("    opt[%u] = '%s'\n", j, opt);
+
+                if (g_strcmp0(opt, display) == 0) {
+                    g_print("    -> MATCH at index %u\n", j);
+                    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), j);
+                    break;
+                }
+            }
+            */
             for (guint j = 0; j < setting->options->len; j++) {
                 const char *opt = g_ptr_array_index(setting->options, j);
                 if (g_strcmp0(opt, display) == 0) {

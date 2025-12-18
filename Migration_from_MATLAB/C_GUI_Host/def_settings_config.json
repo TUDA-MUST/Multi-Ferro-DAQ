@@ -22,7 +22,7 @@
       "gui_handle": "CHAN1 Settings Register (hex byte)",
       "microcontroller_handle": "chan1_settings_reg",
       "type": "entry",
-      "datatype": "uint8",
+      "datatype": "uint8_hex",
       "default": "10"
     },
     {
@@ -37,7 +37,7 @@
       "gui_handle": "CHAN2 Settings Register (hex byte)",
       "microcontroller_handle": "chan2_settings_reg",
       "type": "entry",
-      "datatype": "uint8",
+      "datatype": "uint8_hex",
       "default": "10"
     },
     {
@@ -52,7 +52,7 @@
       "gui_handle": "CHAN3 Settings Register (hex byte)",
       "microcontroller_handle": "chan3_settings_reg",
       "type": "entry",
-      "datatype": "uint8",
+      "datatype": "uint8_hex",
       "default": "10"
     },
     {
@@ -67,7 +67,7 @@
       "gui_handle": "CHAN4 Settings Register (hex byte)",
       "microcontroller_handle": "chan4_settings_reg",
       "type": "entry",
-      "datatype": "uint8",
+      "datatype": "uint8_hex",
       "default": "10"
     },
     {
@@ -82,7 +82,7 @@
       "gui_handle": "CHAN5 Settings Register (hex byte)",
       "microcontroller_handle": "chan5_settings_reg",
       "type": "entry",
-      "datatype": "uint8",
+      "datatype": "uint8_hex",
       "default": "10"
     },
     {
@@ -97,7 +97,7 @@
       "gui_handle": "CHAN6 Settings Register (hex byte)",
       "microcontroller_handle": "chan6_settings_reg",
       "type": "entry",
-      "datatype": "uint8",
+      "datatype": "uint8_hex",
       "default": "10"
     },
     {
@@ -112,7 +112,7 @@
       "gui_handle": "CHAN7 Settings Register (hex byte)",
       "microcontroller_handle": "chan7_settings_reg",
       "type": "entry",
-      "datatype": "uint8",
+      "datatype": "uint8_hex",
       "default": "10"
     },
     {
@@ -127,7 +127,7 @@
       "gui_handle": "CHAN8 Settings Register (hex byte)",
       "microcontroller_handle": "chan8_settings_reg",
       "type": "entry",
-      "datatype": "uint8",
+      "datatype": "uint8_hex",
       "default": "10"
     }
   ]

@@ -1,7 +1,9 @@
 {
   "duration_seconds": 300,
-  "sample_rate_hz": 2000,
-  "chan1_preamp_gain": 2, 
+  "float_test": 1.67,
+  "char_test": "this isn't for real anymore",
+  "sample_rate_hz": 1000,
+  "chan1_preamp_gain": 1, 
   "chan1_settings_reg": "10",
   "chan2_preamp_gain": 1, 
   "chan2_settings_reg": "10",
