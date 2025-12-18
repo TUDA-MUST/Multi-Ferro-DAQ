@@ -1,5 +1,7 @@
 #include <FastLED.h>
 #include <SPI.h>
+#include <pgmspace.h>
+#include <ArduinoJson.h>
 #include "../lib/tcp_client_network.cpp"
 
 Preferences prefs;
@@ -16,6 +18,10 @@ Preferences prefs;
 #define SAMPLE_SIZE_BYTES 8      // float value + float timestamp
 #define DATAQUEUE_SIZE 1024
 
+const char jsonConfig[] PROGMEM =
+#include "def_settings_config.json"
+;
+
 CRGB leds[NUM_LEDS];
 
 // ──────────────────────────────────────────────────────────────
@@ -29,6 +35,62 @@ struct Sample {
 TaskHandle_t aquireTask;
 TaskHandle_t sendTask;
 QueueHandle_t datatransferQueue;
+
+
+
+
+
+//handle the incoming settings
+
+uint64_t waitAndApplySettings_simple(WiFiClient &client)
+{
+    TcpPackage settingsPkg;
+    settingsPkg.package_type = PING_PACKAGE;
+
+    // --------------------------------------------------
+    // Wait for SETTINGS package
+    // --------------------------------------------------
+    while (settingsPkg.package_type != SETTINGS_PACKAGE) {
+        getNextTcpPackage(client, settingsPkg);
+        Serial.print(".");
+    }
+    Serial.println("\nSettings received!");
+
+    // --------------------------------------------------
+    // Parse SETTINGS JSON
+    // --------------------------------------------------
+    size_t estimatedSize = settingsPkg.package_size * 1.2;
+    DynamicJsonDocument doc(estimatedSize);
+
+    DeserializationError err = deserializeJson(doc, settingsPkg.package, settingsPkg.package_size);
+
+    if (err) {
+        Serial.print("JSON parse failed: ");
+        Serial.println(err.c_str());
+        return 0;
+    }
+
+    // --------------------------------------------------
+    // Extract settings (with defaults)
+    // --------------------------------------------------
+    uint32_t duration_seconds = doc.containsKey("duration_seconds") ? doc["duration_seconds"]: 1;
+
+    uint32_t sample_rate_hz = doc.containsKey("sample_rate_hz") ? doc["sample_rate_hz"]: 1000;
+
+    Serial.printf("Settings: %lu Hz, %lu s\n", sample_rate_hz, duration_seconds);
+
+    return (uint64_t)sample_rate_hz * duration_seconds;
+}
+
+
+
+
+
+
+
+
+
+
 
 // ──────────────────────────────────────────────────────────────
 // ACQUISITION TASK
@@ -64,31 +126,17 @@ void sendTaskCode(void* params) {
     IPAddress hostIP = discoverHostUDP();
     WiFiClient client = connectToHost(hostIP, 8080);
 
-    // handshake
-    sendHandshakePackage(client, 2);   // only 2 floats now
+    sendHandshakePackage(client, jsonConfig);
     client.flush();
+
 
     leds[0] = CRGB::Magenta; FastLED.show();
     Serial.println("TCP connected — waiting for SETTINGS package.");
 
-    // SETTINGS LOOP
-    TcpPackage settingsPkg;
-    settingsPkg.package_type = PING_PACKAGE;
+    uint64_t total_samples = waitAndApplySettings_simple(client);
 
-    while (settingsPkg.package_type != SETTINGS_PACKAGE) {
-        getNextTcpPackage(client, settingsPkg);
-    }
-
-    Serial.println("Settings received!");
-
-    // number of samples to send
-    union {
-        byte asBytes[8];
-        int64_t count;
-    } measureCnt;
-
-    memcpy(measureCnt.asBytes, settingsPkg.package, 8);
-    Serial.printf("Expecting to send %lld samples\n", measureCnt.count);
+    
+    Serial.printf("Expecting to send %lld samples\n", total_samples);
 
     // LED: ready
     leds[0] = CRGB::Green; FastLED.show();
@@ -111,14 +159,15 @@ void sendTaskCode(void* params) {
     uint8_t* out = (uint8_t*) malloc(totalOut);
 
     int64_t sent = 0;
+    TcpPackage dataPkg;
 
-    while (sent < measureCnt.count) {
+    while (sent < total_samples) {
 
         // handle incoming commands (STOP, TIMESTAMP, etc.)
         while (client.available()) {
-            getNextTcpPackage(client, settingsPkg);
+            getNextTcpPackage(client, dataPkg);
 
-            switch(settingsPkg.package_type) {
+            switch(dataPkg.package_type) {
                 case STOP_PACKAGE:
                     Serial.println("STOP requested.");
                     vTaskDelete(aquireTask);
@@ -129,7 +178,7 @@ void sendTaskCode(void* params) {
                     break;
 
                 case TIMESTAMP_PACKAGE:
-                    respondWithTimestampPackage(client, settingsPkg);
+                    respondWithTimestampPackage(client, dataPkg);
                     break;
 
                 default:
