@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 
 
 
@@ -94,23 +95,92 @@ static GVariant *string_to_variant(const char *text,
 
 
 
-static gboolean hex_input_filter(GtkWidget *widget,
-                                 GdkEventKey *event,
-                                 gpointer data)
-{
-    if (event->keyval == GDK_KEY_BackSpace ||
-        event->keyval == GDK_KEY_Delete ||
-        event->keyval == GDK_KEY_Left ||
-        event->keyval == GDK_KEY_Right ||
-        event->keyval == GDK_KEY_Tab)
-        return FALSE;
 
+
+
+
+static gboolean datatype_input_filter(GtkWidget *widget, GdkEventKey *event, gpointer user_data){
+    GuiSetting *setting = user_data;
+
+    /* Always allow navigation & editing keys */
+    switch (event->keyval) {
+        case GDK_KEY_BackSpace:
+        case GDK_KEY_Delete:
+        case GDK_KEY_Left:
+        case GDK_KEY_Right:
+        case GDK_KEY_Tab:
+        case GDK_KEY_Home:
+        case GDK_KEY_End:
+            return FALSE;
+    }
+
+    /* Non-character keys */
     if (!event->string || event->string[0] == '\0')
         return TRUE;
 
     gunichar c = g_utf8_get_char(event->string);
-    return !g_unichar_isxdigit(c);
+
+    /* -------- DATATYPE RULES -------- */
+
+    /* char[256] → allow anything printable */
+    if (g_strcmp0(setting->datatype, "char[256]") == 0) {
+        return !g_unichar_isprint(c);
+    }
+
+    /* uint8 / uint32 / uint64 → digits only */
+    if (g_strcmp0(setting->datatype, "uint8") == 0 ||
+        g_strcmp0(setting->datatype, "uint32") == 0 ||
+        g_strcmp0(setting->datatype, "uint64") == 0) {
+        return !g_unichar_isdigit(c);
+    }
+
+    /* int32 → digits and optional leading '-' */
+    if (g_strcmp0(setting->datatype, "int32") == 0) {
+        if (g_unichar_isdigit(c))
+            return FALSE;
+
+        if (c == '-') {
+            const char *text = gtk_entry_get_text(GTK_ENTRY(widget));
+            return text[0] != '\0';  // only allow '-' as first char
+        }
+        return TRUE;
+    }
+
+    /* float → digits, one '.' OR one ',', optional leading '-' */
+    if (g_strcmp0(setting->datatype, "float") == 0) {
+        const char *text = gtk_entry_get_text(GTK_ENTRY(widget));
+
+        /* digits always allowed */
+        if (g_unichar_isdigit(c))
+            return FALSE;
+
+        /* allow one decimal separator: '.' or ',' */
+        if ((c == '.' || c == ',') &&
+            !strchr(text, '.') &&
+            !strchr(text, ',')) {
+            return FALSE;
+        }
+
+        /* optional leading '-' */
+        if (c == '-' && text[0] == '\0')
+            return FALSE;
+
+        return TRUE;  /* block everything else */
+    }
+
+    /* uint8_hex → hex digits only */
+    if (g_strcmp0(setting->datatype, "uint8_hex") == 0) {
+        return !g_unichar_isxdigit(c);
+    }
+
+    /* Unknown datatype → block input */
+    return TRUE;
 }
+
+
+
+
+
 
 
 
@@ -150,56 +220,170 @@ static GPtrArray* parse_options_array(JsonArray *jarr)
 
 
 
+static gboolean json_to_int64_checked(JsonNode *node, gint64 *out){
+    if (!node || !JSON_NODE_HOLDS_VALUE(node))
+        return FALSE;
 
-// Helper to create GVariant for default value based on datatype
-static GVariant* parse_default_value(JsonNode *def_node, const char *datatype) {
-    if (!datatype) return NULL;
-
-    if (!def_node) {
-        // fallback defaults
-        g_warning("falling back to default value of 0 in parse_default_value()");
-        if (g_strcmp0(datatype, "uint8") == 0)
-            return g_variant_new_byte(0);
-        if (g_strcmp0(datatype, "uint32") == 0)
-            return g_variant_new_uint32(0);
-        if (g_strcmp0(datatype, "uint64") == 0)
-            return g_variant_new_uint64(0);
-        if (g_strcmp0(datatype, "int32") == 0)
-            return g_variant_new_int32(0);
-        if (g_strcmp0(datatype, "float") == 0)
-            return g_variant_new_double(0.0);
-        if (g_strcmp0(datatype, "char[256]") == 0)
-            return g_variant_new_string("");
+    if (json_node_get_value_type(node) == G_TYPE_INT64) {
+        *out = json_node_get_int(node);
+        return TRUE;
     }
 
-    if (g_strcmp0(datatype, "uint8") == 0) {
-        return g_variant_new_byte((guchar)json_node_get_int(def_node));
-    }
-    else if (g_strcmp0(datatype, "uint8_hex") == 0) {
-        if (json_node_get_value_type(def_node) == G_TYPE_STRING) {
-            guint v = 0;
-            sscanf(json_node_get_string(def_node), "%x", &v);
-            return g_variant_new_byte((guchar)v);
-        } else {
-            return g_variant_new_byte((guchar)json_node_get_int(def_node));
+    if (json_node_get_value_type(node) == G_TYPE_STRING) {
+        char *end = NULL;
+        const char *s = json_node_get_string(node);
+        gint64 v = g_ascii_strtoll(s, &end, 10);
+        if (end && *end == '\0') {
+            *out = v;
+            return TRUE;
         }
-    } else if (g_strcmp0(datatype, "uint32") == 0) {
-        return g_variant_new_uint32((guint32)json_node_get_int(def_node));
-    } else if (g_strcmp0(datatype, "uint64") == 0) {
-        return g_variant_new_uint64((guint64)json_node_get_int(def_node));
-    } else if (g_strcmp0(datatype, "int32") == 0) {
-        return g_variant_new_int32((gint32)json_node_get_int(def_node));
-    } else if (g_strcmp0(datatype, "char[256]") == 0) {
-        return g_variant_new_string(json_node_get_string(def_node));
-    } else if (g_strcmp0(datatype, "float") == 0) {
-        return g_variant_new_double(json_node_get_double(def_node));
     }
-    g_warning("Encountered unsupported default value while parsing Handshake!");
-    return NULL; // unsupported type
+
+    return FALSE;
 }
 
 
 
+
+
+
+
+
+
+static gboolean json_to_double_checked(JsonNode *node, gdouble *out){
+    if (!node || !JSON_NODE_HOLDS_VALUE(node))
+        return FALSE;
+
+    if (json_node_get_value_type(node) == G_TYPE_DOUBLE) {
+        *out = json_node_get_double(node);
+        return TRUE;
+    }
+
+    if (json_node_get_value_type(node) == G_TYPE_STRING) {
+        char *end = NULL;
+        gdouble v = g_ascii_strtod(json_node_get_string(node), &end);
+        if (end && *end == '\0' && isfinite(v)) {
+            *out = v;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+
+
+
+
+
+
+
+
+// Helper to create GVariant for default value based on datatype
+static GVariant *parse_default_value(JsonNode *def_node, const char *datatype, const char *handle){
+    if (!datatype) return NULL;
+
+    /* ---------- Missing default ---------- */
+    if (!def_node) {
+        g_warning("Missing default value, using 0 for datatype '%s'while loading JSON entry '%s'", datatype, handle);
+        goto fallback;
+    }
+
+    /* ---------- uint8 ---------- */
+    if (g_strcmp0(datatype, "uint8") == 0) {
+        gint64 v;
+        if (json_to_int64_checked(def_node, &v) && v >= 0 && v <= 255)
+            return g_variant_new_byte((guchar)v);
+
+        g_warning("Invalid uint8 default value encountered while loading JSON entry '%s'", handle);
+        goto fallback;
+    }
+
+    /* ---------- uint8_hex ---------- */
+    if (g_strcmp0(datatype, "uint8_hex") == 0) {
+        guint v = 0;
+        if (json_node_get_value_type(def_node) == G_TYPE_STRING &&
+            sscanf(json_node_get_string(def_node), "%x", &v) == 1 &&
+            v <= 0xFF)
+            return g_variant_new_byte((guchar)v);
+
+        if (json_to_int64_checked(def_node, (gint64 *)&v) && v <= 0xFF)
+            return g_variant_new_byte((guchar)v);
+
+        g_warning("Invalid uint8_hex default value encountered while loading JSON entry '%s'", handle);
+        goto fallback;
+    }
+
+    /* ---------- uint32 ---------- */
+    if (g_strcmp0(datatype, "uint32") == 0) {
+        gint64 v;
+        if (json_to_int64_checked(def_node, &v) && v >= 0 && v <= G_MAXUINT32)
+            return g_variant_new_uint32((guint32)v);
+
+        g_warning("Invalid uint32 default value encountered while loading JSON entry '%s'", handle);
+        goto fallback;
+    }
+
+    /* ---------- uint64 ---------- */
+    if (g_strcmp0(datatype, "uint64") == 0) {
+        gint64 v;
+        if (json_to_int64_checked(def_node, &v) && v >= 0)
+            return g_variant_new_uint64((guint64)v);
+
+        g_warning("Invalid uint64 default value encountered while loading JSON entry '%s'", handle);
+        goto fallback;
+    }
+
+    /* ---------- int32 ---------- */
+    if (g_strcmp0(datatype, "int32") == 0) {
+        gint64 v;
+        if (json_to_int64_checked(def_node, &v) &&
+            v >= G_MININT32 && v <= G_MAXINT32)
+            return g_variant_new_int32((gint32)v);
+
+        g_warning("Invalid int32 default value encountered while loading JSON entry '%s'", handle);
+        goto fallback;
+    }
+
+    /* ---------- float ---------- */
+    if (g_strcmp0(datatype, "float") == 0) {
+        gdouble v;
+        if (json_to_double_checked(def_node, &v))
+            return g_variant_new_double(v);
+
+        g_warning("Invalid float default value encountered while loading JSON entry '%s'", handle);
+        goto fallback;
+    }
+
+    /* ---------- char[256] ---------- */
+    if (g_strcmp0(datatype, "char[256]") == 0) {
+        if (json_node_get_value_type(def_node) == G_TYPE_STRING)
+            return g_variant_new_string(json_node_get_string(def_node));
+
+        g_warning("Invalid string default value encountered while loading JSON entry '%s'", handle);
+        goto fallback;
+    }
+
+    g_warning("Unsupported datatype '%s' encountered while loading JSON entry '%s'", datatype, handle);
+    return NULL;
+
+fallback:
+    /* Centralized fallback */
+    if (g_strcmp0(datatype, "uint8") == 0)
+        return g_variant_new_byte(0);
+    if (g_strcmp0(datatype, "uint32") == 0)
+        return g_variant_new_uint32(0);
+    if (g_strcmp0(datatype, "uint64") == 0)
+        return g_variant_new_uint64(0);
+    if (g_strcmp0(datatype, "int32") == 0)
+        return g_variant_new_int32(0);
+    if (g_strcmp0(datatype, "float") == 0)
+        return g_variant_new_double(0.0);
+    if (g_strcmp0(datatype, "char[256]") == 0)
+        return g_variant_new_string("");
+
+    return NULL;
+}
 
 
 
@@ -255,7 +439,7 @@ GuiConfig* parse_gui_config_from_json(const uint8_t *json_data, size_t json_len)
 
         // Default value
         JsonNode *def_node = json_object_get_member(sobj, "default");
-        s->default_value = parse_default_value(def_node, s->datatype);
+        s->default_value = parse_default_value(def_node, s->datatype, s->microcontroller_handle);
 
         // Options array (optional)
         if (json_object_has_member(sobj, "options")) {
@@ -348,13 +532,14 @@ void create_dynamic_widget(GtkWidget *parent_box, GuiSetting *setting)
         gtk_entry_set_text(GTK_ENTRY(widget), text);
         g_free(text);
 
-        if (g_strcmp0(setting->datatype, "uint8_hex") == 0) {
-            gtk_entry_set_max_length(GTK_ENTRY(widget), 2);
-            g_signal_connect(widget,
-                            "key-press-event",
-                            G_CALLBACK(hex_input_filter),
-                            NULL);
-        }
+        /* Length constraints */
+        if (g_strcmp0(setting->datatype, "uint8_hex") == 0) gtk_entry_set_max_length(GTK_ENTRY(widget), 2);
+
+        /* Attach datatype-aware filter */
+        g_signal_connect(widget,
+                        "key-press-event",
+                        G_CALLBACK(datatype_input_filter),
+                        setting);
 
         g_signal_connect(widget,
                          "changed",
@@ -484,7 +669,7 @@ gboolean parse_settings_from_json(ClientInfo *info, const char *json_path)
 
         JsonNode *node = json_object_get_member(obj, setting->microcontroller_handle);
 
-        setting->default_value = parse_default_value(node, setting->datatype);
+        setting->default_value = parse_default_value(node, setting->datatype, setting->microcontroller_handle);
 
 
         /* Update view */

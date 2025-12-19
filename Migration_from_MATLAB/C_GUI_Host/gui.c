@@ -142,22 +142,22 @@ void build_client_ui(ClientInfo *info, GtkWidget *win)
   g_object_set_data(G_OBJECT(info->tab_content), "export_btn", export_btn);
 
   // --- Y-axis Range Controls ---
-  GtkWidget *ymin_label = gtk_label_new("Y-Min for Live Plot");
-  GtkWidget *ymin_entry = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(ymin_entry), "-2500");
-  
   GtkWidget *ymax_label = gtk_label_new("Y-Max for Live Plot");
   GtkWidget *ymax_entry = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(ymax_entry), "2500");
   
-  // store for later access in the draw function
-  g_object_set_data(G_OBJECT(info->tab_content), "ymin_entry", ymin_entry);
-  g_object_set_data(G_OBJECT(info->tab_content), "ymax_entry", ymax_entry);
+  GtkWidget *ymin_label = gtk_label_new("Y-Min for Live Plot");
+  GtkWidget *ymin_entry = gtk_entry_new();
+  gtk_entry_set_text(GTK_ENTRY(ymin_entry), "-2500");
   
-  gtk_box_pack_start(GTK_BOX(right_box), ymin_label, FALSE, FALSE, 3);
-  gtk_box_pack_start(GTK_BOX(right_box), ymin_entry, FALSE, FALSE, 3);
+  // store for later access in the draw function
+  g_object_set_data(G_OBJECT(info->tab_content), "ymax_entry", ymax_entry);
+  g_object_set_data(G_OBJECT(info->tab_content), "ymin_entry", ymin_entry);
+  
   gtk_box_pack_start(GTK_BOX(right_box), ymax_label, FALSE, FALSE, 3);
   gtk_box_pack_start(GTK_BOX(right_box), ymax_entry, FALSE, FALSE, 3);
+  gtk_box_pack_start(GTK_BOX(right_box), ymin_label, FALSE, FALSE, 3);
+  gtk_box_pack_start(GTK_BOX(right_box), ymin_entry, FALSE, FALSE, 3);
 
   
 
@@ -211,15 +211,14 @@ void assign_client_to_waiting_tab(GSocketConnection *conn, GuiConfig *client_con
         info->close_button = NULL;
     }
 
+    // Assign connection
+    info->conn = g_object_ref(conn);
 
     // Set tab label from client_config
     char text[64];
     snprintf(text, sizeof(text), "%s", client_config->gui_handle ? client_config->gui_handle : "Unknown Client");
     gtk_label_set_text(GTK_LABEL(info->tab_label), text);
-    set_tab_label_color_text(info->tab_label, text, TRUE);
-
-    // Assign connection
-    info->conn = g_object_ref(conn);
+    update_client_visual_state(info);
 
     // Assign GUI settings
     info->settings = client_config;
@@ -480,6 +479,7 @@ static void on_stop_btn_clicked(GtkButton *button, gpointer user_data) {
         g_warning("Stop button widget not found for this tab");
     }
     
+    //disconnect_client(info);
 
     g_message("Measurement stopped by user.");
 }
