@@ -515,6 +515,23 @@ void free_gui_config(GuiConfig *config) {
 
 
 
+
+
+static gboolean disable_combo_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data){
+    /* Returning TRUE stops the combo box from changing on scroll */
+    return TRUE;
+}
+
+
+
+
+
+
+
+
+
+
+
 void create_dynamic_widget(GtkWidget *parent_box, GuiSetting *setting)
 {
     GtkWidget *label = gtk_label_new(setting->gui_handle);
@@ -570,6 +587,11 @@ void create_dynamic_widget(GtkWidget *parent_box, GuiSetting *setting)
             }
         }
         g_free(def_text);
+
+        g_signal_connect(widget,
+                     "scroll-event",
+                     G_CALLBACK(disable_combo_scroll),
+                     NULL);
 
         g_signal_connect(widget,
                          "changed",

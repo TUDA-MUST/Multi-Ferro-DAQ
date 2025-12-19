@@ -1,4 +1,4 @@
-//gcc C_GUI_Host_main.c gui.c client.c network.c settings.c -o ClientMonitor -DLINUX `pkg-config --cflags --libs gtk+-3.0 json-glib-1.0`
+//gcc C_GUI_Host_main.c gui.c client.c network.c settings.c -o ClientMonitor -DLINUX `pkg-config --cflags --libs gtk+-3.0 json-glib-1.0` -lm
 // gcc C_GUI_Host_main.c gui.c client.c network.c settings.c -o ./WinApp/bin/ClientMonitor.exe -D_WIN32 -lws2_32 -liphlpapi $(pkg-config --cflags --libs gtk+-3.0 json-glib-1.0)
 
 #ifdef _WIN32
@@ -384,7 +384,7 @@ int main(int argc, char **argv)
     // --- GLOBAL DURATION ---
     GtkWidget *global_dur_label = gtk_label_new("Global Duration (seconds)");
     GtkWidget *global_dur_entry = gtk_entry_new();
-    gtk_entry_set_text(GTK_ENTRY(global_dur_entry), "300");
+    gtk_entry_set_text(GTK_ENTRY(global_dur_entry), "3600");
 
     // store it on the main window for retrieval if needed
     g_object_set_data(G_OBJECT(win), "global_dur_entry", global_dur_entry);

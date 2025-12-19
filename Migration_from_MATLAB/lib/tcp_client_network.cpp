@@ -20,7 +20,7 @@ String waitForLine() {
 
 /*
 // ------------------------------
-//   WIFI + CLIENT CONFIG
+//   WIFI + CLIENT CONFIG               <--- deprecated thorugh json
 // ------------------------------
 void setClientHandshakePreferences() {
     Serial.println("\n=== Configure Handshake ===");
@@ -32,7 +32,7 @@ void setClientHandshakePreferences() {
     prefs.begin("client", false);
     prefs.putString("client_name", nm);
     prefs.end();
-}   <--- deprecated thorugh json
+}  
 
 */
 
@@ -76,6 +76,13 @@ bool readBytes(WiFiClient &client, uint8_t *buffer, size_t n, uint32_t timeoutMs
     return true;
 }
 
+
+
+
+
+
+
+
 bool readTcpPackage(WiFiClient &client, TcpPackage &pkg) {
     uint8_t header[5];
     if (!readBytes(client, header, 5)) return false;
@@ -101,15 +108,29 @@ bool readTcpPackage(WiFiClient &client, TcpPackage &pkg) {
     return true;
 }
 
+
+
+
+
+
+
+
 void freeTcpPackage(TcpPackage &pkg) {
     if (pkg.package) free(pkg.package);
     pkg.package = nullptr;
 }
 
-// FIXED: now returns true when a package is read
+
+
+
+
 bool getNextTcpPackage(WiFiClient &client, TcpPackage &pkg) {
     return readTcpPackage(client, pkg);
 }
+
+
+
+
 
 // ------------------------------
 //   HANDSHAKE + TIMESTAMP

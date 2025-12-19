@@ -397,40 +397,6 @@ void sendTaskCode(void* params){
 
   byte amparr[8];
   uint64_t cntnmbr = waitAndApplySettings(client, amparr);
-  /*
-  while (settingsPkg.package_type != SETTINGS_PACKAGE) {
-    getNextTcpPackage(client, settingsPkg);
-    Serial.print(".");
-  }
-  Serial.println("\nSettings received!");
-
-  // -------------------------
-  // APPLY SETTINGS
-  // (your ADC config code unchanged)
-  // -------------------------
-
-  union {
-      byte cntarray[8];
-      int64_t cntnmbr;
-  } measurecnt;
-
-  union {
-      byte readarray[16];
-      uint16_t uint_hword[8];
-      uint32_t uint_word[4];
-  } inputbuff;
-
-  memcpy(measurecnt.cntarray, settingsPkg.package, 8);
-  memcpy(inputbuff.readarray, settingsPkg.package + 8, 4);
-  set_sample_rate(inputbuff.uint_word);
-  memcpy(inputbuff.readarray, settingsPkg.package + 12, 16);
-  set_channels(inputbuff.uint_hword);
-  memcpy(inputbuff.readarray, settingsPkg.package + 28, 8);
-  byte amparr[8];
-  for (int i = 0; i < set_preamp(inputbuff.readarray); i++) {
-      amparr[i] = inputbuff.readarray[i];
-  }
-  */
 
 
   // -------------------------
