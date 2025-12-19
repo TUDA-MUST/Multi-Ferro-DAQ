@@ -31,7 +31,7 @@ R"JSON(
       "type": "combo",
       "datatype": "uint8",
       "default": 1,
-      "options": [0, 1, 2, 4, 8, 12]
+      "options": [1, 2, 4, 8, 12]
     },
     {
       "gui_handle": "CHAN1 Settings Register (hex byte)",
@@ -46,7 +46,7 @@ R"JSON(
       "type": "combo",
       "datatype": "uint8",
       "default": 1,
-      "options": [0, 1, 2, 4, 8, 12]
+      "options": [1, 2, 4, 8, 12]
     },
     {
       "gui_handle": "CHAN2 Settings Register (hex byte)",
@@ -61,7 +61,7 @@ R"JSON(
       "type": "combo",
       "datatype": "uint8",
       "default": 1,
-      "options": [0, 1, 2, 4, 8, 12]
+      "options": [1, 2, 4, 8, 12]
     },
     {
       "gui_handle": "CHAN3 Settings Register (hex byte)",
@@ -76,7 +76,7 @@ R"JSON(
       "type": "combo",
       "datatype": "uint8",
       "default": 1,
-      "options": [0, 1, 2, 4, 8, 12]
+      "options": [1, 2, 4, 8, 12]
     },
     {
       "gui_handle": "CHAN4 Settings Register (hex byte)",
@@ -91,7 +91,7 @@ R"JSON(
       "type": "combo",
       "datatype": "uint8",
       "default": 1,
-      "options": [0, 1, 2, 4, 8, 12]
+      "options": [1, 2, 4, 8, 12]
     },
     {
       "gui_handle": "CHAN5 Settings Register (hex byte)",
@@ -106,7 +106,7 @@ R"JSON(
       "type": "combo",
       "datatype": "uint8",
       "default": 1,
-      "options": [0, 1, 2, 4, 8, 12]
+      "options": [1, 2, 4, 8, 12]
     },
     {
       "gui_handle": "CHAN6 Settings Register (hex byte)",
@@ -121,7 +121,7 @@ R"JSON(
       "type": "combo",
       "datatype": "uint8",
       "default": 1,
-      "options": [0, 1, 2, 4, 8, 12]
+      "options": [1, 2, 4, 8, 12]
     },
     {
       "gui_handle": "CHAN7 Settings Register (hex byte)",
@@ -136,7 +136,7 @@ R"JSON(
       "type": "combo",
       "datatype": "uint8",
       "default": 1,
-      "options": [0, 1, 2, 4, 8, 12]
+      "options": [1, 2, 4, 8, 12]
     },
     {
       "gui_handle": "CHAN8 Settings Register (hex byte)",

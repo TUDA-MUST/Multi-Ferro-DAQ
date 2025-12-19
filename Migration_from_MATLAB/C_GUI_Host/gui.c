@@ -515,8 +515,11 @@ gboolean on_client_incoming(GSocketService *service,
 
     //Read the first package ---
     TcpPackage pkg;
-    gboolean ok = get_next_tcp_package(sock, &pkg, 150); // 150 ms timeout
-    if (!ok) return FALSE;
+    gboolean ok = get_next_tcp_package(sock, &pkg, 800); // 800 ms timeout (long value neccesary for WINDOWS)
+    if (!ok) {
+        g_warning("Handshake timed out, keeping connection open and trying anyway");
+        return FALSE;
+    }
 
     GuiConfig* client_config;
 
