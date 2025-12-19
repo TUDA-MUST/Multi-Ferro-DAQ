@@ -90,7 +90,7 @@ void build_client_ui(ClientInfo *info, GtkWidget *win)
   GtkWidget *global_dur_entry =
       g_object_get_data(G_OBJECT(win), "global_dur_entry");  
   // Fallback value
-  const char *global_val = "300";  
+  const char *global_val = "3600";  
   if (global_dur_entry != NULL) {
       global_val = gtk_entry_get_text(GTK_ENTRY(global_dur_entry));
   }
@@ -699,7 +699,43 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
         printf("Pass 1: a=%.6f, b=%.6f\n", a1, b1);
 
 
-        /* ---------- IDENTIFY INLIERS (|residual| <= 5ms) ---------- */
+        // ---------- IDENTIFY INLIERS (2-sigma) ---------- 
+        double *residual = malloc(N * sizeof(double));
+
+        for (int i = 0; i < N; i++) {
+            double predicted = a1 * t_mid[i] + b1;
+            residual[i] = lt[i] - predicted;
+        }
+
+        double mean = 0.0;
+        for (int i = 0; i < N; i++) {
+            mean += residual[i];
+        }
+        mean /= N;
+
+        double var = 0.0;
+        for (int i = 0; i < N; i++) {
+            double d = residual[i] - mean;
+            var += d * d;
+        }
+        var /= (N - 1);              // sample variance
+        double sigma = sqrt(var);
+
+        uint32_t k = 2;              // 2-sigma rule
+        int *inlier = calloc(N, sizeof(int));
+        int M = 0;
+
+        for (int i = 0; i < N; i++) {
+            if (fabs(residual[i] - mean) <= k * sigma) {
+                inlier[i] = 1;
+                M++;
+            }
+        }
+
+        printf("Inliers after %d-sigma (%.2f µs) filtering: %d / %d\n", k, k*sigma, M, N);
+
+        
+        /* ---------- IDENTIFY INLIERS (|residual| <= 5ms) ---------- 
 
         double threshold = 5000;    // 5 ms (in microseconds)
         int *inlier = calloc(N, sizeof(int));
@@ -716,7 +752,7 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
         }
 
         printf("Inliers after 5ms filtering: %d / %d\n", M, N);
-
+        */
 
         /* ---------- SECOND PASS: Regression using only inliers ---------- */
 

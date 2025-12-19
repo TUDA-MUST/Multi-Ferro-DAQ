@@ -11,11 +11,10 @@ typedef struct _ClientInfo ClientInfo;       //forward declare for settings.h
 typedef struct {
     char *gui_handle;
     char *microcontroller_handle;
-    char *type;       // type of GUI Widget ("combo" or "entry")
-    char *datatype;   // "uint8", "uint8_hex", "uint32", "uint64", "int32", "char[256]", "float" are supported
-                      // GUI input for "uint8" will be assumed to be in HEX
-    GVariant *default_value;  // default value in corresponding datatype, can be altered via GUI/ loading a json
-    GPtrArray *options;       // for combo boxes
+    char *type;                     // type of GUI Widget ("combo" or "entry")
+    char *datatype;                 // "uint8", "uint8_hex", "uint32", "uint64", "int32", "char[256]", "float" are supported
+    GVariant *default_value;        // default value in corresponding datatype, can be altered via GUI/ loading a json
+    GPtrArray *options;             // for combo boxes
 } GuiSetting;
 
 typedef struct {
