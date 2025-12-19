@@ -6,6 +6,20 @@
 
 
 
+//-----------------------------
+// Visual state of a Clients Tab
+//-----------------------------
+typedef enum {
+    CLIENT_STATE_DISCONNECTED,
+    CLIENT_STATE_CONNECTED,
+    CLIENT_STATE_MEASURING,
+    CLIENT_STATE_DATA_COLLECTED
+} ClientVisualState;
+
+
+
+
+
 // ----------------Read TcpPackage from socket ----------------
 gboolean read_tcp_package(GSocket *sock, TcpPackage *pkg, guint32 timeout_ms) {
     if (!sock || !pkg) return FALSE;
@@ -218,8 +232,7 @@ void disconnect_client(ClientInfo *info) {
     }
 
     // Update the status label
-    set_status_label(info->status_label, FALSE);
-    set_tab_label_color_text(info->tab_label, gtk_label_get_text(GTK_LABEL(info->tab_label)), FALSE);
+    update_client_visual_state(info);
 }
 
 
@@ -244,13 +257,14 @@ gboolean monitor_client_connection(gpointer user_data) {
 
     // If client is already disconnected, stop monitoring
     if (!info || !info->conn) {
-        set_status_label(info ? info->status_label : NULL, FALSE);
+        disconnect_client(info);
         return G_SOURCE_REMOVE;
+
     }
 
     GSocket *sock = g_socket_connection_get_socket(info->conn);
     if (!sock) {
-        set_status_label(info->status_label, FALSE);
+        disconnect_client(info);
         return G_SOURCE_REMOVE;
     }
 
@@ -290,8 +304,7 @@ gboolean monitor_client_connection(gpointer user_data) {
     }
 
     // Ping successful, mark client as connected
-    set_status_label(info->status_label, TRUE);
-    set_tab_label_color_text(info->tab_label, gtk_label_get_text(GTK_LABEL(info->tab_label)), TRUE);
+    update_client_visual_state(info);
     return G_SOURCE_CONTINUE; // Continue monitoring
 }
 
@@ -303,21 +316,17 @@ gboolean monitor_client_connection(gpointer user_data) {
 
 
 
+static ClientVisualState get_client_visual_state(const ClientInfo *info){
+    if (!info || !info->conn) {
+        if (info && info->write_index > 0)
+            return CLIENT_STATE_DATA_COLLECTED;
+        return CLIENT_STATE_DISCONNECTED;
+    }
 
+    if (info->measurement_active)
+        return CLIENT_STATE_MEASURING;
 
-
-
-
-//--------------HELPER TO SET CONNECTION LABEL-------------------
-void set_status_label(GtkWidget *label, gboolean connected){
-    if (!label) return;
-
-    if (connected)
-        gtk_label_set_markup(GTK_LABEL(label),
-            "<span foreground=\"green\" weight=\"bold\">CONNECTED</span>");
-    else
-        gtk_label_set_markup(GTK_LABEL(label),
-            "<span foreground=\"red\" weight=\"bold\">DISCONNECTED</span>");
+    return CLIENT_STATE_CONNECTED;
 }
 
 
@@ -327,26 +336,55 @@ void set_status_label(GtkWidget *label, gboolean connected){
 
 
 
+void update_client_visual_state(ClientInfo *info){
+    if (!info) return;
 
+    ClientVisualState state = get_client_visual_state(info);
 
+    const char *status_markup = NULL;
+    const char *tab_color     = NULL;
 
+    switch (state) {
+        case CLIENT_STATE_MEASURING:
+            status_markup =
+                "<span foreground=\"blue\" weight=\"bold\">MEASURING</span>";
+            tab_color = "blue";
+            break;
 
+        case CLIENT_STATE_CONNECTED:
+            status_markup =
+                "<span foreground=\"green\" weight=\"bold\">CONNECTED</span>";
+            tab_color = "green";
+            break;
 
-//----------------HELPER TO COLOR IN TAB LABELS------------------------
-void set_tab_label_color_text(GtkWidget *label, const char *text, gboolean connected){
-    if (!label || !text) return;
+        case CLIENT_STATE_DATA_COLLECTED:
+            status_markup =
+                "<span foreground=\"orange\" weight=\"bold\">DATA COLLECTED</span>";
+            tab_color = "orange";
+            break;
 
-    char buf[128];
-    snprintf(buf, sizeof(buf),
-             "<span foreground=\"%s\" weight=\"bold\">%s</span>",
-             connected ? "green" : "red",
-             text);
+        case CLIENT_STATE_DISCONNECTED:
+        default:
+            status_markup =
+                "<span foreground=\"red\" weight=\"bold\">DISCONNECTED</span>";
+            tab_color = "red";
+            break;
+    }
 
-    gtk_label_set_markup(GTK_LABEL(label), buf);
+    /* Status label */
+    if (info->status_label)
+        gtk_label_set_markup(GTK_LABEL(info->status_label), status_markup);
+
+    /* Tab label */
+    if (info->tab_label) {
+        const char *text = gtk_label_get_text(GTK_LABEL(info->tab_label));
+        char buf[128];
+        snprintf(buf, sizeof(buf),
+                 "<span foreground=\"%s\" weight=\"bold\">%s</span>",
+                 tab_color, text);
+        gtk_label_set_markup(GTK_LABEL(info->tab_label), buf);
+    }
 }
-
-
-
 
 
 

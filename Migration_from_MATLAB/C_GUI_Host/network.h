@@ -36,8 +36,8 @@
 // HANDSHAKE PACKAGE:
 //  Sent by the Client directly after TCP connection was established. Should contain
 //  a json, that defines the properties of the client and its requested GUI.
-//  -> sent by Client, answered by a single zero-byte in TCP stream by ClientMonitor
-//     (zeron-byte neccesary forn Windows to reliably handle Clients)
+//  -> sent by Client, answered by a single PING_PACKAGE in TCP stream by ClientMonitor
+//     (PING_PACKAGE neccesary for Windows to reliably handle Clients)
 // --------------------
 typedef enum {
     PING_PACKAGE      = 0,
@@ -59,6 +59,9 @@ typedef struct {
     unsigned char *package;
 } TcpPackage;
 
+
+
+
 // --------------------
 // TCP Helper functions
 // --------------------
@@ -69,6 +72,5 @@ static gboolean read_bytes(GSocket *sock, guint8 *buffer, gsize n, guint32 timeo
 void send_settings_to_client(ClientInfo *info);
 void disconnect_client(ClientInfo *info);
 gboolean monitor_client_connection(gpointer user_data);
-void set_status_label(GtkWidget *label, gboolean connected);
-void set_tab_label_color_text(GtkWidget *label, const char *text, gboolean connected);
+void update_client_visual_state(ClientInfo *info);
 #endif // NETWORK_H
