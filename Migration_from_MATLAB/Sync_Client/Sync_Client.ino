@@ -12,9 +12,9 @@ Preferences prefs;
 #define NUM_LEDS 2
 #define DATA_PIN 21
 
-#define ADC_PIN 3        // <<<<<< acquire from this analog pin
+#define ADC_PIN 1        // <<<<<< acquire from this analog pin
 
-#define BUFFERSIZE 40
+#define BUFFERSIZE 16
 #define SAMPLE_SIZE_BYTES 8      // float value + float timestamp
 #define DATAQUEUE_SIZE 1024
 
@@ -23,6 +23,8 @@ const char jsonConfig[] PROGMEM =
 ;
 
 CRGB leds[NUM_LEDS];
+
+
 
 // ──────────────────────────────────────────────────────────────
 // STRUCTS
@@ -86,7 +88,50 @@ uint64_t waitAndApplySettings_simple(WiFiClient &client)
 
 
 
+//----------------------------------------
+//   ISRs
+//----------------------------------------
 
+void IRAM_ATTR risingWrite_Isr() {
+    // Create and initialize the sample for LOW value (before rising edge)
+    Sample* lowSample = (Sample*) malloc(sizeof(Sample));
+    if (lowSample) {
+        lowSample->value = 0.0f; // Set value to LOW
+        lowSample->timestamp = (float)esp_timer_get_time(); // Get timestamp
+        xQueueSendFromISR(datatransferQueue, &lowSample, NULL);
+    }
+    
+    // Create and initialize the sample for HIGH value (after rising edge)
+    Sample* highSample = (Sample*) malloc(sizeof(Sample));
+    if (highSample) {
+        highSample->value = 1.0f; // Set value to HIGH
+        highSample->timestamp = (float)esp_timer_get_time(); // Get timestamp
+        xQueueSendFromISR(datatransferQueue, &highSample, NULL);
+    }
+}
+
+
+
+
+
+
+void IRAM_ATTR fallingWrite_Isr() {
+    // Create and initialize the sample for HIGH value (before falling edge)
+    Sample* highSample = (Sample*) malloc(sizeof(Sample));
+    if (highSample) {
+        highSample->value = 1.0f; // Set value to HIGH
+        highSample->timestamp = (float)esp_timer_get_time(); // Get timestamp
+        xQueueSendFromISR(datatransferQueue, &highSample, NULL);
+    }
+    
+    // Create and initialize the sample for LOW value (after falling edge)
+    Sample* lowSample = (Sample*) malloc(sizeof(Sample));
+    if (lowSample) {
+        lowSample->value = 0.0f; // Set value to LOW
+        lowSample->timestamp = (float)esp_timer_get_time(); // Get timestamp
+        xQueueSendFromISR(datatransferQueue, &lowSample, NULL);
+    }
+}
 
 
 
@@ -97,15 +142,17 @@ uint64_t waitAndApplySettings_simple(WiFiClient &client)
 // continuously capture analog value + timestamp
 // ──────────────────────────────────────────────────────────────
 void aquireTaskCode(void* params) {
+    attachInterrupt(digitalPinToInterrupt(ADC_PIN), risingWrite_Isr, RISING);
+    attachInterrupt(digitalPinToInterrupt(ADC_PIN), fallingWrite_Isr, FALLING);
     while (1) {
         Sample* s = (Sample*) malloc(sizeof(Sample));
         if (s) {
-            int raw = analogRead(ADC_PIN);
-            s->value = (float)raw * (3300.0f / 4095.0f); 
-            s->timestamp = (float) esp_timer_get_time();   // microseconds
+            //int raw = digitalRead(ADC_PIN);  // Digital read (HIGH or LOW)
+            s->value = (float) digitalRead(ADC_PIN); // 1.0 (HIGH) or 0.0 (LOW)
+            s->timestamp = (float)esp_timer_get_time();  // Get timestamp in microseconds
             xQueueSend(datatransferQueue, &s, 0);
         }
-        vTaskDelay(1);   // adjust sampling speed
+        vTaskDelay(2);   // adjust sampling speed
     }
 }
 
@@ -235,7 +282,7 @@ void setup() {
     leds[0] = CRGB::Orange; FastLED.show();
     vTaskDelay(900);
 
-    analogReadResolution(12);          // 12-bit default
+    pinMode(ADC_PIN, INPUT);  // Set the pin as an input for digital read
 
     // queue for samples
     datatransferQueue = xQueueCreate(DATAQUEUE_SIZE, sizeof(Sample*));

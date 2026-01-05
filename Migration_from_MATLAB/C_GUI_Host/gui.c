@@ -569,7 +569,14 @@ gboolean on_client_incoming(GSocketService *service,
 
 
 
-
+// Function to compare two residuals for sorting (used in qsort)
+static int compare(const void *a, const void *b) {
+    double *x = (double *)a;
+    double *y = (double *)b;
+    if (*x < *y) return -1;
+    if (*x > *y) return 1;
+    return 0;
+}
 
 
 
@@ -699,7 +706,43 @@ static void on_export_csv_clicked(GtkButton *button, gpointer user_data) {
         printf("Pass 1: a=%.6f, b=%.6f\n", a1, b1);
 
 
-        // ---------- IDENTIFY INLIERS (2-sigma) ---------- 
+
+        /* ------------------------------------------------------------
+        *     IDENTIFY INLIERS USING IQR METHOD (1.5 * IQR)
+        * ------------------------------------------------------------ */
+
+        double *residual = malloc(N * sizeof(double));
+
+        for (int i = 0; i < N; i++) {
+            double predicted = a1 * t_mid[i] + b1;
+            residual[i] = lt[i] - predicted;
+        }
+
+        // Calculate the first quartile (Q1) and third quartile (Q3) of residuals
+        qsort(residual, N, sizeof(double), compare); // Sort residuals to calculate quartiles
+
+        double Q1 = residual[N / 4];  // 25th percentile (First Quartile)
+        double Q3 = residual[3 * N / 4];  // 75th percentile (Third Quartile)
+        double IQR = Q3 - Q1;  // Interquartile Range
+
+        // Calculate the outlier boundaries
+        double lower_bound = Q1 - 1.5 * IQR;  // Lower boundary for outliers
+        double upper_bound = Q3 + 1.5 * IQR;  // Upper boundary for outliers
+
+        // Identify inliers based on the IQR method
+        int *inlier = calloc(N, sizeof(int));
+        int M = 0;
+
+        for (int i = 0; i < N; i++) {
+            if (residual[i] >= lower_bound && residual[i] <= upper_bound) {
+                inlier[i] = 1;  // Mark as inlier
+                M++;
+            }
+        }
+
+        printf("Inliers after IQR filtering (%.2f µs - %.2f µs): %d / %d\n", lower_bound, upper_bound, M, N);
+
+        /* ---------- IDENTIFY INLIERS (2-sigma) ---------- 
         double *residual = malloc(N * sizeof(double));
 
         for (int i = 0; i < N; i++) {
