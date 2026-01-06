@@ -5205,7 +5205,7 @@
 		(at 233.68 152.4 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "1dcb9206-59e9-4734-96f2-17d165adb8e9")
@@ -5351,7 +5351,7 @@
 				(justify left bottom)
 			)
 		)
-		(property "Value" "4k7"
+		(property "Value" "3.57k"
 			(at 91.948 105.41 0)
 			(effects
 				(font
@@ -7086,7 +7086,7 @@
 		(at 39.37 157.48 180)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "a18316b0-1810-4de6-849b-884f86411694")
