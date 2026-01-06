@@ -4,20 +4,6 @@ R"JSON(
   "float_number": "9",
   "settings": [
     {
-      "gui_handle": "FLOAT TEST",
-      "microcontroller_handle": "float_test",
-      "type": "entry",
-      "datatype": "float",
-      "default": 1.80
-    },
-    {
-      "gui_handle": "CHAR[256] TEST",
-      "microcontroller_handle": "char_test",
-      "type": "entry",
-      "datatype": "char[256]",
-      "default": "testing this 4real"
-    },
-    {
       "gui_handle": "Sample Rate",
       "microcontroller_handle": "sample_rate_hz",
       "type": "combo",
