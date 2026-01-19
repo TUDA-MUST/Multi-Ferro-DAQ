@@ -720,7 +720,7 @@
       "plot": "jlcpcb/production_files/manual-GERBER-Schlaubi-Schlumpf/",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "Schlaubi-Schlumpf.step",
       "svg": "",
       "vrml": ""
     },

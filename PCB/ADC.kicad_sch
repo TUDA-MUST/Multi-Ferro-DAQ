@@ -2003,6 +2003,434 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Jumper:SolderJumper_3_Bridged12"
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim yes)
+			(in_bom no)
+			(on_board yes)
+			(property "Reference" "JP"
+				(at -2.54 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "SolderJumper_3_Bridged12"
+				(at 0 2.794 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "3-pole Solder Jumper, pins 1+2 closed/bridged"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "Solder Jumper SPDT"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "SolderJumper*Bridged12*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "SolderJumper_3_Bridged12_0_1"
+				(polyline
+					(pts
+						(xy -2.54 0) (xy -2.032 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.016 1.016) (xy -1.016 -1.016)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.016 0.508)
+					(end -0.508 -0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(arc
+					(start -1.016 -1.016)
+					(mid -2.0276 0)
+					(end -1.016 1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -1.016 -1.016)
+					(mid -2.0276 0)
+					(end -1.016 1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start -0.508 1.016)
+					(end 0.508 -1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 -1.27) (xy 0 -1.016)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 1.016 1.016)
+					(mid 2.0276 0)
+					(end 1.016 -1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 1.016 1.016)
+					(mid 2.0276 0)
+					(end 1.016 -1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.016 1.016) (xy 1.016 -1.016)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 0) (xy 2.032 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "SolderJumper_3_Bridged12_1_1"
+				(pin passive line
+					(at -5.08 0 0)
+					(length 2.54)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 2.54)
+					(name "C"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 0 180)
+					(length 2.54)
+					(name "B"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Oscillator:ASCO"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "Y"
+				(at -7.62 6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "ASCO"
+				(at 1.27 -6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" "Oscillator:Oscillator_SMD_Abracon_ASCO-4Pin_1.6x1.2mm"
+				(at 2.54 -8.89 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://abracon.com/Oscillators/ASCO.pdf"
+				(at -5.715 3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Crystal Clock Oscillator, Abracon ASCO"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "Crystal Clock Oscillator"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Oscillator*Abracon*ASCO*1.6x1.2mm*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "ASCO_0_1"
+				(rectangle
+					(start -7.62 5.08)
+					(end 7.62 -5.08)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(polyline
+					(pts
+						(xy -5.715 2.54) (xy -5.08 2.54) (xy -5.08 3.81) (xy -4.445 3.81) (xy -4.445 2.54) (xy -3.81 2.54)
+						(xy -3.81 3.81) (xy -3.175 3.81) (xy -3.175 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "ASCO_1_1"
+				(pin input line
+					(at -10.16 0 0)
+					(length 2.54)
+					(name "Tri-State"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 7.62 270)
+					(length 2.54)
+					(name "VDD"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -7.62 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 10.16 0 180)
+					(length 2.54)
+					(name "OUT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "TLV9051IDBVR:TLV9051IDBVR"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -2456,6 +2884,18 @@
 		)
 		(uuid "31ca8982-b924-4fde-8481-4b3b0d1585c3")
 	)
+	(text "DVDD - internal CLK\nGND - external CLK"
+		(exclude_from_sim no)
+		(at 191.516 48.514 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.1588)
+			)
+			(justify left)
+		)
+		(uuid "53ff9c5e-8cf9-4ef3-a0c1-2a47dc47ad7a")
+	)
 	(text "alternativley ->\npower down & \nsupply external reference"
 		(exclude_from_sim no)
 		(at 108.712 171.704 0)
@@ -2466,6 +2906,18 @@
 			(justify left)
 		)
 		(uuid "90cd1614-6246-4b0f-a47a-0d9365be8f91")
+	)
+	(text "2.048 Mhz\nOT2EL89CJI-111YLC-2.048M"
+		(exclude_from_sim no)
+		(at 232.918 152.4 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.1588)
+			)
+			(justify left)
+		)
+		(uuid "9868ffea-1901-446f-b733-72d67c57876e")
 	)
 	(text "Calulation for charge Amplifier: \nQ=d33*F, Vo = 2V (max. voltage swing)\nd33 = 500pC/N?,	F=1 or 1000N,	Cs=20pF?,	Rs=100GOhm\nVin = Q/Cs\nCf = -Q/Vo (feedback Capacitor)\nfL = 1/(2pi * Rf * Cf) = (Cutoff Frequency)"
 		(exclude_from_sim no)
@@ -2480,7 +2932,7 @@
 	)
 	(text "Programming:\n- Set *RESET and *PWDN to High\n- Set SPI Mode (0,1) CPOL=0, CPHA=1\n- (VREF_4V <= 1) Set internal Reference Voltage to 4V\n- (OPAMP_REF <= 1) Set Opamp reference to (AVDD+AVSS) / 2\n\n"
 		(exclude_from_sim no)
-		(at 186.944 149.098 0)
+		(at 179.07 173.99 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2634,6 +3086,12 @@
 		(uuid "98c40152-b68e-44dd-bfb4-b35f5f072b6e")
 	)
 	(junction
+		(at 220.98 130.81)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9ba60e0d-e928-4876-b85a-a5857e7dae15")
+	)
+	(junction
 		(at 238.76 21.59)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2706,10 +3164,22 @@
 		(uuid "d17be28c-f255-4cc4-b750-a1e649a767cf")
 	)
 	(junction
+		(at 196.85 146.05)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d38aa9c5-9209-4252-8ff6-839aaa161724")
+	)
+	(junction
 		(at 152.4 176.53)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d4cc116f-6c1e-4431-a7e5-1dda07799204")
+	)
+	(junction
+		(at 213.36 133.35)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "e442cc55-16e8-4f92-a773-752530ae2274")
 	)
 	(junction
 		(at 144.78 181.61)
@@ -2857,13 +3327,23 @@
 	)
 	(wire
 		(pts
-			(xy 237.49 111.76) (xy 237.49 119.38)
+			(xy 237.49 111.76) (xy 237.49 118.11)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "0091753b-4b80-4dfc-9124-674ca66f6a36")
+	)
+	(wire
+		(pts
+			(xy 226.06 146.05) (xy 223.52 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "00990bfd-4219-4a82-ae36-d282834a79f9")
 	)
 	(wire
 		(pts
@@ -2877,6 +3357,16 @@
 	)
 	(wire
 		(pts
+			(xy 220.98 130.81) (xy 220.98 133.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "05d38e41-4613-4e80-a618-927bc6c05abb")
+	)
+	(wire
+		(pts
 			(xy 180.34 93.98) (xy 247.65 93.98)
 		)
 		(stroke
@@ -2884,6 +3374,16 @@
 			(type default)
 		)
 		(uuid "0c53de1b-0f13-4339-9666-e48505dfba9b")
+	)
+	(wire
+		(pts
+			(xy 213.36 133.35) (xy 213.36 138.43)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0c924cab-e242-40d6-b248-fe9a333a0dfe")
 	)
 	(wire
 		(pts
@@ -2984,6 +3484,16 @@
 			(type default)
 		)
 		(uuid "20114432-039c-4179-a3b7-53331428536d")
+	)
+	(wire
+		(pts
+			(xy 194.31 109.22) (xy 194.31 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2054852f-8c46-444a-9894-9f3d86177fca")
 	)
 	(wire
 		(pts
@@ -3137,6 +3647,16 @@
 	)
 	(wire
 		(pts
+			(xy 185.42 43.18) (xy 165.1 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "38ab2906-0a4a-4fe4-8e29-4b2b9eec8d28")
+	)
+	(wire
+		(pts
 			(xy 121.92 86.36) (xy 127 86.36)
 		)
 		(stroke
@@ -3187,7 +3707,7 @@
 	)
 	(wire
 		(pts
-			(xy 232.41 114.3) (xy 232.41 119.38)
+			(xy 232.41 114.3) (xy 232.41 118.11)
 		)
 		(stroke
 			(width 0)
@@ -3367,6 +3887,16 @@
 	)
 	(wire
 		(pts
+			(xy 165.1 43.18) (xy 165.1 60.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "66b36a1e-10b3-4b31-b528-c9728d952016")
+	)
+	(wire
+		(pts
 			(xy 252.73 41.91) (xy 259.08 41.91)
 		)
 		(stroke
@@ -3404,6 +3934,16 @@
 			(type default)
 		)
 		(uuid "72b9943a-2984-4531-ab24-66fcfa5891b0")
+	)
+	(wire
+		(pts
+			(xy 213.36 128.27) (xy 213.36 133.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "73147759-2a34-4470-b2b3-377b01f5d8ef")
 	)
 	(wire
 		(pts
@@ -3524,6 +4064,16 @@
 			(type default)
 		)
 		(uuid "8668fc0f-655d-4b2b-a993-bea398c2328b")
+	)
+	(wire
+		(pts
+			(xy 196.85 146.05) (xy 203.2 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "87cae9ed-52ab-45f6-a66c-b599d1e09581")
 	)
 	(wire
 		(pts
@@ -3787,6 +4337,16 @@
 	)
 	(wire
 		(pts
+			(xy 220.98 128.27) (xy 220.98 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b469c1d4-46ed-46e7-ad87-9f7b5c056a94")
+	)
+	(wire
+		(pts
 			(xy 76.2 106.68) (xy 76.2 109.22)
 		)
 		(stroke
@@ -3834,6 +4394,16 @@
 			(type default)
 		)
 		(uuid "bae49382-08bb-496a-8bd7-de5e8d87209e")
+	)
+	(wire
+		(pts
+			(xy 194.31 109.22) (xy 180.34 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c0e43b31-d37b-4764-886b-9ace0c0ccc94")
 	)
 	(wire
 		(pts
@@ -3974,6 +4544,16 @@
 			(type default)
 		)
 		(uuid "d919dd16-f825-42fb-957d-8032ffed9b3c")
+	)
+	(wire
+		(pts
+			(xy 194.31 146.05) (xy 196.85 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "de2f8a09-b7f3-4315-91f4-7e8d4e769aea")
 	)
 	(wire
 		(pts
@@ -4407,17 +4987,6 @@
 			)
 		)
 	)
-	(hierarchical_label "3.3V"
-		(shape input)
-		(at 165.1 60.96 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "1f1c03da-8692-44cd-af9b-2dfbb70b7e9e")
-	)
 	(hierarchical_label "5V"
 		(shape input)
 		(at 137.16 171.45 180)
@@ -4428,6 +4997,17 @@
 			(justify right)
 		)
 		(uuid "2735b85d-0aa8-47b4-865a-1eadca2d8957")
+	)
+	(hierarchical_label "3.3V"
+		(shape input)
+		(at 175.26 43.18 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "3462a09e-f693-441f-88be-a63ede1993a0")
 	)
 	(hierarchical_label "3.3V"
 		(shape input)
@@ -4462,6 +5042,17 @@
 		)
 		(uuid "847dd1ba-ed0f-43fa-8df9-3a7a40ad119d")
 	)
+	(hierarchical_label "3.3V"
+		(shape input)
+		(at 189.23 38.1 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "8f6d8c85-2987-44e5-bad9-2e8ecee6855b")
+	)
 	(hierarchical_label "5V"
 		(shape input)
 		(at 278.13 21.59 0)
@@ -4472,6 +5063,17 @@
 			(justify left)
 		)
 		(uuid "91fe00f8-32d5-4314-b4c8-da74953d0e00")
+	)
+	(hierarchical_label "3.3V"
+		(shape input)
+		(at 229.87 140.97 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9dbd339d-01a1-421b-8b36-f5a454923a94")
 	)
 	(hierarchical_label "non_reg"
 		(shape input)
@@ -4868,7 +5470,7 @@
 		(at 139.7 52.07 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "032e6475-411e-423f-a2dd-f5d27c64d501")
@@ -5338,7 +5940,7 @@
 		(at 144.78 46.99 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "2118b276-d76a-4912-a215-5a5ad7d33499")
@@ -5394,6 +5996,78 @@
 			(project "Schlaubi-Schlumpf"
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
 					(reference "TP_OP_P1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_3_Bridged12")
+		(at 229.87 146.05 270)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
+		(uuid "228e2e32-5784-4336-9c0d-0a2de3a7ca0f")
+		(property "Reference" "CLK_EN1"
+			(at 232.41 147.3201 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "SolderJumper_3_Bridged12"
+			(at 232.41 144.7801 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-3_P1.3mm_Bridged2Bar12_RoundedPad1.0x1.5mm"
+			(at 229.87 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 229.87 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "3-pole Solder Jumper, pins 1+2 closed/bridged"
+			(at 229.87 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "3"
+			(uuid "b95c5a68-1c95-471f-a338-fff06ed81b71")
+		)
+		(pin "2"
+			(uuid "c8d58f01-18c2-4ebe-83e1-3c83a6007e30")
+		)
+		(pin "1"
+			(uuid "990130f1-d03b-46d7-82da-f08795e57816")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
+					(reference "CLK_EN1")
 					(unit 1)
 				)
 			)
@@ -5470,7 +6144,7 @@
 		(at 180.34 99.06 270)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "2b644267-4c5a-42b0-85a1-e9c40beeaadb")
@@ -5732,6 +6406,72 @@
 			(project "Schlaubi-Schlumpf"
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
 					(reference "CS4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 229.87 151.13 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "384f566f-2bea-48b1-8ba4-a6b18e3d3040")
+		(property "Reference" "#PWR041"
+			(at 229.87 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 229.87 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 229.87 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 229.87 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 229.87 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "73874773-2ebe-4e6c-ad6c-72e9acfedef8")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
+					(reference "#PWR041")
 					(unit 1)
 				)
 			)
@@ -6147,16 +6887,83 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 232.41 119.38 180)
+		(lib_id "power:GND")
+		(at 189.23 48.26 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "5dc8005c-9da9-47c9-bcb2-bfd578201c4a")
+		(property "Reference" "#PWR044"
+			(at 189.23 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 189.2299 52.07 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 189.23 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 189.23 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 189.23 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "44a0a5aa-a45a-4030-869a-90a88ede0577")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
+					(reference "#PWR044")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 232.41 118.11 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
 		(uuid "602d7c02-47f5-4af4-a081-037ed3cce206")
 		(property "Reference" "TP_ADC_*PWDN1"
-			(at 233.426 125.476 90)
+			(at 229.362 117.856 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6165,7 +6972,7 @@
 			)
 		)
 		(property "Value" "TestPoint"
-			(at 230.886 125.476 90)
+			(at 226.822 117.856 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6174,7 +6981,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 227.33 119.38 0)
+			(at 227.33 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6183,7 +6990,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 227.33 119.38 0)
+			(at 227.33 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6192,7 +6999,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 232.41 119.38 0)
+			(at 232.41 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6351,6 +7158,73 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 220.98 130.81 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "73b031da-6a23-493a-8d03-6a0d91cb1717")
+		(property "Reference" "#PWR043"
+			(at 227.33 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 224.79 130.8099 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 220.98 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 220.98 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 220.98 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "aec1ee5d-3953-4ace-8504-3ef9849444b2")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
+					(reference "#PWR043")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 228.6 25.4 180)
 		(unit 1)
@@ -6424,7 +7298,7 @@
 		(at 144.78 181.61 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "78624570-330d-4784-ba1f-d87c564ff25d")
@@ -6549,6 +7423,75 @@
 			(project "Schlaubi-Schlumpf"
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
 					(reference "CS6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 217.17 133.35 90)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
+		(uuid "7e87dab3-e153-468d-b2a1-b4c8e253e082")
+		(property "Reference" "CS20"
+			(at 215.392 139.192 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1u"
+			(at 217.932 139.192 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 220.98 132.3848 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 217.17 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 217.17 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1aed54d2-0ea9-4599-8c88-28cf13fd1bd1")
+		)
+		(pin "2"
+			(uuid "b942a0af-fef2-4644-ab62-e43260424359")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
+					(reference "CS20")
 					(unit 1)
 				)
 			)
@@ -6761,7 +7704,7 @@
 		(at 137.16 137.16 180)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "8b6c6302-eb84-452b-8447-6a545a233605")
@@ -7031,7 +7974,7 @@
 		(at 134.62 57.15 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "9724dafc-96e6-4cc0-9e99-172c47ef347c")
@@ -7160,6 +8103,79 @@
 		)
 	)
 	(symbol
+		(lib_id "Jumper:SolderJumper_3_Bridged12")
+		(at 189.23 43.18 270)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
+		(uuid "9cc3aefd-1fd6-4cbf-befa-ef4aa6133c70")
+		(property "Reference" "CLKSEL1"
+			(at 191.77 41.9099 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "SolderJumper_3_Bridged12"
+			(at 191.77 44.4499 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-3_P1.3mm_Bridged2Bar12_RoundedPad1.0x1.5mm"
+			(at 189.23 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 189.23 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "3-pole Solder Jumper, pins 1+2 closed/bridged"
+			(at 189.23 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "3"
+			(uuid "3e2c4f5c-5f04-4233-bd53-e1e8aae777d7")
+		)
+		(pin "2"
+			(uuid "111f48d7-ec3f-48d6-bbf9-720bd2478aa6")
+		)
+		(pin "1"
+			(uuid "5d985991-5128-4f5c-ba22-2cbfd5506297")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
+					(reference "CLKSEL1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 152.4 45.72 180)
 		(unit 1)
@@ -7223,6 +8239,80 @@
 			(project "Schlaubi-Schlumpf"
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
 					(reference "CS3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Oscillator:ASCO")
+		(at 213.36 146.05 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
+		(uuid "a28904f4-c3ff-4342-b357-f6b86d5395eb")
+		(property "Reference" "Y1"
+			(at 201.93 139.6298 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "ASCO"
+			(at 201.93 142.1698 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm"
+			(at 210.82 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://abracon.com/Oscillators/ASCO.pdf"
+			(at 219.075 142.875 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Crystal Clock Oscillator, Abracon ASCO"
+			(at 213.36 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "dd444724-62b1-4fc2-a9f1-3e0d033997c6")
+		)
+		(pin "3"
+			(uuid "a12533d1-c076-40e7-bd6f-188da69ee40d")
+		)
+		(pin "4"
+			(uuid "c2f83e31-e1d2-4890-9499-563eacc38aa4")
+		)
+		(pin "1"
+			(uuid "a897da91-4b7b-4e26-a8d2-e2e0d9c03995")
+		)
+		(instances
+			(project ""
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
+					(reference "Y1")
 					(unit 1)
 				)
 			)
@@ -7933,6 +9023,72 @@
 	)
 	(symbol
 		(lib_id "power:GND")
+		(at 196.85 146.05 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c106b669-6918-4701-b748-414ea93602e8")
+		(property "Reference" "#PWR016"
+			(at 196.85 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 196.85 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 196.85 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 196.85 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 196.85 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "52bb05d2-277f-437e-8df8-aef793a2a2b2")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
+					(reference "#PWR016")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
 		(at 152.4 60.96 180)
 		(unit 1)
 		(exclude_from_sim no)
@@ -8126,73 +9282,6 @@
 			(project "Schlaubi-Schlumpf"
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
 					(reference "#PWR049")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 180.34 109.22 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "c5388d6b-8312-40f2-8f8a-8564009bb34e")
-		(property "Reference" "#PWR016"
-			(at 186.69 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 184.15 109.2199 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 180.34 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 180.34 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 180.34 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "43b6adb9-017e-40b2-94bb-55242b8d45ac")
-		)
-		(instances
-			(project "Schlaubi-Schlumpf"
-				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
-					(reference "#PWR016")
 					(unit 1)
 				)
 			)
@@ -8540,7 +9629,7 @@
 		(at 83.82 181.61 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "cc9593d5-edde-4f91-b370-ccf1d70d017c")
@@ -8669,15 +9758,15 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 237.49 119.38 180)
+		(at 237.49 118.11 180)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "cf881ec3-065d-464f-827b-d61cb147f244")
 		(property "Reference" "TP_ADC_*RST1"
-			(at 238.506 125.476 90)
+			(at 242.824 117.856 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8686,7 +9775,7 @@
 			)
 		)
 		(property "Value" "TestPoint"
-			(at 235.966 125.476 90)
+			(at 240.284 117.856 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8695,7 +9784,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 232.41 119.38 0)
+			(at 232.41 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8704,7 +9793,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 232.41 119.38 0)
+			(at 232.41 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8713,7 +9802,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 237.49 119.38 0)
+			(at 237.49 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8728,6 +9817,72 @@
 			(project "Schlaubi-Schlumpf"
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
 					(reference "TP_ADC_*RST1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 213.36 153.67 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d3a64adc-d43d-482b-b914-f6931aa82996")
+		(property "Reference" "#PWR042"
+			(at 213.36 160.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 213.36 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 213.36 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 213.36 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 213.36 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "62b8503f-ea6f-46ad-9d26-062ad0f6dff1")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
+					(reference "#PWR042")
 					(unit 1)
 				)
 			)
@@ -8938,7 +10093,7 @@
 		(at 76.2 181.61 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "de2c1adb-69ea-47a9-a4c8-e2868d9d5b9f")
@@ -9072,7 +10227,7 @@
 		(at 88.9 41.91 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "e37934a2-a681-45fd-876e-fc4d12f92f57")
@@ -9195,6 +10350,75 @@
 			(project "Schlaubi-Schlumpf"
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
 					(reference "#PWR021")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 217.17 128.27 90)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
+		(uuid "e8fc169f-76c7-492d-91e6-bf2d2808f68c")
+		(property "Reference" "CS22"
+			(at 218.948 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "100n"
+			(at 216.408 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 220.98 127.3048 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 217.17 128.27 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 217.17 128.27 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "69c88dc1-467f-4f93-a6d5-298e8294c78e")
+		)
+		(pin "2"
+			(uuid "e9e27159-ed63-448b-8769-405281bca547")
+		)
+		(instances
+			(project "Schlaubi-Schlumpf"
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
+					(reference "CS22")
 					(unit 1)
 				)
 			)
@@ -9468,7 +10692,7 @@
 		(at 134.62 137.16 180)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "fb78b27a-b9b6-45f5-905a-bd12b3ba2a4c")
