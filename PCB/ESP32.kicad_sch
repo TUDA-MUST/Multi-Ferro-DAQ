@@ -5013,7 +5013,7 @@
 		(at 86.36 116.84 180)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -6136,7 +6136,7 @@
 		(at 83.82 116.84 180)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -6492,7 +6492,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6ccda0a5-60fa-41f9-bbc3-8f33b640e347")
-		(property "Reference" "GPIO3"
+		(property "Reference" "GPIO1"
 			(at 104.14 78.1051 90)
 			(effects
 				(font
@@ -6546,7 +6546,7 @@
 		(instances
 			(project "Schlaubi-Schlumpf"
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/5509f61c-8a57-450f-8279-a49a1ae29ff5"
-					(reference "GPIO3")
+					(reference "GPIO1")
 					(unit 1)
 				)
 			)
@@ -6767,7 +6767,7 @@
 		(at 88.9 116.84 180)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -7038,7 +7038,7 @@
 		(at 93.98 116.84 180)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
