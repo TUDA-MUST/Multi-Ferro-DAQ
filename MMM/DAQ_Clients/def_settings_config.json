@@ -1,6 +1,6 @@
 R"JSON(
 {
-  "gui_handle": "ESP32-default",
+  "gui_handle": "ESP32-MFDAQ-default",
   "float_number": "9",
   "settings": [
     {

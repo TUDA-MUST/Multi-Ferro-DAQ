@@ -308,12 +308,25 @@ uint64_t waitAndApplySettings(WiFiClient &client, byte amparr[8]) {
 
         // Preamp gain
         snprintf(key, sizeof(key), "chan%d_preamp_gain", ch + 1);
-        amparr[ch] = doc[key] | 1;  // default gain = 1
+        uint8_t gain = doc[key] | 1;
+        switch (gain) {
+            case 1:
+            case 2:
+            case 4:
+            case 8:
+            case 12:
+                amparr[ch] = gain;
+                break;
+            default:
+                amparr[ch] = 1; // safe default
+                Serial.printf("Invalid gain %d on CH%d, defaulting to 1\n", gain, ch+1);
+        }
+
 
         // Settings register (binary string → number)
         snprintf(key, sizeof(key), "chan%d_settings_reg", ch + 1);
         const char* regStr = doc[key] | "10"; // default = "10"
-        channelRegs.uint_hword[ch] = strtoul(regStr, nullptr, 2);
+        channelRegs.uint_hword[ch] = strtoul(regStr, nullptr, 16);
     }
 
     // --------------------------------------------------
@@ -486,7 +499,9 @@ void sendTaskCode(void* params){
       dataPkg.package_size = total_buffer_size - 5;
       memcpy(out, header, 5);
       memcpy(out + 5, dataPkg.package, dataPkg.package_size);
-
+      
+      float *ch = (float *)(out + 5);
+      //Serial.printf("The channels read to %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f mV\n", ch[0], ch[1], ch[2], ch[3], ch[4], ch[5], ch[6], ch[7]);
       client.write(out, total_buffer_size);   // single TCP write()
       i += BUFFERSIZE;
       }
