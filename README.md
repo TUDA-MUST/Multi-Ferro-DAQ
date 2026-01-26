@@ -16,7 +16,7 @@ Make sure you have the necessary libraries installed as well as the `/Software/A
 
 Select an ESP32-S3 board without SRAM and make shure that Events and Arduino run on Core 0.
 
-<img src="Tools.png" alt="Tools" style="width:450px;"/>
+<img src="src/Tools.png" alt="Tools" style="width:450px;"/>
 
 
 
@@ -103,11 +103,13 @@ The TCP stream contains **segments of nine floats** per sample:
 
 ## 📡 Usage with MultiMeasurementMonitor
 
-The DAQ can also be used as a Client for the MMM (MultiMeasurementMonitor) Project. To do this use the code in the directory MMM.
+The DAQ can also be used as a Client for the MMM (MultiMeasurementMonitor) Project. To do this use the code in the directory Software/MMM.
 
 The available settings etc. will not change, but the benefits of the MMM are available to the user. Please note that the ClientName is set via the JSON upon programming and the WiFi credential can be altered via the SerialMonitor upon startup.
 
 For furhter details on using Clients with the MMM, visit the [MMM Project on Github](https://github.com/TUDA-MUST/Multi-Measurement-Monitor).
+
+![Client Tab](/src/sync_client.png)
 
 ---
 
