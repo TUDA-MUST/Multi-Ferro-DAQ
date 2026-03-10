@@ -1,6 +1,7 @@
 R"JSON(
 {
   "gui_handle": "ESP32-MFDAQ-default",
+  "channel_names":["CHAN1_mV","CHAN2_mV","CHAN3_mV","CHAN4_mV","CHAN5_mV","CHAN6_mV","CHAN7_mV","CHAN8_mV","local_time_us"],
   "float_number": "9",
   "settings": [
     {
