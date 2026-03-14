@@ -10433,13 +10433,12 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f1da47e6-50cc-4c55-9509-658a99a153b3")
-		(property "Reference" "Rf_Opamp1"
-			(at 124.46 39.624 90)
+		(property "Reference" "Rf_Op1"
+			(at 122.936 52.832 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
 		(property "Value" "0R"
@@ -10486,7 +10485,7 @@
 		(instances
 			(project "Schlaubi-Schlumpf"
 				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c"
-					(reference "Rf_Opamp1")
+					(reference "Rf_Op1")
 					(unit 1)
 				)
 			)

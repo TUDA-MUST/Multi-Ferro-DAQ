@@ -2,6 +2,7 @@ Designator,Val,Package,Mid X,Mid Y,Rotation,Layer
 C1,10u,C_0603_1608Metric,41.8,-14.5,-90.0,top
 C8,10u,C_0603_1608Metric,35.5,-22.0125,-90.0,top
 C9,10u,C_0603_1608Metric,31.0,-22.0125,90.0,top
+CCH1,1u,C_0603_1608Metric,45.225,-16.6,0.0,top
 CF1,680p,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,23.062,-44.5,0.0,top
 CF2,680p,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,30.3,-44.5,0.0,top
 CF3,680p,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,21.7,-35.9,0.0,top
@@ -106,6 +107,7 @@ RF5,1G,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,21.6,-61.7,0.0,top
 RF6,1G,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,30.3,-61.7,0.0,top
 RF7,1G,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,23.1,-49.0,0.0,top
 RF8,1G,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,30.3,-49.0,0.0,top
+Rf_Op1,0R,R_0603_1608Metric,16.4,-56.75,-90.0,top
 S1,SK-12D02-VG3,SK12D02VG3,47.0,-8.5,90.0,top
 S2,SKRPABE010,SW_SKRPABE010,3.3,-27.4715,90.0,top
 S3,SKRPABE010,SW_SKRPABE010,8.875,-3.0,0.0,top
