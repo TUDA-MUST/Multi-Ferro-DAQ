@@ -16,7 +16,7 @@ Make sure you have the necessary libraries installed as well as the `/Software/A
 
 Select an ESP32-S3 board without SRAM and make shure that Events and Arduino run on Core 0.
 
-<img src="src/Tools.png" alt="Tools" style="width:450px;"/>
+<img src="doc/Tools.png" alt="Tools" style="width:450px;"/>
 
 
 
@@ -109,7 +109,7 @@ The available settings etc. will not change, but the benefits of the MMM are ava
 
 For furhter details on using Clients with the MMM, visit the [MMM Project on Github](https://github.com/TUDA-MUST/Multi-Measurement-Monitor).
 
-![Client Tab](/src/sync_client.png)
+![Client Tab](doc/sync_client.png)
 
 ---
 
