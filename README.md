@@ -46,6 +46,7 @@ Connect to the ESP32’s WiFi hotspot:
 
 
 Then connect to **IP Adress 192.168.4.1** under **TCP port 8080** to communicate.
+(see this [Matlab script](Software/ADC_readout/Matlab/ADC_WiFi_readout_TCP.m) for more details)
 
 ### 4. Initialization
 The ESP32 expects initialization values in a **hardcoded format and order**.  
@@ -57,9 +58,6 @@ Garbage bytes can be sent to initialize with the ADCs own default values.
 | `uint32` | 1 | ADC sample rate — choose from: `1000, 2000, 4000, 8000, 16000, 32000, 64000`. <br>Rates above **2000** cause sample loss and are **not recommended**. |
 | `uint16` | 8 | ADC settings registers for **CHAN1–CHAN8**. <br>Only the lower byte is used; set the upper byte to zero. |
 | `uint8` | 8 | Preamp values for **CHAN1–CHAN8**. <br>These overwrite previously set register values. The preamp value is factored out by the microcontroller before data transmission. |
-
-For a working example, see the MATLAB script:  
-`/Software/ADC_readout/Matlab/ADC_WiFi_readout_TCP.m`
 
 ### 5. Start Measurement
 Once initialized, the **status LED turns GREEN** and remains green until:
@@ -103,7 +101,7 @@ The TCP stream contains **segments of nine floats** per sample:
 
 ## 📡 Usage with MultiMeasurementMonitor
 
-The DAQ can also be used as a Client for the MMM (MultiMeasurementMonitor) Project. To do this use the code in the directory Software/MMM.
+The DAQ can also be used as a Client for the MMM (MultiMeasurementMonitor) Project with this [firmware](Software/MMM_Migration).
 
 The available settings etc. will not change, but the benefits of the MMM are available to the user. Please note that the ClientName is set via the JSON upon programming and the WiFi credential can be altered via the SerialMonitor upon startup.
 
