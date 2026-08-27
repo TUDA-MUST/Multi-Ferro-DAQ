@@ -1,7 +1,7 @@
 (kicad_sch
-	(version 20231120)
+	(version 20250114)
 	(generator "eeschema")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(uuid "3b88d621-64fb-484d-9d0c-1be03927dee9")
 	(paper "A4")
 	(lib_symbols
@@ -86,18 +86,6 @@
 			(symbol "AD8608ARUZ-REEL_0_1"
 				(polyline
 					(pts
-						(xy 7.62 -20.32) (xy 33.02 -20.32)
-					)
-					(stroke
-						(width 0.127)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
 						(xy 7.62 5.08) (xy 7.62 -20.32)
 					)
 					(stroke
@@ -110,7 +98,7 @@
 				)
 				(polyline
 					(pts
-						(xy 33.02 -20.32) (xy 33.02 5.08)
+						(xy 7.62 -20.32) (xy 33.02 -20.32)
 					)
 					(stroke
 						(width 0.127)
@@ -132,6 +120,18 @@
 						(type none)
 					)
 				)
+				(polyline
+					(pts
+						(xy 33.02 -20.32) (xy 33.02 5.08)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
 				(pin unspecified line
 					(at 0 0 0)
 					(length 7.62)
@@ -143,96 +143,6 @@
 						)
 					)
 					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin unspecified line
-					(at 40.64 -10.16 180)
-					(length 7.62)
-					(name "+INC"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "10"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 40.64 -7.62 180)
-					(length 7.62)
-					(name "V-"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "11"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin unspecified line
-					(at 40.64 -5.08 180)
-					(length 7.62)
-					(name "+IND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "12"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin unspecified line
-					(at 40.64 -2.54 180)
-					(length 7.62)
-					(name "-IND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "13"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin unspecified line
-					(at 40.64 0 180)
-					(length 7.62)
-					(name "OUTD"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "14"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -349,16 +259,88 @@
 					)
 				)
 				(pin unspecified line
-					(at 40.64 -15.24 180)
+					(at 40.64 0 180)
 					(length 7.62)
-					(name "OUTC"
+					(name "OUTD"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "8"
+					(number "14"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 40.64 -2.54 180)
+					(length 7.62)
+					(name "-IND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "13"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 40.64 -5.08 180)
+					(length 7.62)
+					(name "+IND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "12"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 40.64 -7.62 180)
+					(length 7.62)
+					(name "V-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "11"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 40.64 -10.16 180)
+					(length 7.62)
+					(name "+INC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "10"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -384,10 +366,31 @@
 						)
 					)
 				)
+				(pin unspecified line
+					(at 40.64 -15.24 180)
+					(length 7.62)
+					(name "OUTC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Device:C"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(offset 0.254)
 			)
@@ -460,7 +463,7 @@
 			(symbol "C_0_1"
 				(polyline
 					(pts
-						(xy -2.032 -0.762) (xy 2.032 -0.762)
+						(xy -2.032 0.762) (xy 2.032 0.762)
 					)
 					(stroke
 						(width 0.508)
@@ -472,7 +475,7 @@
 				)
 				(polyline
 					(pts
-						(xy -2.032 0.762) (xy 2.032 0.762)
+						(xy -2.032 -0.762) (xy 2.032 -0.762)
 					)
 					(stroke
 						(width 0.508)
@@ -521,9 +524,12 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Device:R"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(offset 0)
 			)
@@ -642,12 +648,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:GND"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -738,6 +749,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 	)
 	(junction
@@ -1286,22 +1298,20 @@
 		)
 		(uuid "fc9db0d7-fbe2-4ef9-854d-236a9371effa")
 	)
-	(hierarchical_label "Vref"
+	(hierarchical_label "Vbias"
 		(shape input)
-		(at 107.95 87.63 180)
-		(fields_autoplaced yes)
+		(at 107.95 82.55 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify right)
 		)
-		(uuid "37343320-c45d-44b7-91f1-19cdc37bb79c")
+		(uuid "03bcb0cd-a9bc-4b1c-89b5-6d930f4402b9")
 	)
 	(hierarchical_label "Vin_A"
 		(shape input)
 		(at 107.95 80.01 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1310,22 +1320,20 @@
 		)
 		(uuid "47d5368e-dd3d-4e22-bb54-323d99b209ec")
 	)
-	(hierarchical_label "Vref"
+	(hierarchical_label "Vbias"
 		(shape input)
-		(at 194.31 87.63 0)
-		(fields_autoplaced yes)
+		(at 107.95 87.63 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
-		(uuid "4a760712-e18f-4c4d-9216-6cafbc625263")
+		(uuid "4e6cae93-8ecf-4563-9786-cfce98044204")
 	)
 	(hierarchical_label "Vin_B"
 		(shape input)
 		(at 107.95 90.17 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1337,7 +1345,6 @@
 	(hierarchical_label "Vin_D"
 		(shape input)
 		(at 194.31 80.01 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1346,10 +1353,20 @@
 		)
 		(uuid "59c0fc87-c41d-4a97-babc-578091175063")
 	)
+	(hierarchical_label "Vbias"
+		(shape input)
+		(at 138.43 105.41 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "87108ec1-7371-4a21-b9bc-0c152052b3f8")
+	)
 	(hierarchical_label "Vin_C"
 		(shape input)
 		(at 194.31 90.17 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1361,7 +1378,6 @@
 	(hierarchical_label "Vout_A"
 		(shape output)
 		(at 107.95 72.39 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1370,34 +1386,20 @@
 		)
 		(uuid "8b6737c1-6db6-4126-b0c8-7e131b324920")
 	)
-	(hierarchical_label "Vref"
+	(hierarchical_label "Vbias"
 		(shape input)
 		(at 194.31 82.55 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "99447673-9e28-45ee-9fb9-0a38774baacf")
-	)
-	(hierarchical_label "Vref"
-		(shape input)
-		(at 138.43 105.41 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a5ebafaf-01d3-45b5-a7dc-f3314fa2bb3d")
+		(uuid "8efaafa1-fb9a-4869-b1bd-b7ab55ff3c3e")
 	)
 	(hierarchical_label "Vout_D"
 		(shape output)
 		(at 194.31 72.39 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1409,7 +1411,6 @@
 	(hierarchical_label "5V"
 		(shape input)
 		(at 73.66 85.09 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1421,7 +1422,6 @@
 	(hierarchical_label "Vout_B"
 		(shape output)
 		(at 107.95 97.79 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1430,22 +1430,9 @@
 		)
 		(uuid "dc561529-8c60-48c4-a652-e428c344905b")
 	)
-	(hierarchical_label "Vref"
-		(shape input)
-		(at 107.95 82.55 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "dcffd086-3987-4200-b587-92d6099ade4e")
-	)
 	(hierarchical_label "Vout_C"
 		(shape output)
 		(at 194.31 97.79 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1453,6 +1440,17 @@
 			(justify left)
 		)
 		(uuid "e36ad419-b5f4-4f91-8ac8-79c6892a179d")
+	)
+	(hierarchical_label "Vbias"
+		(shape input)
+		(at 194.31 87.63 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "fb06e9ea-b6e6-4001-8a97-a4aa3e38ed9b")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -1576,6 +1574,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C578777"
+			(at 151.13 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "4"
 			(uuid "ff6a5707-0f0e-433d-98a0-6b0e9d2c0386")
 		)
@@ -1646,7 +1653,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "2G"
+		(property "Value" "1G"
 			(at 187.96 95.2499 0)
 			(effects
 				(font
@@ -1655,7 +1662,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 183.642 93.98 90)
 			(effects
 				(font
@@ -1675,6 +1682,15 @@
 		)
 		(property "Description" "Resistor"
 			(at 185.42 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2484710"
+			(at 187.96 92.7099 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1752,6 +1768,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C14663"
+			(at 158.75 107.9499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "3ece795d-5695-496d-a127-060f2c1965de")
 		)
@@ -1786,7 +1811,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "2G"
+		(property "Value" "1G"
 			(at 187.96 77.4699 0)
 			(effects
 				(font
@@ -1795,7 +1820,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 183.642 76.2 90)
 			(effects
 				(font
@@ -1815,6 +1840,15 @@
 		)
 		(property "Description" "Resistor"
 			(at 185.42 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2484710"
+			(at 187.96 74.9299 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1856,7 +1890,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "2G"
+		(property "Value" "1G"
 			(at 125.73 77.4699 0)
 			(effects
 				(font
@@ -1865,7 +1899,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 121.412 76.2 90)
 			(effects
 				(font
@@ -1885,6 +1919,15 @@
 		)
 		(property "Description" "Resistor"
 			(at 123.19 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2484710"
+			(at 125.73 74.9299 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1991,7 +2034,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "330p"
+		(property "Value" "680p"
 			(at 172.974 94.488 0)
 			(effects
 				(font
@@ -2000,7 +2043,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 181.3052 97.79 0)
 			(effects
 				(font
@@ -2020,6 +2063,15 @@
 		)
 		(property "Description" "Unpolarized capacitor"
 			(at 180.34 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C30816"
+			(at 174.752 91.948 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2061,7 +2113,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "2G"
+		(property "Value" "1G"
 			(at 125.73 95.2499 0)
 			(effects
 				(font
@@ -2070,7 +2122,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 121.412 93.98 90)
 			(effects
 				(font
@@ -2090,6 +2142,15 @@
 		)
 		(property "Description" "Resistor"
 			(at 123.19 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2484710"
+			(at 125.73 92.7099 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2233,6 +2294,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C19702"
+			(at 148.59 107.9499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "2f3b20aa-35e2-47e8-a9ff-54e7308dec33")
 		)
@@ -2266,7 +2336,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "330p"
+		(property "Value" "680p"
 			(at 110.744 94.488 0)
 			(effects
 				(font
@@ -2275,7 +2345,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 119.0752 97.79 0)
 			(effects
 				(font
@@ -2295,6 +2365,15 @@
 		)
 		(property "Description" "Unpolarized capacitor"
 			(at 118.11 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C30816"
+			(at 112.522 91.948 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2335,7 +2414,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "330p"
+		(property "Value" "680p"
 			(at 172.974 76.708 0)
 			(effects
 				(font
@@ -2344,7 +2423,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 181.3052 80.01 0)
 			(effects
 				(font
@@ -2364,6 +2443,15 @@
 		)
 		(property "Description" "Unpolarized capacitor"
 			(at 180.34 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C30816"
+			(at 174.752 74.168 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2441,6 +2529,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C14663"
+			(at 92.71 87.6299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7a6a48e4-7c39-42c4-af33-2c0dfdb9edee")
 		)
@@ -2511,6 +2608,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C19702"
+			(at 82.55 87.6299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "c921acd7-b074-485f-a993-e84a24aa8561")
 		)
@@ -2544,7 +2650,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "330p"
+		(property "Value" "680p"
 			(at 110.744 76.708 0)
 			(effects
 				(font
@@ -2553,7 +2659,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 119.0752 80.01 0)
 			(effects
 				(font
@@ -2573,6 +2679,15 @@
 		)
 		(property "Description" "Unpolarized capacitor"
 			(at 118.11 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C30816"
+			(at 112.522 74.168 0)
 			(effects
 				(font
 					(size 1.27 1.27)
