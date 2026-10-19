@@ -1,0 +1,31 @@
+Multi-Ferro-DAQ — License Overview
+
+Copyright (c) 2024–2026 Measurement and Sensor Technology Group (MUST), TU Darmstadt and contributors
+
+This repository contains several types of material. Each type has its own license.
+The full license texts are in the LICENSES/ folder.
+
+1. Hardware: CERN Open Hardware Licence Version 2 – Weakly Reciprocal (CERN-OHL-W-2.0)
+   Applies to: PCB/ (KiCad schematics, layout, footprints and symbols created for this
+   project, Gerber/drill/BOM/CPL production files) and any mechanical design files.
+   Full text: LICENSES/CERN-OHL-W-2.0.txt
+   Source location: https://github.com/TUDA-MUST/Multi-Ferro-DAQ
+
+2. Software: MIT License (MIT)
+   Applies to: Software/ (ESP32 firmware, MultiMeasurementMonitor client, MATLAB scripts),
+   except the third-party files listed below.
+   Full text: LICENSES/MIT.txt
+
+3. Documentation: Creative Commons Attribution 4.0 International (CC-BY-4.0)
+   Applies to: README files, BOM documentation, doc/ (images, screenshots) and other
+   documentation.
+   Full text: LICENSES/CC-BY-4.0.txt
+
+Third-party material (not relicensed by this project)
+- ADS131E08 driver (Software/*/lib/ADS131E08*) by Minchul Jun, BSD-2-Clause,
+  https://github.com/mcjun37/ads131e08
+- Component symbols, footprints and 3D models in PCB/components/ obtained from SnapEDA
+  or component manufacturers are subject to their providers' terms.
+See THIRD_PARTY_NOTICES.md for details.
+
+SPDX-License-Identifier: CERN-OHL-W-2.0 AND MIT AND CC-BY-4.0

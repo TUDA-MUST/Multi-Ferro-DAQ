@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this hardware or software, please cite it using the metadata below."
+title: "Multi-Ferro-DAQ: 8-channel wearable charge amplifier and data acquisition system for piezo- and ferroelectric sensors"
+type: software
+version: "1.3"
+authors:
+  - family-names: Suppelt
+    given-names: Mark
+    affiliation: "Measurement and Sensor Technology Group (MUST), Technische Universität Darmstadt"
+  - family-names: Schreck
+    given-names: Thomas
+    affiliation: "Measurement and Sensor Technology Group (MUST), Technische Universität Darmstadt"
+repository-code: "https://github.com/TUDA-MUST/Multi-Ferro-DAQ"
+url: "https://www.etit.tu-darmstadt.de/must/"
+license:
+  - CERN-OHL-W-2.0
+  - MIT
+  - CC-BY-4.0
+keywords:
+  - charge amplifier
+  - piezoelectric sensors
+  - ferroelectrets
+  - data acquisition
+  - wearable
+  - ADS131E08
+  - ESP32
+  - open hardware
