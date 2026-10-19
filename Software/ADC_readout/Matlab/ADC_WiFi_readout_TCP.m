@@ -1,6 +1,6 @@
 % This is a test to collect ADC data in a grid
 
-% You use this script by turning on the Schlaubischlumpf-board and waiting
+% You use this script by turning on the Multi-Ferro-DAQ board and waiting
 % until the led turns magenta. This indicates that the ESP32 is ready to
 % beigin collecting data. Make sure you are in the WiFi network broadcast
 % by the ESP32 (PW should be 123456789) and start the MATLAB script. When
