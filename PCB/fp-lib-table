@@ -26,5 +26,4 @@
   (lib (name "TL071HIDBVR")(type "KiCad")(uri "${KIPRJMOD}/components/TL071HIDBVR")(options "")(descr ""))
   (lib (name "OPA345")(type "KiCad")(uri "${KIPRJMOD}/components/OPA345")(options "")(descr ""))
   (lib (name "TLV9051IDBVR")(type "KiCad")(uri "${KIPRJMOD}/components/TLV9051IDBVR")(options "")(descr ""))
-  (lib (name "Schlaubi")(type "KiCad")(uri "${KIPRJMOD}/Schlaubi.pretty")(options "")(descr ""))
 )
