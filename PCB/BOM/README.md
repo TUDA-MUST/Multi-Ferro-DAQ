@@ -1,6 +1,6 @@
-# Bill of Materials – Multi-Ferro-DAQ v1.3
+# Bill of Materials – Multi-Ferro-DAQ v1.4
 
-41 line items, 117 placed parts. Machine-readable version: [`BOM_Multi-Ferro-DAQ_v1.3.csv`](BOM_Multi-Ferro-DAQ_v1.3.csv). JLCPCB assembly files (BOM/CPL with LCSC numbers only) remain in [`../jlcpcb/production_files`](../jlcpcb/production_files).
+41 line items, 117 placed parts. Machine-readable version: [`BOM_Multi-Ferro-DAQ_v1.4.csv`](BOM_Multi-Ferro-DAQ_v1.4.csv). JLCPCB assembly files (BOM/CPL with LCSC numbers only) remain in [`../jlcpcb/production_files`](../jlcpcb/production_files).
 
 Manufacturer part numbers were resolved from the LCSC numbers in the KiCad schematic. Any equivalent part with the same specs can be substituted, **except the items marked critical**.
 

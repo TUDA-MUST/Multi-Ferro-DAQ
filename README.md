@@ -5,12 +5,17 @@
 The system reads up to **8 charge sources simultaneously** via **two RJ45 connectors** (4 sensors per connector).
 The PCB is designed for **mobile use**: it can be strapped to a test person, runs on **battery power**, and streams data in **millivolts (mV)** via **Wi-Fi** at up to **2000 samples per second**.
 
+<p align="center">
+  <img src="doc/board_overview.png" alt="Multi-Ferro-DAQ v1.4 board overview with main components and dimensions (65 mm × 50 mm)" width="600"/>
+</p>
+
 ---
 
 ## 📋 Specifications
 
 | Parameter | Value |
 |---|---|
+| Hardware revision | v1.4 |
 | Channels | 8, simultaneously sampled |
 | ADC | TI ADS131E08, 24 bit ΔΣ, programmable gain G = 1, 2, 4, 8, 12 |
 | Charge amplifier | AD8608 (quad CMOS op-amp), one per channel |
@@ -73,16 +78,33 @@ $$H(f) = -\frac{1}{C_F} \cdot \frac{j 2\pi f \tau}{1 + j 2\pi f \tau}$$
 
 ## 🔌 Sensor connection (RJ45 pinout)
 
-Each RJ45 port carries four sensors. Each sensor uses one wire pair: one pin goes to the amplifier input (**signal**), the other to **V_bias**. Pin numbers follow the jack; wire colors follow the T-568B standard.
+Each RJ45 port carries four sensors. Each sensor uses one wire pair: the solid-colored wire goes to the amplifier input (**signal, +**), the striped wire to **V_bias (−)**. Pin numbers follow the jack; wire colors follow the T-568B standard. All odd pins are V_bias, all even pins are signal.
 
-| Pair | Signal pin | V_bias pin | Signal wire / V_bias wire (T-568B) | Port I | Port II |
-|---|---|---|---|---|---|
-| A | 5 | 4 | white-blue / blue | IN4 | IN8 |
-| B | 2 | 1 | orange / white-orange | IN3 | IN7 |
-| C | 6 | 3 | green / white-green | IN2 | IN6 |
-| D | 8 | 7 | brown / white-brown | IN1 | IN5 |
+**By ADC channel:**
 
-INx corresponds to CHANx in the data stream.
+| ADC channel | Port | + (signal) | − (V_bias) |
+|---|---|---|---|
+| CHAN1 | I | 8 – brown | 7 – white-brown |
+| CHAN2 | I | 6 – green | 3 – white-green |
+| CHAN3 | I | 2 – orange | 1 – white-orange |
+| CHAN4 | I | 4 – blue | 5 – white-blue |
+| CHAN5 | II | 8 – brown | 7 – white-brown |
+| CHAN6 | II | 6 – green | 3 – white-green |
+| CHAN7 | II | 2 – orange | 1 – white-orange |
+| CHAN8 | II | 4 – blue | 5 – white-blue |
+
+**By RJ45 pin:**
+
+| Pin | Wire (T-568B) | Port I | Port II |
+|---|---|---|---|
+| 1 | white-orange | CHAN3 − | CHAN7 − |
+| 2 | orange | CHAN3 + | CHAN7 + |
+| 3 | white-green | CHAN2 − | CHAN6 − |
+| 4 | blue | CHAN4 + | CHAN8 + |
+| 5 | white-blue | CHAN4 − | CHAN8 − |
+| 6 | green | CHAN2 + | CHAN6 + |
+| 7 | white-brown | CHAN1 − | CHAN5 − |
+| 8 | brown | CHAN1 + | CHAN5 + |
 
 > **Important:** the V_bias pins sit at **2.5 V above board ground**. Never connect them to GND or to the cable shield. Shorting V_bias to ground loads the reference and drives the channels into saturation. Use the RJ45 shield for the cable screen. It connects to the board's shield net.
 
@@ -103,7 +125,7 @@ The pinout is also printed on the PCB silkscreen.
    - Check the solder jumpers. The factory states are listed in the BOM documentation.
    - Connect the battery and flash the firmware (see below).
 
-The complete bill of materials, with manufacturer part numbers, key specs and datasheet links, is in [`PCB/BOM`](PCB/BOM/README.md) ([CSV](PCB/BOM/BOM_Multi-Ferro-DAQ_v1.3.csv)). The design files require **KiCad 9**. All project-specific symbols, footprints and 3D models are in `PCB/components`.
+The complete bill of materials, with manufacturer part numbers, key specs and datasheet links, is in [`PCB/BOM`](PCB/BOM/README.md) ([CSV](PCB/BOM/BOM_Multi-Ferro-DAQ_v1.4.csv)). The design files require **KiCad 10**. All project-specific symbols, footprints and 3D models are in `PCB/components`.
 
 ---
 
