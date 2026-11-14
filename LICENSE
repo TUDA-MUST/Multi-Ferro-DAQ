@@ -28,4 +28,11 @@ Third-party material (not relicensed by this project)
   or component manufacturers are subject to their providers' terms.
 See THIRD_PARTY_NOTICES.md for details.
 
+Logos and trademarks (not licensed)
+The logos on the PCB silkscreen and in the documentation, in particular the logo of
+Technische Universität Darmstadt, are not covered by the licenses above. Remove them
+before manufacturing or distributing a modified version. The names of TU Darmstadt and
+the Measurement and Sensor Technology Group may not be used to endorse modified or
+derived designs; this does not affect the copyright and attribution notices above.
+
 SPDX-License-Identifier: CERN-OHL-W-2.0 AND MIT AND CC-BY-4.0

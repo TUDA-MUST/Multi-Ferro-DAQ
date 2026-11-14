@@ -17,15 +17,22 @@ The PCB is designed for **mobile use**: it can be strapped to a test person, run
 
 | Parameter | Value |
 |---|---|
-| Hardware | Revision v1.4, 4-layer PCB, 50 mm × 65 mm |
-| Channels / ADC | 8, simultaneously sampled; TI ADS131E08, 24 bit ΔΣ, PGA gain G = 1, 2, 4, 8, 12 |
-| Charge amplifier | AD8608 (one per channel), C_F = 680 pF (C0G, ±5 %) ∥ R_F = 1 GΩ (±10 %) |
-| Sensitivity / lower cut-off | 1 / C_F ≈ 1.47 mV/pC; τ = R_F · C_F = 0.68 s → f_c = 1 / (2π τ) ≈ 0.23 Hz |
-| Range | ±2.5 V vs. V_bias ≙ ±1.70 nC at G = 1 (±4 V / G for G ≥ 2); fault flag above ±2.375 V |
+| Hardware revision | v1.4 |
+| Channels | 8, simultaneously sampled |
+| ADC | TI ADS131E08, 24 bit ΔΣ, programmable gain G = 1, 2, 4, 8, 12 |
+| Charge amplifier | AD8608 (quad CMOS op-amp), one per channel |
+| Feedback network | C_F = 680 pF (C0G, ±5 %) ∥ R_F = 1 GΩ (±10 %) |
+| Sensitivity | 1 / C_F ≈ 1.47 mV/pC |
+| Time constant / lower cut-off | τ = R_F · C_F = 0.68 s → f_c = 1 / (2π τ) ≈ 0.23 Hz |
+| Output range (vs. V_bias) | ±2.5 V at G = 1, ±4 V / G for G ≥ 2 |
+| Charge range | ±1.70 nC at G = 1 (fault flag above ±2.375 V ≈ ±1.62 nC) |
 | Sample rate | 1–2 kSa/s recommended (ADC supports up to 64 kSa/s, but samples are lost above 2 kSa/s) |
-| Microcontroller / interface | ESP32-S3-MINI-1-N8; Wi-Fi 2.4 GHz access point, TCP port 8080 |
-| Power | 1S Li-ion/LiPo (protected cell, JST-PH) or USB-C; on-board charger ≈ 336 mA; supplies: 5 V analog, 3.3 V digital, V_bias = 2.5 V |
-| Extras | 6-axis IMU (ICM-42670-P), 2 RGB status LEDs, RF shield over the analog front end |
+| Microcontroller | ESP32-S3-MINI-1-N8 |
+| Data interface | Wi-Fi 2.4 GHz access point, TCP port 8080 |
+| Power | 1S Li-ion/LiPo (protected cell, JST-PH) or USB-C; on-board charger ≈ 336 mA |
+| On-board supplies | 5 V analog (LM2775 charge pump), 3.3 V digital (TPS7A91 LDO), V_bias = 2.5 V |
+| Extras | 6-axis IMU (ICM-42670-P), 2 RGB status LEDs, board-level RF shield over the analog front end |
+| PCB | 4 layers, 50 mm × 65 mm |
 
 ---
 
@@ -73,37 +80,33 @@ $$H(f) = -\frac{1}{C_F} \cdot \frac{j 2\pi f \tau}{1 + j 2\pi f \tau}$$
 
 ## 🔌 Sensor connection (RJ45 pinout)
 
-Each RJ45 port carries four sensors. Each sensor uses one wire pair: the solid-colored wire goes to the amplifier input (**signal, +**), the striped wire to **V_bias (−)**. Pin numbers follow the jack; wire colors follow the T-568B standard. All odd pins are V_bias, all even pins are signal.
+Each RJ45 port carries four sensors. Each sensor uses one wire pair: the solid-colored wire goes to the amplifier input (**signal, +**), the striped wire to **V_bias (−)**. Pin numbers follow the jack. Wire colors are given for both T-568A and T-568B, the two wiring schemes for Ethernet cables defined in ANSI/TIA-568. They differ only in that the orange and green pairs are swapped; T-568B is the more common one for commercial installations and patch cables in North America. In both, all odd pins are V_bias (striped wire) and all even pins are signal (solid wire).
 
 **By ADC channel:**
 
-| ADC channel | Port | + (signal) | − (V_bias) |
-|---|---|---|---|
-| CHAN1 | I | 8 – brown | 7 – white-brown |
-| CHAN2 | I | 6 – green | 3 – white-green |
-| CHAN3 | I | 2 – orange | 1 – white-orange |
-| CHAN4 | I | 4 – blue | 5 – white-blue |
-| CHAN5 | II | 8 – brown | 7 – white-brown |
-| CHAN6 | II | 6 – green | 3 – white-green |
-| CHAN7 | II | 2 – orange | 1 – white-orange |
-| CHAN8 | II | 4 – blue | 5 – white-blue |
+| Port I | Port II | + (signal) pin | T-568A | T-568B | − (V_bias) pin | T-568A | T-568B |
+|---|---|---|---|---|---|---|---|
+| CHAN1 | CHAN5 | 8 | brown | brown | 7 | white-brown | white-brown |
+| CHAN2 | CHAN6 | 6 | orange | green | 3 | white-orange | white-green |
+| CHAN3 | CHAN7 | 2 | green | orange | 1 | white-green | white-orange |
+| CHAN4 | CHAN8 | 4 | blue | blue | 5 | white-blue | white-blue |
 
 **By RJ45 pin:**
 
-| Pin | Wire (T-568B) | Port I | Port II |
-|---|---|---|---|
-| 1 | white-orange | CHAN3 − | CHAN7 − |
-| 2 | orange | CHAN3 + | CHAN7 + |
-| 3 | white-green | CHAN2 − | CHAN6 − |
-| 4 | blue | CHAN4 + | CHAN8 + |
-| 5 | white-blue | CHAN4 − | CHAN8 − |
-| 6 | green | CHAN2 + | CHAN6 + |
-| 7 | white-brown | CHAN1 − | CHAN5 − |
-| 8 | brown | CHAN1 + | CHAN5 + |
+| Pin | Wire (T-568A) | Wire (T-568B) | Port I | Port II |
+|---|---|---|---|---|
+| 1 | white-green | white-orange | CHAN3 − | CHAN7 − |
+| 2 | green | orange | CHAN3 + | CHAN7 + |
+| 3 | white-orange | white-green | CHAN2 − | CHAN6 − |
+| 4 | blue | blue | CHAN4 + | CHAN8 + |
+| 5 | white-blue | white-blue | CHAN4 − | CHAN8 − |
+| 6 | orange | green | CHAN2 + | CHAN6 + |
+| 7 | white-brown | white-brown | CHAN1 − | CHAN5 − |
+| 8 | brown | brown | CHAN1 + | CHAN5 + |
 
 > **Important:** the V_bias pins sit at **2.5 V above board ground**. Never connect them to GND or to the cable shield. Shorting V_bias to ground loads the reference and drives the channels into saturation. Use the RJ45 shield for the cable screen. It connects to the board's shield net.
 
-The pinout is also printed on the PCB silkscreen.
+The pinout is also printed on the PCB silkscreen (T-568B colors).
 
 ---
 
