@@ -1,7 +1,4 @@
 Designator,Val,Package,Mid X,Mid Y,Rotation,Layer
-ADC_Daisy1,TestPoint,TestPoint_Pad_D1.0mm,8.1,-48.55,0.0,bottom
-ADC_TESTN1,TestPoint,TestPoint_Pad_D1.0mm,16.3,-44.75,180.0,bottom
-ADC_TESTP1,TestPoint,TestPoint_Pad_D1.0mm,18.2,-42.5,180.0,bottom
 C1,10u,C_0603_1608Metric,41.8,-14.5,-90.0,top
 C8,10u,C_0603_1608Metric,35.5,-22.0125,-90.0,top
 C9,10u,C_0603_1608Metric,31.0,-22.0125,90.0,top
@@ -57,7 +54,6 @@ CS6,22u,C_0603_1608Metric,9.6,-39.75,90.0,top
 CS7,1u,C_0603_1608Metric,8.1,-39.75,90.0,top
 CS8,1u,C_0603_1608Metric,14.779922,-56.75,90.0,top
 CS9,10u,C_0603_1608Metric,3.4,-53.05,90.0,top
-CS_External1,TestPoint,TestPoint_THTPad_D1.0mm_Drill0.5mm,14.9,-6.5,0.0,top
 D1,D_Schottky,D_SOD-323,41.9,-12.0,180.0,top
 D2,LED_R,LED_0603_1608Metric,34.0,-22.0125,90.0,top
 D3,LED_R,LED_0603_1608Metric,4.9,-56.05,90.0,top
@@ -81,13 +77,6 @@ J4,Conn_01x02_Pin,JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,27.8,-10.7,180.0,top
 J5,8P8C_Shielded,R-RJ45R08P-B000,44.8775,-54.6,-90.0,top
 J6,TYPE-C-31-M-12,HRO_TYPE-C-31-M-12,37.5,-3.735,180.0,top
 J7,RFShield_TwoPieces,Laird_Technologies_BMI-S-204-F_32.00x32.00mm,17.1245,-47.8,90.0,top
-JP1,SolderJumper_3_Bridged12,SolderJumper-3_P1.3mm_Bridged2Bar12_RoundedPad1.0x1.5mm,48.25,-18.4,-90.0,top
-JP2,JP_Pullup_SCL/SCLK,SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm,20.8,-1.85,90.0,top
-JP3,JP_Pullup_MOSI/SDA,SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm,20.8,-5.35,-90.0,top
-JP4,SolderJumper_3_Bridged12,SolderJumper-3_P1.3mm_Bridged2Bar12_RoundedPad1.0x1.5mm,29.7,-29.3,180.0,top
-JP_ADC_RefP1,SolderJumper_2_Open,SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm,14.8,-36.9,180.0,top
-JP_SH/GND1,SolderJumper_2_Bridged,SolderJumper-2_P1.3mm_Bridged2Bar_RoundedPad1.0x1.5mm,35.25,-16.6,0.0,bottom
-JP_SH/USB1,SolderJumper_2_Bridged,SolderJumper-2_P1.3mm_Bridged2Bar_RoundedPad1.0x1.5mm,42.6,-15.35,270.0,bottom
 L1,Choke_Wurth_WE-CNSW_744232090,L_CommonMode_Wurth_WE-CNSW-1206,36.5,-8.3,180.0,top
 Q1,DMG2305,DMG2305UX,39.2,-14.6,90.0,top
 R1,10k,R_0603_1608Metric,4.162,-50.35,180.0,top
@@ -122,23 +111,6 @@ Rf_Op1,0R,R_0603_1608Metric,16.4,-56.75,-90.0,top
 S1,SK-12D02-VG3,SK12D02VG3,47.0,-8.5,90.0,top
 S2,SKRPABE010,SW_SKRPABE010,6.775,-28.975,180.0,top
 S3,SKRPABE010,SW_SKRPABE010,8.875,-3.0,0.0,top
-TP_3.3V2,TestPoint,TestPoint_Pad_D1.0mm,23.2,-22.8,0.0,bottom
-TP_5V1,TestPoint,TestPoint_Pad_D1.0mm,45.9,-24.1,180.0,bottom
-TP_ADC_*PWDN1,TestPoint,TestPoint_Pad_D1.0mm,13.5,-23.0,180.0,bottom
-TP_ADC_*RST1,TestPoint,TestPoint_Pad_D1.0mm,15.8,-22.9,180.0,bottom
-TP_CS1,TestPoint,TestPoint_Pad_D1.0mm,18.2,-27.9,0.0,top
-TP_DRDY1,TestPoint,TestPoint_Pad_D1.0mm,5.5,-35.8,0.0,bottom
-TP_GND1,TestPoint,TestPoint_Pad_D1.0mm,14.6,-48.25,0.0,bottom
-TP_GND2,TestPoint,TestPoint_Pad_D1.0mm,31.1,-25.9,0.0,bottom
-TP_MISO1,TestPoint,TestPoint_Pad_D1.0mm,20.3,-30.0,0.0,top
-TP_MOSI1,TestPoint,TestPoint_Pad_D1.0mm,18.2,-30.0,0.0,top
-TP_OP_N1,TestPoint,TestPoint_Pad_D1.0mm,16.6,-52.3,180.0,bottom
-TP_OP_OUT1,TestPoint,TestPoint_Pad_D1.0mm,17.3,-56.8,180.0,bottom
-TP_OP_P1,TestPoint,TestPoint_Pad_D1.0mm,13.9,-51.4,180.0,bottom
-TP_REFp1,TestPoint,TestPoint_Pad_D1.0mm,12.7,-36.9,90.0,bottom
-TP_SCLK1,TestPoint,TestPoint_Pad_D1.0mm,20.3,-27.9,0.0,top
-TP_SHIELD1,TestPoint,TestPoint_Pad_D1.0mm,35.0,-50.4,0.0,bottom
-TP_VBIAS1,TestPoint,TestPoint_Pad_D1.0mm,18.1,-61.1,0.0,bottom
 U1,AD8608ARUZ-REEL,RU_14_ADI,26.0,-39.6,90.0,top
 U2,ESP32-S3-MINI-1-N8,XCVR_ESP32-S3-MINI-1-N8,13.25,-15.9,90.0,top
 U3,ICM-42670-P,LGA14_2.5X3X0.76_IVS,16.8,-3.3,180.0,top

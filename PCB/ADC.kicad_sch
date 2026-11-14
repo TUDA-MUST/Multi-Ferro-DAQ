@@ -9573,6 +9573,10 @@
 					(reference "IC1")
 					(unit 1)
 				)
+				(path "/adec948c-82e6-4ad4-8e75-b19e612c0d17/2131c80a-ce05-49b0-92ac-52a13fef390c/adf6e25c-f47c-4ac9-9c2f-f22ac4b1a7f4"
+					(reference "IC1")
+					(unit 1)
+				)
 			)
 		)
 	)
