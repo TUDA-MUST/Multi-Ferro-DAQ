@@ -15,22 +15,15 @@ The PCB is designed for **mobile use**: it can be strapped to a test person, run
 
 | Parameter | Value |
 |---|---|
-| Hardware revision | v1.4 |
-| Channels | 8, simultaneously sampled |
-| ADC | TI ADS131E08, 24 bit ΔΣ, programmable gain G = 1, 2, 4, 8, 12 |
-| Charge amplifier | AD8608 (quad CMOS op-amp), one per channel |
-| Feedback network | C_F = 680 pF (C0G, ±5 %) ∥ R_F = 1 GΩ (±10 %) |
-| Sensitivity | 1 / C_F ≈ 1.47 mV/pC |
-| Time constant / lower cut-off | τ = R_F · C_F = 0.68 s → f_c = 1 / (2π τ) ≈ 0.23 Hz |
-| Output range (vs. V_bias) | ±2.5 V at G = 1, ±4 V / G for G ≥ 2 |
-| Charge range | ±1.70 nC at G = 1 (fault flag above ±2.375 V ≈ ±1.62 nC) |
+| Hardware | Revision v1.4, 4-layer PCB, 50 mm × 65 mm |
+| Channels / ADC | 8, simultaneously sampled; TI ADS131E08, 24 bit ΔΣ, PGA gain G = 1, 2, 4, 8, 12 |
+| Charge amplifier | AD8608 (one per channel), C_F = 680 pF (C0G, ±5 %) ∥ R_F = 1 GΩ (±10 %) |
+| Sensitivity / lower cut-off | 1 / C_F ≈ 1.47 mV/pC; τ = R_F · C_F = 0.68 s → f_c = 1 / (2π τ) ≈ 0.23 Hz |
+| Range | ±2.5 V vs. V_bias ≙ ±1.70 nC at G = 1 (±4 V / G for G ≥ 2); fault flag above ±2.375 V |
 | Sample rate | 1–2 kSa/s recommended (ADC supports up to 64 kSa/s, but samples are lost above 2 kSa/s) |
-| Microcontroller | ESP32-S3-MINI-1-N8 |
-| Data interface | Wi-Fi 2.4 GHz access point, TCP port 8080 |
-| Power | 1S Li-ion/LiPo (protected cell, JST-PH) or USB-C; on-board charger ≈ 336 mA |
-| On-board supplies | 5 V analog (LM2775 charge pump), 3.3 V digital (TPS7A91 LDO), V_bias = 2.5 V |
-| Extras | 6-axis IMU (ICM-42670-P), 2 RGB status LEDs, board-level RF shield over the analog front end |
-| PCB | 4 layers, 50 mm × 65 mm |
+| Microcontroller / interface | ESP32-S3-MINI-1-N8; Wi-Fi 2.4 GHz access point, TCP port 8080 |
+| Power | 1S Li-ion/LiPo (protected cell, JST-PH) or USB-C; on-board charger ≈ 336 mA; supplies: 5 V analog, 3.3 V digital, V_bias = 2.5 V |
+| Extras | 6-axis IMU (ICM-42670-P), 2 RGB status LEDs, RF shield over the analog front end |
 
 ---
 

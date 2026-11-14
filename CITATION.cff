@@ -6,10 +6,16 @@ version: "1.4"
 authors:
   - family-names: Suppelt
     given-names: Mark
-    affiliation: "Measurement and Sensor Technology Group (MUST), Technische Universität Darmstadt"
+    affiliation: "Technische Universität Darmstadt"
+    orcid: "https://orcid.org/0000-0003-4954-7229"
   - family-names: Schreck
     given-names: Thomas
-    affiliation: "Measurement and Sensor Technology Group (MUST), Technische Universität Darmstadt"
+    affiliation: "Technische Universität Darmstadt"
+    orcid: "https://orcid.org/0009-0004-6524-5436"
+  - family-names: Kupnik
+    given-names: Mario
+    affiliation: "Technische Universität Darmstadt"
+    orcid: "https://orcid.org/0000-0003-2287-4481"
 repository-code: "https://github.com/TUDA-MUST/Multi-Ferro-DAQ"
 url: "https://www.etit.tu-darmstadt.de/must/"
 license:
