@@ -72,9 +72,18 @@ $$Q\,[\mathrm{pC}] = -0.68 \cdot U\,[\mathrm{mV}]$$
 
 Example: U = 100 mV → Q = −68 pC. The amplifier is inverting, so the sign of the output is opposite to the sign of the charge flowing into the input.
 
-The feedback resistor makes the amplifier a high-pass. A charge step decays as e^(−t/τ) with τ = 0.68 s: after 0.68 s only 37 % of the step remains, and after 3.4 s (5τ) less than 1 %. For slow or quasi-static signals, correct for this with the transfer function
+The feedback resistor R_F makes the amplifier a high-pass with the time constant τ = R_F · C_F = 1 GΩ · 680 pF = 0.68 s.
+A charge step therefore decays as e^(−t/τ): after 0.68 s only 37 % of the step remains, and after 3.4 s (5τ) less than 1 %.
+In the frequency domain, the transfer function from charge to output voltage is
 
-$$H(f) = -\frac{1}{C_F} \cdot \frac{j 2\pi f \tau}{1 + j 2\pi f \tau}$$
+$$H(f) = \frac{U(f)}{Q(f)} = -\frac{1}{C_F} \cdot \frac{j 2\pi f \tau}{1 + j 2\pi f \tau}$$
+
+For slow or quasi-static signals, correct this high-pass in the time domain:
+
+$$Q(t) = -C_F \left[ U(t) + \frac{1}{\tau} \int_0^t U(t')\,\mathrm{d}t' \right]$$
+
+Subtract the baseline offset before integrating: an offset of 0.1 mV integrates to a drift of ≈ 0.1 pC/s.
+Because R_F has a tolerance of ±10 %, τ differs between channels and should be determined per channel (e.g. from a step response).
 
 ---
 
