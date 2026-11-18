@@ -6,7 +6,7 @@
 [![Badge](https://img.shields.io/badge/Built%20w%2F-KiCad-blue)](https://www.kicad.org/)
 [![DOI](https://zenodo.org/badge/868977250.svg)](https://doi.org/10.5281/zenodo.24343791)
 
-**Wearable 8-channel charge amplifier and data acquisition system for piezo- and electret sensors.**
+**Wearable 8-channel charge amplifier and data acquisition system for piezoelectric and electret sensors.**
 
 The system reads up to **8 charge sources simultaneously** via **two RJ45 connectors** (4 sensors per connector).
 The PCB is designed for **mobile use**: it can be strapped to a test person, runs on **battery power**, and streams data in **millivolts (mV)** via **Wi-Fi** at up to **2000 samples per second**.
