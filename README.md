@@ -1,6 +1,10 @@
 <img src="doc/TU_Darmstadt_Logo.svg" align="right" width="140" alt="TU Darmstadt logo"/>
 
-# Multi-Ferro-DAQ
+# Multi-Ferro-DAQ 
+
+[![Badge_must](https://img.shields.io/badge/Made_by-MUST-blue)](https://www.etit.tu-darmstadt.de/must/home_must/index.en.jsp)
+[![Badge](https://img.shields.io/badge/Built%20w%2F-KiCad-blue)](https://www.kicad.org/)
+[![DOI](https://zenodo.org/badge/868977250.svg)](https://doi.org/10.5281/zenodo.24343791)
 
 **Wearable 8-channel charge amplifier and data acquisition system for piezo- and ferroelectric sensors.**
 
