@@ -14,7 +14,7 @@ The system reads up to **8 charge sources simultaneously** via **two RJ45 connec
 The PCB is designed for **mobile use**: it can be strapped to a test person, runs on **battery power**, and streams data in **millivolts (mV)** via **Wi-Fi** at up to **2000 samples per second**.
 
 <p align="center">
-  <img src="doc/board_overview.png" alt="Multi-Ferro-DAQ v1.4 board overview with main components and dimensions (65 mm × 50 mm)" width="600"/>
+  <img src="doc/pcb_labels_horizontal.svg" alt="Multi-Ferro-DAQ v1.4 board overview with main components and dimensions (65 mm × 50 mm)" width="600"/>
 </p>
 
 ---
