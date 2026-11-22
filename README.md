@@ -1,4 +1,6 @@
 <img src="doc/TU_Darmstadt_Logo.svg" align="right" width="140" alt="TU Darmstadt logo"/>
+<a href="https://certification.oshwa.org/de000179"><img src="doc/certification-mark-DE000179-wide.svg" align="right" width="120" alt="OSHWA certified open source hardware, UID DE000179"/></a>
+
 
 # Multi-Ferro-DAQ 
 
